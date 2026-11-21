@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arcane Transit Authority: run your rails through earth, water, fire and air</title>
+<meta name="description" content="A planet-wide city with no room to spare. Tap two places, pick a route card, and run elemental trains across the rooftops, under the sea, through the rock and straight through the molten core.">
+<meta name="theme-color" content="#141a3a">
+<meta property="og:title" content="Arcane Transit Authority">
+<meta property="og:description" content="Run your rails through earth, water, fire and air on a planet-wide city: a 3D transit game.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://arcanetransitauthority.synapticnoise.com/">
+<meta property="og:url" content="https://arcanetransitauthority.synapticnoise.com/">
+<meta property="og:image" content="https://arcanetransitauthority.synapticnoise.com/social-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The planet-city Oikumene, glowing ley-rails running over, under and through it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://arcanetransitauthority.synapticnoise.com/social-card.jpg">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preload" href="fonts/ATADisplay.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Exo2.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/keyart/globe.jpg" as="image">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/report.js"></script>
+<script src="vendor/other-devices.js"></script>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+</script>
+<!-- after the import map, which must come before any module -->
+<link rel="modulepreload" href="vendor/three.core.js">
+<link rel="modulepreload" href="vendor/three.module.js">
+<link rel="modulepreload" href="src/render-net.js">
+<link rel="modulepreload" href="src/game.js">
+</head>
+<body>
+<!-- what the title globe draws: real images, so the page's load event waits for them; main.js makes its textures from these elements (no second fetch). Everything else loads after the title. -->
+<div id="title-tex" hidden>
+  <img data-tex="galaxy" src="assets/bg/galaxy-core.jpg" crossorigin="anonymous" alt="">
+  <img data-tex="streets" src="assets/tiles/streets.jpg" crossorigin="anonymous" alt="">
+  <img data-tex="windows" src="assets/tiles/windows.jpg" crossorigin="anonymous" alt="">
+  <img data-tex="rock" src="assets/tiles/rock.jpg" crossorigin="anonymous" alt="">
+  <img data-tex="seafloor" src="assets/tiles/seafloor.jpg" crossorigin="anonymous" alt="">
+</div>
+<canvas id="c" aria-label="The planet Oikumene"></canvas>
+<div id="hud-root"></div>
+
+<!-- Loading -->
+<section id="loading" data-screen="loading" class="screen">
+  <div class="ka-stack"><div class="ka on" style="background-image:url(assets/keyart/globe.jpg)"></div></div>
+  <div class="loading-foot">
+    <div class="logo small"><span class="logo-ata">ATA</span><span class="logo-name">Arcane Transit Authority</span></div>
+    <div class="bar"><div class="bar-fill" id="load-fill"></div></div>
+    <div class="load-label" id="load-label">Charging the ley-rails…</div>
+  </div>
+</section>
+
+<!-- Title -->
+<section id="title" data-screen="title" class="screen" hidden>
+  <div class="title-col">
+    <div class="logo"><span class="logo-ata">ATA</span><span class="logo-name">Arcane Transit Authority</span></div>
+    <div class="tagline">A planet-wide city with no room to spare, so run your rails through earth, water, fire and air.</div>
+    <nav class="menu" id="title-menu">
+      <button class="btn primary" data-act="continue" hidden>Continue</button>
+      <button class="btn primary" data-act="new">New Term</button>
+      <button class="btn" data-act="load" hidden>Load</button>
+      <button class="btn" data-act="merit">Merit Office</button>
+      <button class="btn" data-act="howto">How to Play</button>
+      <button class="btn" data-act="settings">Settings</button>
+      <button class="btn" data-act="credits">Credits</button>
+    </nav>
+  </div>
+  <button class="icon-btn mute-btn" data-act="mute" aria-label="Mute (M)" title="Mute (M)"></button>
+  <a class="title-link title-link-gallery" href="https://synapticnoise.com/" title="More games at synapticnoise.com">synapticnoise.com</a>
+  <a class="title-link title-link-repo" href="https://github.com/zeveck/arcane-transit-authority" target="_blank" rel="noopener" title="Arcane Transit Authority on GitHub: how it was made">GitHub</a>
+</section>
+
+<!-- Generic overlay screens are filled by ui.js -->
+<section id="settings" data-screen="settings" class="screen overlay" hidden></section>
+<section id="howto" data-screen="howto" class="screen overlay" hidden></section>
+<section id="credits" data-screen="credits" class="screen overlay" hidden></section>
+<section id="pause" data-screen="pause" class="screen overlay dim" hidden></section>
+<section id="tech" data-screen="tech" class="screen overlay" hidden></section>
+<section id="charters" data-screen="charters" class="screen overlay clear" hidden></section>
+<section id="setup" data-screen="setup" class="screen overlay clear" hidden></section>
+<section id="merit" data-screen="merit" class="screen overlay" hidden></section>
+<section id="slots" data-screen="slots" class="screen overlay" hidden></section>
+<section id="result" data-screen="result" class="screen overlay dim" hidden></section>
+<section id="finale" data-screen="finale" class="screen" hidden></section>
+<section id="confirm" data-screen="confirm" class="screen overlay dim" hidden></section>
+<section id="fade" class="fade" hidden></section>
+
+<script type="module" src="vendor/gh-feedback.js"></script>
+<script type="module" src="src/main.js"></script>
+<gh-feedback id="report" trigger="none" repo="zeveck/arcane-transit-authority" template="bug.yml"
+  heading="Report a bug" types="bug,feature" theme="dark" color="#ffd9a0" popup-color="#9a6a18"></gh-feedback>
+</body>
+</html>

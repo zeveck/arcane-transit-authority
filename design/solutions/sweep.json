@@ -1,0 +1,3885 @@
+{
+ "seeds": [
+  11,
+  22
+ ],
+ "lookahead": 180,
+ "cardMetric": {
+  "comparisons": 225123,
+  "bothTaggedPct": 43.4,
+  "bothByKindPct": {
+   "earth": 26.8,
+   "core": 16.3,
+   "hybrid": 0.1,
+   "space": 0.2,
+   "water": 0
+  },
+  "builds": 1316,
+  "buildsByKindPct": {
+   "core": 15.2,
+   "earth": 37.3,
+   "surface": 42.7,
+   "sky": 3.3,
+   "water": 1.4,
+   "hybrid": 0.1
+  }
+ },
+ "rows": [
+  {
+   "charter": "I",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    150,
+    570,
+    810
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "core": 0.51,
+    "earth": 0.301,
+    "surface": 0.188
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1621,
+    "bothTagged": 1129,
+    "bothByKind": {
+     "earth": 813,
+     "core": 316
+    },
+    "cheapestByKind": {
+     "earth": 813,
+     "core": 630,
+     "surface": 155,
+     "hybrid": 23
+    },
+    "capacityByKind": {
+     "earth": 1183,
+     "core": 326,
+     "surface": 112
+    },
+    "builds": {
+     "core": 3,
+     "earth": 6,
+     "surface": 4
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    180,
+    660,
+    930
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.473,
+    "surface": 0.285,
+    "earth": 0.243
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1831,
+    "bothTagged": 843,
+    "bothByKind": {
+     "core": 288,
+     "earth": 555
+    },
+    "cheapestByKind": {
+     "core": 695,
+     "surface": 567,
+     "earth": 555,
+     "hybrid": 14
+    },
+    "capacityByKind": {
+     "core": 294,
+     "earth": 1348,
+     "surface": 189
+    },
+    "builds": {
+     "core": 3,
+     "surface": 5,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    180,
+    690,
+    930
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.411,
+    "earth": 0.432,
+    "surface": 0.157
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1626,
+    "bothTagged": 912,
+    "bothByKind": {
+     "core": 205,
+     "earth": 707
+    },
+    "cheapestByKind": {
+     "core": 499,
+     "surface": 382,
+     "earth": 707,
+     "hybrid": 15,
+     "water": 23
+    },
+    "capacityByKind": {
+     "core": 205,
+     "earth": 1294,
+     "surface": 127
+    },
+    "builds": {
+     "core": 2,
+     "earth": 8,
+     "surface": 2
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    180,
+    630,
+    870
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.394,
+    "surface": 0.338,
+    "earth": 0.268
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1302,
+    "bothTagged": 952,
+    "bothByKind": {
+     "core": 211,
+     "earth": 741
+    },
+    "cheapestByKind": {
+     "core": 353,
+     "surface": 196,
+     "earth": 741,
+     "hybrid": 12
+    },
+    "capacityByKind": {
+     "core": 223,
+     "earth": 991,
+     "surface": 88
+    },
+    "builds": {
+     "core": 2,
+     "surface": 5,
+     "earth": 6
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    180,
+    540,
+    720
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.566,
+    "surface": 0.178,
+    "earth": 0.256
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1646,
+    "bothTagged": 858,
+    "bothByKind": {
+     "core": 189,
+     "earth": 669
+    },
+    "cheapestByKind": {
+     "surface": 439,
+     "core": 516,
+     "earth": 669,
+     "hybrid": 11,
+     "sky": 11
+    },
+    "capacityByKind": {
+     "earth": 1293,
+     "core": 194,
+     "surface": 159
+    },
+    "builds": {
+     "core": 3,
+     "surface": 3,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    180,
+    660,
+    930
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.451,
+    "surface": 0.326,
+    "earth": 0.105,
+    "sky": 0.118
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2117,
+    "bothTagged": 1318,
+    "bothByKind": {
+     "core": 148,
+     "earth": 1170
+    },
+    "cheapestByKind": {
+     "core": 465,
+     "surface": 460,
+     "earth": 1170,
+     "hybrid": 12,
+     "sky": 10
+    },
+    "capacityByKind": {
+     "core": 156,
+     "earth": 1812,
+     "surface": 149
+    },
+    "builds": {
+     "core": 3,
+     "surface": 7,
+     "earth": 3,
+     "sky": 2
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    180,
+    540,
+    810
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.366,
+    "earth": 0.27,
+    "surface": 0.364
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1615,
+    "bothTagged": 915,
+    "bothByKind": {
+     "core": 175,
+     "earth": 740
+    },
+    "cheapestByKind": {
+     "core": 477,
+     "surface": 398,
+     "earth": 740
+    },
+    "capacityByKind": {
+     "core": 175,
+     "earth": 1352,
+     "surface": 88
+    },
+    "builds": {
+     "core": 2,
+     "earth": 5,
+     "surface": 5
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    180,
+    630,
+    810
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.53,
+    "surface": 0.178,
+    "earth": 0.292
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1724,
+    "bothTagged": 1071,
+    "bothByKind": {
+     "core": 273,
+     "earth": 786,
+     "hybrid": 12
+    },
+    "cheapestByKind": {
+     "core": 580,
+     "surface": 328,
+     "earth": 786,
+     "hybrid": 30
+    },
+    "capacityByKind": {
+     "core": 281,
+     "earth": 1380,
+     "surface": 51,
+     "hybrid": 12
+    },
+    "builds": {
+     "core": 3,
+     "surface": 3,
+     "earth": 6
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    180,
+    540,
+    750
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.401,
+    "surface": 0.322,
+    "earth": 0.276
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1607,
+    "bothTagged": 860,
+    "bothByKind": {
+     "core": 170,
+     "earth": 686,
+     "hybrid": 4
+    },
+    "cheapestByKind": {
+     "core": 431,
+     "surface": 450,
+     "earth": 686,
+     "hybrid": 40
+    },
+    "capacityByKind": {
+     "earth": 1383,
+     "core": 176,
+     "surface": 44,
+     "hybrid": 4
+    },
+    "builds": {
+     "core": 2,
+     "surface": 6,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    210,
+    390,
+    930
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.367,
+    "earth": 0.226,
+    "surface": 0.407
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1694,
+    "bothTagged": 957,
+    "bothByKind": {
+     "core": 107,
+     "earth": 850
+    },
+    "cheapestByKind": {
+     "core": 413,
+     "surface": 419,
+     "earth": 850,
+     "hybrid": 12
+    },
+    "capacityByKind": {
+     "core": 107,
+     "earth": 1509,
+     "surface": 78
+    },
+    "builds": {
+     "core": 2,
+     "earth": 5,
+     "surface": 7
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    180,
+    510,
+    870
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.376,
+    "surface": 0.392,
+    "earth": 0.232
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1846,
+    "bothTagged": 641,
+    "bothByKind": {
+     "core": 136,
+     "earth": 505
+    },
+    "cheapestByKind": {
+     "core": 348,
+     "surface": 931,
+     "earth": 567
+    },
+    "capacityByKind": {
+     "core": 140,
+     "earth": 1341,
+     "space": 317,
+     "surface": 48
+    },
+    "builds": {
+     "core": 2,
+     "surface": 7,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "I",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    180,
+    510,
+    750
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.414,
+    "surface": 0.36,
+    "earth": 0.226
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1237,
+    "bothTagged": 410,
+    "bothByKind": {
+     "core": 34,
+     "earth": 374,
+     "space": 2
+    },
+    "cheapestByKind": {
+     "core": 265,
+     "surface": 391,
+     "earth": 579,
+     "space": 2
+    },
+    "capacityByKind": {
+     "core": 34,
+     "earth": 567,
+     "space": 596,
+     "surface": 40
+    },
+    "builds": {
+     "core": 2,
+     "surface": 5,
+     "earth": 4
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    360,
+    870,
+    1200
+   ],
+   "idleGapMax": 60,
+   "shares": {
+    "earth": 0.252,
+    "core": 0.402,
+    "surface": 0.166,
+    "sky": 0.179
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2374,
+    "bothTagged": 1628,
+    "bothByKind": {
+     "earth": 1197,
+     "core": 431
+    },
+    "cheapestByKind": {
+     "earth": 1197,
+     "core": 785,
+     "surface": 343,
+     "hybrid": 10,
+     "sky": 21,
+     "water": 18
+    },
+    "capacityByKind": {
+     "earth": 1731,
+     "core": 441,
+     "surface": 202
+    },
+    "builds": {
+     "earth": 6,
+     "core": 3,
+     "surface": 4,
+     "sky": 3
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    240,
+    1020,
+    1320
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "core": 0.542,
+    "surface": 0.183,
+    "earth": 0.275
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2396,
+    "bothTagged": 1391,
+    "bothByKind": {
+     "core": 304,
+     "earth": 1087
+    },
+    "cheapestByKind": {
+     "core": 792,
+     "surface": 515,
+     "earth": 1087,
+     "hybrid": 2
+    },
+    "capacityByKind": {
+     "core": 306,
+     "earth": 1710,
+     "surface": 380
+    },
+    "builds": {
+     "core": 4,
+     "surface": 4,
+     "earth": 7
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    450,
+    990,
+    1260
+   ],
+   "idleGapMax": 60,
+   "shares": {
+    "core": 0.484,
+    "earth": 0.358,
+    "surface": 0.13,
+    "water": 0.028
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1860,
+    "bothTagged": 1055,
+    "bothByKind": {
+     "core": 324,
+     "earth": 723,
+     "hybrid": 8
+    },
+    "cheapestByKind": {
+     "core": 592,
+     "surface": 513,
+     "earth": 723,
+     "hybrid": 23,
+     "water": 9
+    },
+    "capacityByKind": {
+     "core": 324,
+     "earth": 1428,
+     "surface": 100,
+     "hybrid": 8
+    },
+    "builds": {
+     "core": 3,
+     "earth": 8,
+     "surface": 2,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    330,
+    870,
+    1140
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.214,
+    "core": 0.487,
+    "earth": 0.299
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1806,
+    "bothTagged": 1359,
+    "bothByKind": {
+     "core": 196,
+     "earth": 1163
+    },
+    "cheapestByKind": {
+     "core": 432,
+     "surface": 207,
+     "earth": 1163,
+     "hybrid": 4
+    },
+    "capacityByKind": {
+     "core": 201,
+     "earth": 1482,
+     "surface": 123
+    },
+    "builds": {
+     "surface": 4,
+     "core": 3,
+     "earth": 7
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    300,
+    750,
+    960
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.261,
+    "core": 0.405,
+    "earth": 0.302,
+    "water": 0.033
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2004,
+    "bothTagged": 956,
+    "bothByKind": {
+     "core": 325,
+     "earth": 624,
+     "hybrid": 7
+    },
+    "cheapestByKind": {
+     "surface": 600,
+     "core": 763,
+     "earth": 624,
+     "hybrid": 12,
+     "water": 5
+    },
+    "capacityByKind": {
+     "earth": 1449,
+     "core": 330,
+     "surface": 218,
+     "hybrid": 7
+    },
+    "builds": {
+     "surface": 4,
+     "core": 2,
+     "earth": 6,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    210,
+    960,
+    1290
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.448,
+    "earth": 0.251,
+    "core": 0.133,
+    "water": 0.031,
+    "sky": 0.138
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2178,
+    "bothTagged": 1606,
+    "bothByKind": {
+     "core": 340,
+     "earth": 1266
+    },
+    "cheapestByKind": {
+     "core": 400,
+     "surface": 479,
+     "earth": 1266,
+     "water": 18,
+     "sky": 15
+    },
+    "capacityByKind": {
+     "core": 340,
+     "earth": 1778,
+     "surface": 60
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 5,
+     "core": 1,
+     "water": 1,
+     "sky": 2
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    210,
+    930,
+    1140
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.49,
+    "earth": 0.333,
+    "surface": 0.177
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2399,
+    "bothTagged": 1290,
+    "bothByKind": {
+     "core": 316,
+     "earth": 974
+    },
+    "cheapestByKind": {
+     "core": 862,
+     "surface": 538,
+     "earth": 974,
+     "hybrid": 25
+    },
+    "capacityByKind": {
+     "core": 316,
+     "earth": 1906,
+     "surface": 177
+    },
+    "builds": {
+     "core": 3,
+     "earth": 7,
+     "surface": 3
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    360,
+    1380,
+    1590
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.556,
+    "earth": 0.444
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3474,
+    "bothTagged": 1846,
+    "bothByKind": {
+     "core": 1241,
+     "earth": 605
+    },
+    "cheapestByKind": {
+     "core": 1818,
+     "surface": 1051,
+     "earth": 605
+    },
+    "capacityByKind": {
+     "core": 1257,
+     "earth": 2217
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 9
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    210,
+    720,
+    1140
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.2,
+    "core": 0.561,
+    "earth": 0.217,
+    "water": 0.022
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1918,
+    "bothTagged": 916,
+    "bothByKind": {
+     "core": 183,
+     "earth": 733
+    },
+    "cheapestByKind": {
+     "core": 589,
+     "surface": 562,
+     "earth": 733,
+     "hybrid": 11,
+     "water": 21,
+     "sky": 2
+    },
+    "capacityByKind": {
+     "earth": 1628,
+     "core": 183,
+     "surface": 107
+    },
+    "builds": {
+     "surface": 4,
+     "core": 4,
+     "earth": 5,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    270,
+    840,
+    1350
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.466,
+    "earth": 0.162,
+    "surface": 0.372
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2324,
+    "bothTagged": 1542,
+    "bothByKind": {
+     "core": 196,
+     "earth": 1346
+    },
+    "cheapestByKind": {
+     "core": 525,
+     "surface": 441,
+     "earth": 1346,
+     "hybrid": 12
+    },
+    "capacityByKind": {
+     "core": 196,
+     "earth": 2010,
+     "surface": 118
+    },
+    "builds": {
+     "core": 3,
+     "earth": 4,
+     "surface": 8
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    210,
+    900,
+    1290
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.281,
+    "core": 0.383,
+    "surface": 0.336
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2249,
+    "bothTagged": 942,
+    "bothByKind": {
+     "core": 51,
+     "earth": 863,
+     "space": 23,
+     "hybrid": 5
+    },
+    "cheapestByKind": {
+     "core": 274,
+     "surface": 801,
+     "earth": 1139,
+     "space": 23,
+     "hybrid": 11,
+     "water": 1
+    },
+    "capacityByKind": {
+     "core": 51,
+     "earth": 1501,
+     "space": 623,
+     "surface": 69,
+     "hybrid": 5
+    },
+    "builds": {
+     "earth": 6,
+     "core": 2,
+     "surface": 6
+    }
+   }
+  },
+  {
+   "charter": "II",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    210,
+    780,
+    1230
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.313,
+    "core": 0.505,
+    "surface": 0.153,
+    "water": 0.03
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1828,
+    "bothTagged": 658,
+    "bothByKind": {
+     "core": 11,
+     "earth": 601,
+     "space": 42,
+     "water": 4
+    },
+    "cheapestByKind": {
+     "core": 222,
+     "surface": 517,
+     "earth": 969,
+     "space": 42,
+     "hybrid": 50,
+     "water": 28
+    },
+    "capacityByKind": {
+     "core": 11,
+     "earth": 912,
+     "space": 886,
+     "surface": 15,
+     "water": 4
+    },
+    "builds": {
+     "earth": 6,
+     "core": 3,
+     "surface": 3,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    480,
+    1530,
+    2070
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.387,
+    "surface": 0.454,
+    "core": 0.159
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3759,
+    "bothTagged": 1800,
+    "bothByKind": {
+     "earth": 576,
+     "core": 1224
+    },
+    "cheapestByKind": {
+     "earth": 576,
+     "core": 1838,
+     "surface": 1345
+    },
+    "capacityByKind": {
+     "earth": 2533,
+     "core": 1224,
+     "surface": 2
+    },
+    "builds": {
+     "earth": 9,
+     "surface": 10,
+     "core": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    270,
+    1110,
+    1410
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.164,
+    "core": 0.525,
+    "earth": 0.311
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1335,
+    "bothTagged": 654,
+    "bothByKind": {
+     "core": 161,
+     "earth": 493
+    },
+    "cheapestByKind": {
+     "core": 434,
+     "surface": 406,
+     "hybrid": 2,
+     "earth": 493
+    },
+    "capacityByKind": {
+     "core": 163,
+     "earth": 995,
+     "surface": 177
+    },
+    "builds": {
+     "surface": 4,
+     "core": 4,
+     "earth": 8
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    810,
+    1560,
+    2040
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "earth": 0.326,
+    "core": 0.174,
+    "surface": 0.5
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3300,
+    "bothTagged": 2067,
+    "bothByKind": {
+     "core": 715,
+     "earth": 1352
+    },
+    "cheapestByKind": {
+     "core": 1245,
+     "surface": 691,
+     "earth": 1352,
+     "hybrid": 12
+    },
+    "capacityByKind": {
+     "core": 715,
+     "earth": 2393,
+     "surface": 192
+    },
+    "builds": {
+     "earth": 8,
+     "core": 1,
+     "surface": 10
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    420,
+    960,
+    1320
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.439,
+    "core": 0.341,
+    "earth": 0.201,
+    "water": 0.019
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1527,
+    "bothTagged": 1010,
+    "bothByKind": {
+     "core": 209,
+     "earth": 797,
+     "water": 4
+    },
+    "cheapestByKind": {
+     "core": 333,
+     "surface": 389,
+     "earth": 797,
+     "hybrid": 4,
+     "water": 4
+    },
+    "capacityByKind": {
+     "core": 214,
+     "earth": 1212,
+     "surface": 97,
+     "water": 4
+    },
+    "builds": {
+     "surface": 8,
+     "core": 2,
+     "earth": 5,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    450,
+    810,
+    1170
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.317,
+    "core": 0.373,
+    "earth": 0.311
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1903,
+    "bothTagged": 1015,
+    "bothByKind": {
+     "core": 377,
+     "earth": 638
+    },
+    "cheapestByKind": {
+     "surface": 498,
+     "core": 743,
+     "earth": 638,
+     "hybrid": 5,
+     "water": 19
+    },
+    "capacityByKind": {
+     "earth": 1397,
+     "core": 382,
+     "surface": 124
+    },
+    "builds": {
+     "surface": 5,
+     "core": 2,
+     "earth": 7
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    210,
+    1110,
+    1830
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "surface": 0.479,
+    "earth": 0.265,
+    "core": 0.113,
+    "sky": 0.117,
+    "water": 0.026
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2866,
+    "bothTagged": 2008,
+    "bothByKind": {
+     "core": 652,
+     "earth": 1356
+    },
+    "cheapestByKind": {
+     "core": 809,
+     "surface": 667,
+     "earth": 1356,
+     "sky": 14,
+     "water": 20
+    },
+    "capacityByKind": {
+     "core": 652,
+     "earth": 2151,
+     "surface": 63
+    },
+    "builds": {
+     "surface": 9,
+     "earth": 6,
+     "core": 1,
+     "sky": 2,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    360,
+    1170,
+    1560
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "core": 0.292,
+    "earth": 0.193,
+    "surface": 0.515
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2502,
+    "bothTagged": 1293,
+    "bothByKind": {
+     "core": 459,
+     "earth": 830,
+     "hybrid": 4
+    },
+    "cheapestByKind": {
+     "core": 885,
+     "surface": 783,
+     "earth": 830,
+     "hybrid": 4
+    },
+    "capacityByKind": {
+     "core": 467,
+     "earth": 1836,
+     "surface": 195,
+     "hybrid": 4
+    },
+    "builds": {
+     "core": 2,
+     "earth": 5,
+     "surface": 9
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    660,
+    1680,
+    2070
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.522,
+    "earth": 0.478
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3582,
+    "bothTagged": 1910,
+    "bothByKind": {
+     "core": 1466,
+     "earth": 444
+    },
+    "cheapestByKind": {
+     "core": 2163,
+     "surface": 943,
+     "earth": 444,
+     "hybrid": 32
+    },
+    "capacityByKind": {
+     "core": 1468,
+     "earth": 2114
+    },
+    "builds": {
+     "surface": 8,
+     "earth": 11
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    210,
+    810,
+    1260
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "surface": 0.329,
+    "core": 0.367,
+    "earth": 0.156,
+    "water": 0.02,
+    "sky": 0.129
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1915,
+    "bothTagged": 1095,
+    "bothByKind": {
+     "core": 193,
+     "earth": 902
+    },
+    "cheapestByKind": {
+     "core": 588,
+     "surface": 400,
+     "earth": 902,
+     "hybrid": 12,
+     "water": 7,
+     "sky": 6
+    },
+    "capacityByKind": {
+     "earth": 1603,
+     "core": 193,
+     "surface": 119
+    },
+    "builds": {
+     "surface": 7,
+     "core": 3,
+     "earth": 4,
+     "water": 1,
+     "sky": 2
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    420,
+    990,
+    1320
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.399,
+    "core": 0.432,
+    "earth": 0.168
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2723,
+    "bothTagged": 1192,
+    "bothByKind": {
+     "core": 216,
+     "earth": 913,
+     "hybrid": 63
+    },
+    "cheapestByKind": {
+     "core": 933,
+     "surface": 774,
+     "hybrid": 103,
+     "earth": 913
+    },
+    "capacityByKind": {
+     "core": 222,
+     "earth": 2290,
+     "surface": 148,
+     "hybrid": 63
+    },
+    "builds": {
+     "surface": 9,
+     "core": 3,
+     "earth": 5,
+     "hybrid": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    210,
+    960,
+    1290
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.261,
+    "core": 0.528,
+    "surface": 0.187,
+    "water": 0.024
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2336,
+    "bothTagged": 835,
+    "bothByKind": {
+     "core": 48,
+     "earth": 787
+    },
+    "cheapestByKind": {
+     "core": 467,
+     "surface": 716,
+     "earth": 1136,
+     "water": 17
+    },
+    "capacityByKind": {
+     "core": 48,
+     "earth": 1598,
+     "space": 575,
+     "surface": 115
+    },
+    "builds": {
+     "earth": 6,
+     "core": 4,
+     "surface": 4,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "III",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    210,
+    930,
+    1290
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "earth": 0.254,
+    "core": 0.566,
+    "surface": 0.18
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1974,
+    "bothTagged": 771,
+    "bothByKind": {
+     "core": 18,
+     "earth": 734,
+     "space": 19
+    },
+    "cheapestByKind": {
+     "core": 280,
+     "surface": 416,
+     "earth": 1222,
+     "space": 19,
+     "hybrid": 18,
+     "water": 19
+    },
+    "capacityByKind": {
+     "core": 18,
+     "earth": 1088,
+     "space": 834,
+     "surface": 34
+    },
+    "builds": {
+     "earth": 6,
+     "core": 4,
+     "surface": 4
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    300,
+    1350,
+    1770
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.522,
+    "earth": 0.294,
+    "core": 0.184
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3830,
+    "bothTagged": 1758,
+    "bothByKind": {
+     "earth": 322,
+     "core": 1436
+    },
+    "cheapestByKind": {
+     "earth": 328,
+     "core": 2272,
+     "surface": 1230
+    },
+    "capacityByKind": {
+     "earth": 1969,
+     "core": 1436,
+     "space": 412,
+     "surface": 13
+    },
+    "builds": {
+     "surface": 11,
+     "earth": 7,
+     "core": 1
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    360,
+    1140,
+    1530
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.208,
+    "surface": 0.455,
+    "earth": 0.337
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3389,
+    "bothTagged": 1687,
+    "bothByKind": {
+     "core": 858,
+     "earth": 822,
+     "space": 7
+    },
+    "cheapestByKind": {
+     "core": 1498,
+     "surface": 1024,
+     "earth": 822,
+     "hybrid": 38,
+     "space": 7
+    },
+    "capacityByKind": {
+     "core": 878,
+     "space": 300,
+     "earth": 1989,
+     "surface": 222
+    },
+    "builds": {
+     "core": 1,
+     "surface": 8,
+     "earth": 7
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    540,
+    1770,
+    2100
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.51,
+    "earth": 0.314,
+    "sky": 0.177
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3930,
+    "bothTagged": 2014,
+    "bothByKind": {
+     "core": 1645,
+     "earth": 369
+    },
+    "cheapestByKind": {
+     "core": 2365,
+     "surface": 1114,
+     "earth": 369,
+     "sky": 66,
+     "hybrid": 16
+    },
+    "capacityByKind": {
+     "core": 1645,
+     "space": 232,
+     "earth": 2053
+    },
+    "builds": {
+     "surface": 8,
+     "earth": 8,
+     "sky": 3
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    240,
+    870,
+    1170
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.339,
+    "core": 0.44,
+    "earth": 0.22
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1728,
+    "bothTagged": 668,
+    "bothByKind": {
+     "core": 108,
+     "earth": 557,
+     "space": 3
+    },
+    "cheapestByKind": {
+     "core": 441,
+     "surface": 462,
+     "earth": 808,
+     "hybrid": 14,
+     "space": 3
+    },
+    "capacityByKind": {
+     "core": 109,
+     "space": 586,
+     "earth": 952,
+     "surface": 81
+    },
+    "builds": {
+     "surface": 6,
+     "core": 3,
+     "earth": 6
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    240,
+    870,
+    1170
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.214,
+    "core": 0.469,
+    "earth": 0.252,
+    "sky": 0.066
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2673,
+    "bothTagged": 1007,
+    "bothByKind": {
+     "core": 248,
+     "earth": 759
+    },
+    "cheapestByKind": {
+     "surface": 692,
+     "core": 808,
+     "earth": 1128,
+     "hybrid": 17,
+     "water": 22,
+     "sky": 6
+    },
+    "capacityByKind": {
+     "space": 736,
+     "core": 254,
+     "earth": 1547,
+     "surface": 136
+    },
+    "builds": {
+     "surface": 4,
+     "core": 3,
+     "earth": 6,
+     "sky": 1
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    270,
+    1320,
+    2040
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.228,
+    "surface": 0.342,
+    "earth": 0.157,
+    "sky": 0.273
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3658,
+    "bothTagged": 1140,
+    "bothByKind": {
+     "core": 391,
+     "earth": 749
+    },
+    "cheapestByKind": {
+     "core": 933,
+     "surface": 1162,
+     "earth": 1463,
+     "sky": 97,
+     "hybrid": 3
+    },
+    "capacityByKind": {
+     "space": 1659,
+     "core": 391,
+     "earth": 1552,
+     "surface": 56
+    },
+    "builds": {
+     "core": 2,
+     "surface": 9,
+     "earth": 5,
+     "sky": 6
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    240,
+    900,
+    1290
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "surface": 0.594,
+    "core": 0.208,
+    "earth": 0.198
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2713,
+    "bothTagged": 759,
+    "bothByKind": {
+     "core": 247,
+     "earth": 493,
+     "space": 19
+    },
+    "cheapestByKind": {
+     "core": 899,
+     "surface": 1052,
+     "earth": 715,
+     "hybrid": 28,
+     "space": 19
+    },
+    "capacityByKind": {
+     "space": 606,
+     "core": 298,
+     "earth": 1702,
+     "surface": 107
+    },
+    "builds": {
+     "surface": 10,
+     "core": 1,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    330,
+    1170,
+    1530
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.504,
+    "surface": 0.399,
+    "earth": 0.097
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3071,
+    "bothTagged": 665,
+    "bothByKind": {
+     "core": 243,
+     "earth": 403,
+     "space": 19
+    },
+    "cheapestByKind": {
+     "core": 842,
+     "surface": 1438,
+     "earth": 607,
+     "hybrid": 165,
+     "space": 19
+    },
+    "capacityByKind": {
+     "space": 936,
+     "core": 283,
+     "earth": 1674,
+     "surface": 178
+    },
+    "builds": {
+     "core": 5,
+     "surface": 10,
+     "earth": 3
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    210,
+    810,
+    1230
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.338,
+    "core": 0.271,
+    "earth": 0.297,
+    "water": 0.094
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2497,
+    "bothTagged": 746,
+    "bothByKind": {
+     "core": 268,
+     "earth": 476,
+     "space": 2
+    },
+    "cheapestByKind": {
+     "core": 880,
+     "surface": 779,
+     "hybrid": 42,
+     "earth": 757,
+     "water": 37,
+     "space": 2
+    },
+    "capacityByKind": {
+     "earth": 1474,
+     "space": 521,
+     "core": 290,
+     "surface": 212
+    },
+    "builds": {
+     "surface": 6,
+     "core": 2,
+     "earth": 6,
+     "water": 2
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    360,
+    1230,
+    1500
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.442,
+    "surface": 0.389,
+    "earth": 0.169
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3681,
+    "bothTagged": 1301,
+    "bothByKind": {
+     "core": 663,
+     "space": 17,
+     "earth": 557,
+     "hybrid": 64
+    },
+    "cheapestByKind": {
+     "core": 1826,
+     "surface": 1077,
+     "hybrid": 148,
+     "space": 17,
+     "earth": 613
+    },
+    "capacityByKind": {
+     "space": 576,
+     "core": 701,
+     "earth": 2127,
+     "surface": 213,
+     "hybrid": 64
+    },
+    "builds": {
+     "core": 4,
+     "surface": 9,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    240,
+    1230,
+    1800
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "core": 0.576,
+    "earth": 0.221,
+    "surface": 0.203
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3056,
+    "bothTagged": 851,
+    "bothByKind": {
+     "core": 188,
+     "earth": 663
+    },
+    "cheapestByKind": {
+     "core": 616,
+     "surface": 1472,
+     "hybrid": 14,
+     "earth": 954
+    },
+    "capacityByKind": {
+     "core": 189,
+     "earth": 1633,
+     "space": 1002,
+     "surface": 232
+    },
+    "builds": {
+     "core": 4,
+     "earth": 5,
+     "surface": 4
+    }
+   }
+  },
+  {
+   "charter": "IV",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    240,
+    870,
+    1530
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.348,
+    "earth": 0.148,
+    "core": 0.504
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2913,
+    "bothTagged": 986,
+    "bothByKind": {
+     "core": 206,
+     "earth": 768,
+     "space": 12
+    },
+    "cheapestByKind": {
+     "core": 569,
+     "surface": 1065,
+     "earth": 1156,
+     "hybrid": 90,
+     "water": 21,
+     "space": 12
+    },
+    "capacityByKind": {
+     "core": 207,
+     "earth": 1478,
+     "space": 1138,
+     "surface": 90
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 4,
+     "core": 4
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    180,
+    1490,
+    1850
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.359,
+    "surface": 0.449,
+    "core": 0.192
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3486,
+    "bothTagged": 1524,
+    "bothByKind": {
+     "earth": 95,
+     "core": 1429
+    },
+    "cheapestByKind": {
+     "earth": 95,
+     "core": 2064,
+     "surface": 1279,
+     "sky": 48
+    },
+    "capacityByKind": {
+     "earth": 1646,
+     "core": 1429,
+     "space": 411
+    },
+    "builds": {
+     "earth": 7,
+     "surface": 8,
+     "core": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    300,
+    1430,
+    1770
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.396,
+    "earth": 0.284,
+    "core": 0.32
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3627,
+    "bothTagged": 1573,
+    "bothByKind": {
+     "core": 853,
+     "earth": 710,
+     "space": 10
+    },
+    "cheapestByKind": {
+     "core": 1755,
+     "surface": 1105,
+     "hybrid": 47,
+     "earth": 710,
+     "space": 10
+    },
+    "capacityByKind": {
+     "core": 868,
+     "space": 422,
+     "earth": 1955,
+     "surface": 382
+    },
+    "builds": {
+     "surface": 8,
+     "earth": 7,
+     "core": 2
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    240,
+    1500,
+    1740
+   ],
+   "idleGapMax": 30,
+   "shares": {
+    "earth": 0.287,
+    "core": 0.495,
+    "surface": 0.194,
+    "water": 0.024
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3090,
+    "bothTagged": 1582,
+    "bothByKind": {
+     "core": 749,
+     "earth": 833
+    },
+    "cheapestByKind": {
+     "core": 1538,
+     "surface": 518,
+     "earth": 971,
+     "water": 63
+    },
+    "capacityByKind": {
+     "core": 749,
+     "space": 438,
+     "earth": 1677,
+     "surface": 226
+    },
+    "builds": {
+     "earth": 7,
+     "core": 4,
+     "surface": 3,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    240,
+    950,
+    1390
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.543,
+    "core": 0.214,
+    "earth": 0.242
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2011,
+    "bothTagged": 947,
+    "bothByKind": {
+     "core": 58,
+     "earth": 886,
+     "space": 3
+    },
+    "cheapestByKind": {
+     "core": 432,
+     "surface": 362,
+     "earth": 1211,
+     "hybrid": 3,
+     "space": 3
+    },
+    "capacityByKind": {
+     "core": 59,
+     "space": 683,
+     "earth": 1210,
+     "surface": 59
+    },
+    "builds": {
+     "surface": 8,
+     "core": 1,
+     "earth": 6
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    240,
+    1000,
+    1280
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.17,
+    "earth": 0.423,
+    "core": 0.376,
+    "water": 0.031
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2750,
+    "bothTagged": 1083,
+    "bothByKind": {
+     "core": 250,
+     "earth": 833
+    },
+    "cheapestByKind": {
+     "surface": 534,
+     "core": 1034,
+     "earth": 1165,
+     "hybrid": 12,
+     "water": 5
+    },
+    "capacityByKind": {
+     "space": 687,
+     "core": 253,
+     "earth": 1711,
+     "surface": 99
+    },
+    "builds": {
+     "surface": 3,
+     "earth": 8,
+     "core": 2,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    360,
+    876,
+    1376
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.322,
+    "earth": 0.33,
+    "core": 0.348
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2684,
+    "bothTagged": 1036,
+    "bothByKind": {
+     "core": 165,
+     "earth": 860,
+     "space": 11
+    },
+    "cheapestByKind": {
+     "core": 755,
+     "surface": 649,
+     "earth": 1220,
+     "hybrid": 49,
+     "space": 11
+    },
+    "capacityByKind": {
+     "space": 1291,
+     "core": 168,
+     "earth": 1111,
+     "surface": 114
+    },
+    "builds": {
+     "surface": 6,
+     "earth": 7,
+     "core": 2
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    180,
+    1600,
+    2340
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.849,
+    "earth": 0.082,
+    "sky": 0.07
+   },
+   "commended": true,
+   "overtime": true,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 5002,
+    "bothTagged": 1200,
+    "bothByKind": {
+     "core": 1074,
+     "earth": 126
+    },
+    "cheapestByKind": {
+     "core": 2264,
+     "surface": 2564,
+     "earth": 126,
+     "sky": 48
+    },
+    "capacityByKind": {
+     "space": 800,
+     "core": 1074,
+     "earth": 3128
+    },
+    "builds": {
+     "surface": 17,
+     "earth": 2,
+     "sky": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    240,
+    1380,
+    1740
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.327,
+    "earth": 0.265,
+    "core": 0.385,
+    "water": 0.023
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3405,
+    "bothTagged": 1247,
+    "bothByKind": {
+     "core": 645,
+     "earth": 593,
+     "space": 1,
+     "hybrid": 8
+    },
+    "cheapestByKind": {
+     "core": 1352,
+     "surface": 1086,
+     "earth": 902,
+     "hybrid": 36,
+     "space": 1,
+     "water": 14,
+     "sky": 14
+    },
+    "capacityByKind": {
+     "space": 805,
+     "core": 648,
+     "earth": 1845,
+     "surface": 99,
+     "hybrid": 8
+    },
+    "builds": {
+     "surface": 6,
+     "earth": 7,
+     "core": 3,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    180,
+    1190,
+    1530
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.463,
+    "earth": 0.107,
+    "core": 0.43
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3144,
+    "bothTagged": 1336,
+    "bothByKind": {
+     "core": 664,
+     "earth": 660,
+     "space": 12
+    },
+    "cheapestByKind": {
+     "core": 1307,
+     "surface": 743,
+     "earth": 1002,
+     "hybrid": 27,
+     "water": 30,
+     "sky": 23,
+     "space": 12
+    },
+    "capacityByKind": {
+     "earth": 1715,
+     "space": 656,
+     "core": 670,
+     "surface": 103
+    },
+    "builds": {
+     "surface": 9,
+     "earth": 3,
+     "core": 3
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    428,
+    998,
+    1378
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.478,
+    "core": 0.262,
+    "earth": 0.26
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3173,
+    "bothTagged": 1459,
+    "bothByKind": {
+     "core": 245,
+     "earth": 1086,
+     "space": 14,
+     "hybrid": 114
+    },
+    "cheapestByKind": {
+     "core": 1162,
+     "surface": 755,
+     "hybrid": 154,
+     "earth": 1088,
+     "space": 14
+    },
+    "capacityByKind": {
+     "space": 439,
+     "core": 246,
+     "earth": 2288,
+     "surface": 86,
+     "hybrid": 114
+    },
+    "builds": {
+     "surface": 10,
+     "core": 2,
+     "earth": 7
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    240,
+    1280,
+    1780
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.445,
+    "surface": 0.301,
+    "core": 0.212,
+    "water": 0.042
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2775,
+    "bothTagged": 862,
+    "bothByKind": {
+     "core": 171,
+     "earth": 689,
+     "hybrid": 2
+    },
+    "cheapestByKind": {
+     "core": 616,
+     "surface": 1329,
+     "earth": 824,
+     "hybrid": 6
+    },
+    "capacityByKind": {
+     "core": 171,
+     "earth": 1777,
+     "space": 636,
+     "surface": 189,
+     "hybrid": 2
+    },
+    "builds": {
+     "earth": 9,
+     "surface": 5,
+     "core": 1,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "V",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    240,
+    1170,
+    1630
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.544,
+    "core": 0.208,
+    "earth": 0.248
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2844,
+    "bothTagged": 868,
+    "bothByKind": {
+     "core": 166,
+     "earth": 700,
+     "hybrid": 2
+    },
+    "cheapestByKind": {
+     "core": 587,
+     "surface": 1063,
+     "earth": 1072,
+     "hybrid": 122
+    },
+    "capacityByKind": {
+     "core": 167,
+     "earth": 1499,
+     "space": 1018,
+     "surface": 158,
+     "hybrid": 2
+    },
+    "builds": {
+     "surface": 9,
+     "core": 1,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    240,
+    1420,
+    1740
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.522,
+    "earth": 0.19,
+    "core": 0.265,
+    "water": 0.023
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3560,
+    "bothTagged": 1630,
+    "bothByKind": {
+     "core": 1054,
+     "earth": 576
+    },
+    "cheapestByKind": {
+     "surface": 1248,
+     "core": 1570,
+     "earth": 689,
+     "water": 53
+    },
+    "capacityByKind": {
+     "earth": 1874,
+     "core": 1237,
+     "space": 328,
+     "surface": 121
+    },
+    "builds": {
+     "surface": 10,
+     "earth": 5,
+     "core": 2,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    180,
+    842,
+    1392
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.385,
+    "surface": 0.45,
+    "earth": 0.164
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2926,
+    "bothTagged": 1237,
+    "bothByKind": {
+     "core": 692,
+     "earth": 544,
+     "space": 1
+    },
+    "cheapestByKind": {
+     "core": 1262,
+     "surface": 983,
+     "earth": 604,
+     "hybrid": 76,
+     "space": 1
+    },
+    "capacityByKind": {
+     "core": 731,
+     "space": 406,
+     "earth": 1649,
+     "surface": 140
+    },
+    "builds": {
+     "core": 3,
+     "surface": 9,
+     "earth": 5
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    240,
+    1320,
+    1620
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.23,
+    "surface": 0.444,
+    "core": 0.325
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3175,
+    "bothTagged": 810,
+    "bothByKind": {
+     "core": 447,
+     "earth": 363
+    },
+    "cheapestByKind": {
+     "core": 1241,
+     "surface": 1403,
+     "earth": 483,
+     "hybrid": 48
+    },
+    "capacityByKind": {
+     "space": 510,
+     "core": 470,
+     "earth": 1993,
+     "surface": 202
+    },
+    "builds": {
+     "earth": 5,
+     "surface": 8,
+     "core": 2
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    210,
+    856,
+    1396
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.255,
+    "earth": 0.229,
+    "core": 0.43,
+    "sky": 0.085
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2617,
+    "bothTagged": 1094,
+    "bothByKind": {
+     "core": 343,
+     "earth": 751
+    },
+    "cheapestByKind": {
+     "core": 1059,
+     "surface": 467,
+     "earth": 1057,
+     "hybrid": 15,
+     "sky": 19
+    },
+    "capacityByKind": {
+     "core": 354,
+     "space": 826,
+     "earth": 1282,
+     "surface": 155
+    },
+    "builds": {
+     "surface": 6,
+     "earth": 6,
+     "core": 4,
+     "sky": 2
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    300,
+    1140,
+    1480
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.261,
+    "earth": 0.249,
+    "core": 0.415,
+    "sky": 0.075
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3002,
+    "bothTagged": 1720,
+    "bothByKind": {
+     "core": 826,
+     "earth": 894
+    },
+    "cheapestByKind": {
+     "core": 1489,
+     "surface": 471,
+     "earth": 969,
+     "hybrid": 29,
+     "water": 34,
+     "sky": 10
+    },
+    "capacityByKind": {
+     "core": 826,
+     "earth": 1628,
+     "space": 302,
+     "surface": 246
+    },
+    "builds": {
+     "surface": 4,
+     "earth": 6,
+     "core": 3,
+     "sky": 1
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    180,
+    646,
+    1256
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.387,
+    "earth": 0.122,
+    "core": 0.491
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2793,
+    "bothTagged": 958,
+    "bothByKind": {
+     "core": 297,
+     "earth": 661
+    },
+    "cheapestByKind": {
+     "core": 1119,
+     "surface": 410,
+     "earth": 1226,
+     "hybrid": 38
+    },
+    "capacityByKind": {
+     "space": 1204,
+     "earth": 1104,
+     "core": 297,
+     "surface": 188
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 3,
+     "core": 5
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    240,
+    1310,
+    1610
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.313,
+    "earth": 0.215,
+    "surface": 0.472
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3264,
+    "bothTagged": 1444,
+    "bothByKind": {
+     "core": 679,
+     "earth": 765
+    },
+    "cheapestByKind": {
+     "core": 1576,
+     "surface": 783,
+     "earth": 765,
+     "sky": 140
+    },
+    "capacityByKind": {
+     "space": 203,
+     "core": 679,
+     "earth": 2168,
+     "surface": 214
+    },
+    "builds": {
+     "core": 2,
+     "earth": 5,
+     "surface": 9
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    180,
+    780,
+    1016
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.268,
+    "surface": 0.507,
+    "earth": 0.225
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 1972,
+    "bothTagged": 704,
+    "bothByKind": {
+     "core": 147,
+     "earth": 549,
+     "hybrid": 2,
+     "space": 6
+    },
+    "cheapestByKind": {
+     "core": 812,
+     "surface": 559,
+     "earth": 549,
+     "hybrid": 32,
+     "space": 6,
+     "sky": 14
+    },
+    "capacityByKind": {
+     "core": 163,
+     "space": 328,
+     "earth": 1352,
+     "surface": 127,
+     "hybrid": 2
+    },
+    "builds": {
+     "core": 1,
+     "surface": 6,
+     "earth": 4
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    240,
+    860,
+    1220
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.181,
+    "earth": 0.379,
+    "core": 0.414,
+    "water": 0.026
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2321,
+    "bothTagged": 693,
+    "bothByKind": {
+     "core": 262,
+     "earth": 431
+    },
+    "cheapestByKind": {
+     "core": 755,
+     "surface": 706,
+     "earth": 700,
+     "hybrid": 142,
+     "water": 18
+    },
+    "capacityByKind": {
+     "core": 278,
+     "space": 581,
+     "earth": 1242,
+     "surface": 220
+    },
+    "builds": {
+     "surface": 3,
+     "earth": 7,
+     "core": 3,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    210,
+    842,
+    1332
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.37,
+    "earth": 0.136,
+    "core": 0.458,
+    "sky": 0.036
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3288,
+    "bothTagged": 1604,
+    "bothByKind": {
+     "core": 687,
+     "earth": 909,
+     "hybrid": 8
+    },
+    "cheapestByKind": {
+     "core": 1691,
+     "surface": 570,
+     "earth": 961,
+     "hybrid": 13,
+     "sky": 53
+    },
+    "capacityByKind": {
+     "core": 689,
+     "space": 566,
+     "earth": 1781,
+     "surface": 244,
+     "hybrid": 8
+    },
+    "builds": {
+     "surface": 9,
+     "earth": 4,
+     "core": 4,
+     "sky": 1
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    240,
+    1060,
+    1560
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.317,
+    "earth": 0.303,
+    "core": 0.241,
+    "sky": 0.139
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2857,
+    "bothTagged": 952,
+    "bothByKind": {
+     "core": 237,
+     "earth": 715
+    },
+    "cheapestByKind": {
+     "surface": 1249,
+     "core": 595,
+     "earth": 952,
+     "sky": 59,
+     "hybrid": 2
+    },
+    "capacityByKind": {
+     "space": 865,
+     "core": 249,
+     "earth": 1557,
+     "surface": 186
+    },
+    "builds": {
+     "surface": 6,
+     "earth": 7,
+     "core": 2,
+     "sky": 2
+    }
+   }
+  },
+  {
+   "charter": "VI",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    240,
+    842,
+    1542
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.365,
+    "earth": 0.114,
+    "surface": 0.343,
+    "sky": 0.178
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3302,
+    "bothTagged": 1185,
+    "bothByKind": {
+     "core": 455,
+     "earth": 698,
+     "space": 32
+    },
+    "cheapestByKind": {
+     "core": 1248,
+     "surface": 641,
+     "sky": 76,
+     "earth": 1251,
+     "hybrid": 54,
+     "space": 32
+    },
+    "capacityByKind": {
+     "core": 489,
+     "space": 951,
+     "earth": 1596,
+     "surface": 266
+    },
+    "builds": {
+     "core": 3,
+     "earth": 2,
+     "surface": 6,
+     "sky": 3
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "capital",
+   "seed": 11,
+   "quotas": [
+    240,
+    1400,
+    1840
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.586,
+    "earth": 0.246,
+    "core": 0.168
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 4498,
+    "bothTagged": 1622,
+    "bothByKind": {
+     "core": 1037,
+     "earth": 583,
+     "hybrid": 2
+    },
+    "cheapestByKind": {
+     "surface": 1951,
+     "core": 1652,
+     "earth": 603,
+     "hybrid": 292
+    },
+    "capacityByKind": {
+     "earth": 2354,
+     "core": 1502,
+     "space": 441,
+     "surface": 199,
+     "hybrid": 2
+    },
+    "builds": {
+     "surface": 10,
+     "earth": 6,
+     "core": 1
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "capital",
+   "seed": 22,
+   "quotas": [
+    180,
+    842,
+    1262
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.16,
+    "surface": 0.44,
+    "earth": 0.197,
+    "sky": 0.203
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2904,
+    "bothTagged": 893,
+    "bothByKind": {
+     "core": 418,
+     "earth": 472,
+     "space": 3
+    },
+    "cheapestByKind": {
+     "core": 1202,
+     "surface": 997,
+     "earth": 525,
+     "hybrid": 105,
+     "space": 3,
+     "sky": 72
+    },
+    "capacityByKind": {
+     "core": 482,
+     "space": 468,
+     "earth": 1808,
+     "surface": 146
+    },
+    "builds": {
+     "core": 1,
+     "surface": 9,
+     "earth": 5,
+     "sky": 3
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "brine",
+   "seed": 11,
+   "quotas": [
+    240,
+    1160,
+    1440
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "earth": 0.339,
+    "surface": 0.313,
+    "core": 0.348
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2768,
+    "bothTagged": 1004,
+    "bothByKind": {
+     "core": 443,
+     "earth": 561
+    },
+    "cheapestByKind": {
+     "core": 1100,
+     "surface": 914,
+     "earth": 754
+    },
+    "capacityByKind": {
+     "space": 594,
+     "core": 443,
+     "earth": 1565,
+     "surface": 166
+    },
+    "builds": {
+     "earth": 7,
+     "surface": 6,
+     "core": 2
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "brine",
+   "seed": 22,
+   "quotas": [
+    180,
+    856,
+    1306
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.234,
+    "earth": 0.368,
+    "core": 0.398
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2637,
+    "bothTagged": 1045,
+    "bothByKind": {
+     "core": 303,
+     "earth": 736,
+     "space": 6
+    },
+    "cheapestByKind": {
+     "core": 894,
+     "surface": 530,
+     "earth": 1161,
+     "hybrid": 44,
+     "space": 6,
+     "sky": 2
+    },
+    "capacityByKind": {
+     "core": 329,
+     "space": 774,
+     "earth": 1379,
+     "surface": 155
+    },
+    "builds": {
+     "surface": 5,
+     "earth": 8,
+     "core": 3
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "rift",
+   "seed": 11,
+   "quotas": [
+    240,
+    1030,
+    1390
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.511,
+    "earth": 0.168,
+    "core": 0.32
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3651,
+    "bothTagged": 1873,
+    "bothByKind": {
+     "core": 1051,
+     "earth": 822
+    },
+    "cheapestByKind": {
+     "core": 1905,
+     "surface": 864,
+     "earth": 837,
+     "hybrid": 19,
+     "sky": 26
+    },
+    "capacityByKind": {
+     "core": 1059,
+     "earth": 1932,
+     "space": 354,
+     "surface": 306
+    },
+    "builds": {
+     "surface": 10,
+     "earth": 5,
+     "core": 3
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "rift",
+   "seed": 22,
+   "quotas": [
+    180,
+    526,
+    1166
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.436,
+    "earth": 0.172,
+    "core": 0.391
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2650,
+    "bothTagged": 866,
+    "bothByKind": {
+     "core": 299,
+     "earth": 557,
+     "space": 7,
+     "hybrid": 3
+    },
+    "cheapestByKind": {
+     "core": 1115,
+     "surface": 441,
+     "earth": 1030,
+     "hybrid": 49,
+     "space": 7,
+     "sky": 8
+    },
+    "capacityByKind": {
+     "space": 1171,
+     "earth": 1047,
+     "core": 300,
+     "surface": 129,
+     "hybrid": 3
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 4,
+     "core": 4
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "spires",
+   "seed": 11,
+   "quotas": [
+    240,
+    1330,
+    1670
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.328,
+    "earth": 0.271,
+    "surface": 0.401
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3329,
+    "bothTagged": 1120,
+    "bothByKind": {
+     "core": 283,
+     "earth": 837
+    },
+    "cheapestByKind": {
+     "core": 1310,
+     "surface": 1164,
+     "earth": 852,
+     "hybrid": 3
+    },
+    "capacityByKind": {
+     "space": 235,
+     "core": 286,
+     "earth": 2435,
+     "surface": 373
+    },
+    "builds": {
+     "core": 2,
+     "earth": 6,
+     "surface": 8
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "spires",
+   "seed": 22,
+   "quotas": [
+    180,
+    600,
+    1430
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.347,
+    "surface": 0.305,
+    "earth": 0.321,
+    "water": 0.027
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3145,
+    "bothTagged": 977,
+    "bothByKind": {
+     "core": 166,
+     "earth": 721,
+     "hybrid": 6,
+     "space": 48,
+     "water": 36
+    },
+    "cheapestByKind": {
+     "core": 989,
+     "surface": 951,
+     "earth": 1015,
+     "hybrid": 94,
+     "space": 48,
+     "water": 48
+    },
+    "capacityByKind": {
+     "core": 191,
+     "space": 856,
+     "earth": 1897,
+     "surface": 159,
+     "hybrid": 6,
+     "water": 36
+    },
+    "builds": {
+     "core": 2,
+     "surface": 6,
+     "earth": 7,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "flats",
+   "seed": 11,
+   "quotas": [
+    240,
+    830,
+    1130
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.404,
+    "earth": 0.29,
+    "core": 0.282,
+    "water": 0.024
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2647,
+    "bothTagged": 817,
+    "bothByKind": {
+     "core": 206,
+     "earth": 599,
+     "space": 12
+    },
+    "cheapestByKind": {
+     "core": 772,
+     "surface": 716,
+     "earth": 1001,
+     "hybrid": 137,
+     "space": 12,
+     "water": 9
+    },
+    "capacityByKind": {
+     "core": 216,
+     "space": 779,
+     "earth": 1434,
+     "surface": 218
+    },
+    "builds": {
+     "surface": 7,
+     "earth": 6,
+     "core": 2,
+     "water": 1
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "flats",
+   "seed": 22,
+   "quotas": [
+    180,
+    646,
+    1206
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.535,
+    "earth": 0.255,
+    "core": 0.169,
+    "sky": 0.041
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 3084,
+    "bothTagged": 1417,
+    "bothByKind": {
+     "core": 833,
+     "earth": 584
+    },
+    "cheapestByKind": {
+     "core": 1780,
+     "surface": 676,
+     "earth": 584,
+     "sky": 35,
+     "hybrid": 9
+    },
+    "capacityByKind": {
+     "core": 835,
+     "space": 368,
+     "earth": 1602,
+     "surface": 279
+    },
+    "builds": {
+     "surface": 11,
+     "earth": 6,
+     "core": 1,
+     "sky": 1
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "ringside",
+   "seed": 11,
+   "quotas": [
+    240,
+    860,
+    1520
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "surface": 0.483,
+    "earth": 0.307,
+    "core": 0.21
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 2749,
+    "bothTagged": 906,
+    "bothByKind": {
+     "core": 211,
+     "earth": 695
+    },
+    "cheapestByKind": {
+     "surface": 1061,
+     "core": 705,
+     "earth": 908,
+     "hybrid": 75
+    },
+    "capacityByKind": {
+     "space": 924,
+     "core": 238,
+     "earth": 1389,
+     "surface": 198
+    },
+    "builds": {
+     "surface": 8,
+     "earth": 6,
+     "core": 1
+    }
+   }
+  },
+  {
+   "charter": "G",
+   "region": "ringside",
+   "seed": 22,
+   "quotas": [
+    210,
+    842,
+    1982
+   ],
+   "idleGapMax": 0,
+   "shares": {
+    "core": 0.319,
+    "surface": 0.207,
+    "earth": 0.129,
+    "sky": 0.344
+   },
+   "commended": true,
+   "overtime": false,
+   "ok": true,
+   "cardStats": {
+    "comparisons": 4456,
+    "bothTagged": 1154,
+    "bothByKind": {
+     "core": 435,
+     "earth": 683,
+     "space": 33,
+     "hybrid": 3
+    },
+    "cheapestByKind": {
+     "core": 1506,
+     "surface": 1093,
+     "sky": 399,
+     "hybrid": 74,
+     "earth": 1351,
+     "space": 33
+    },
+    "capacityByKind": {
+     "core": 439,
+     "space": 1361,
+     "earth": 2214,
+     "surface": 439,
+     "hybrid": 3
+    },
+    "builds": {
+     "core": 5,
+     "surface": 6,
+     "earth": 5,
+     "sky": 8
+    }
+   }
+  }
+ ]
+}

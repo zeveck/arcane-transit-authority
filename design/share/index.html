@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arcane Transit Authority</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* One visual world: the game's own night-indigo and chrome, single theme by choice.
+   Layout: a centred reading column with full-bleed picture bands and train/station grids. */
+:root {
+  --night: #141a3a;
+  --night-2: #1c2350;
+  --panel: #222a5c;
+  --chrome: #c9d2e3;
+  --ink: #eef2fa;
+  --muted: #aab4cf;
+  --warm: #ffd9a0;
+  --line: #3a4480;
+  --surface: #ffc23d; --sky: #4fe3ff; --water: #2f6bff; --earth: #2fd67b;
+  --fire: #ff5a1f; --space: #9b6bff; --deep: #ff3fb4;
+  --display: "Orbitron", "Eurostile", "Arial Black", sans-serif;
+  --body: "Exo 2", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #2a2f6e 0%, transparent 60%), var(--night);
+  color: var(--ink);
+  font: 400 17px/1.6 var(--body);
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--sky); }
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+.read { max-width: 720px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; letter-spacing: .02em; line-height: 1.2; }
+h1 { font-size: clamp(30px, 6vw, 56px); font-weight: 900; margin: 0 0 12px; }
+h2 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 700; margin: 0 0 16px; color: var(--chrome); }
+h3 { font-size: 16px; font-weight: 700; margin: 0 0 6px; }
+p { margin: 0 0 14px; }
+section { padding: 48px 0; border-top: 1px solid var(--line); }
+.tag { font-family: var(--display); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--warm); margin: 0 0 10px; }
+.lede { font-size: 20px; color: var(--chrome); }
+.hero { padding: 40px 0 28px; }
+.hero-img { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); margin-top: 24px; background: var(--night-2); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.pill-row li { border: 1px solid var(--line); background: var(--night-2); border-radius: 999px; padding: 4px 12px; font-size: 14px; color: var(--muted); }
+.note { color: var(--muted); font-size: 15px; }
+.grid { display: grid; gap: 18px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.card .pic { background: #151515; }
+.card .body { padding: 14px 16px 16px; }
+.card .body p { font-size: 15px; color: var(--muted); margin: 0; }
+.train .body { border-top: 4px solid var(--c); }
+.train h3 { color: var(--c); }
+.scene { margin: 0; }
+.scene img { border-radius: 12px; border: 1px solid var(--line); }
+.scene figcaption { font-size: 14px; color: var(--muted); padding: 8px 2px 0; }
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.checklist li::before { content: ""; width: 14px; height: 14px; margin-top: 6px; border-radius: 3px; background: var(--water); box-shadow: 0 0 0 2px rgba(31,181,168,.25); }
+.checklist q { color: var(--warm); font-style: italic; quotes: "\201C" "\201D"; }
+.checklist .where { color: var(--muted); font-size: 15px; }
+.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
+.steps li::before { content: counter(s); font-family: var(--display); font-weight: 700; width: 30px; height: 30px; border-radius: 50%; background: var(--night-2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 13px; color: var(--surface); }
+.route-cards { display: flex; gap: 12px; overflow-x: auto; padding: 6px 2px 10px; }
+.rc { flex: 0 0 200px; background: var(--night-2); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 10px; padding: 12px 14px; }
+.rc .k { font-family: var(--display); font-size: 12px; letter-spacing: .1em; color: var(--c); text-transform: uppercase; }
+.rc .big { font-family: var(--display); font-size: 20px; font-weight: 700; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+.rc .sub { font-size: 14px; color: var(--muted); }
+.rc.off { opacity: .55; }
+.rc .chip { display: inline-block; margin-top: 8px; font-size: 12px; border-radius: 999px; padding: 2px 8px; background: rgba(255,255,255,.08); color: var(--warm); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 640px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--display); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--night-2); }
+tr:last-child td { border-bottom: 0; }
+td b { color: var(--chrome); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 8px; vertical-align: 1px; }
+.cast { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.person { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; text-align: center; }
+.person img { width: 180px; height: 180px; margin: 0 auto 12px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #2e377a, #141a3a); border: 3px solid var(--chrome); object-fit: cover; object-position: top; }
+.person p { font-size: 15px; color: var(--muted); margin: 0; }
+.planets { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.planet { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.orb { width: 56px; height: 56px; border-radius: 50%; margin-bottom: 10px; background: radial-gradient(circle at 35% 30%, var(--a), var(--b) 70%); box-shadow: 0 0 18px var(--g); }
+.planet .n { font-family: var(--display); font-size: 11px; color: var(--muted); letter-spacing: .14em; }
+.planet p { font-size: 14px; color: var(--muted); margin: 0; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 8px 0 18px; }
+.stat { background: var(--night-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.stat b { display: block; font-family: var(--display); font-size: 24px; color: var(--surface); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 14px; color: var(--muted); }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.sw { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.sw i { width: 22px; height: 22px; border-radius: 6px; background: var(--c); border: 1px solid rgba(255,255,255,.2); }
+footer { padding: 36px 0 60px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  section { padding: 36px 0; }
+  .lede { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+.logo { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 12vw, 110px); line-height: 1; letter-spacing: .12em; margin: 4px 0 2px;
+  background: linear-gradient(90deg, var(--surface), var(--fire) 30%, var(--deep) 55%, var(--space) 75%, var(--sky));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+@media (max-width: 600px) {
+  table { min-width: 0; }
+  thead { display: none; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  tr { padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  tr:last-child { border-bottom: 0; }
+  td { border: 0; padding: 3px 0; }
+  td:first-child { font-size: 16px; padding-bottom: 6px; }
+  td:not(:first-child)::before { content: attr(data-label) ": "; font-family: var(--display); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+}
+</style>
+</head>
+<body>
+<header class="wrap hero">
+  <p class="tag">Game design · for review</p>
+  <div class="logo" aria-hidden="true">ATA</div>
+  <h1>Arcane Transit Authority</h1>
+  <p class="lede">A planet-wide city with no room to spare, so run your rails through earth, water, fire and air.</p>
+  <ul class="pill-row" aria-label="At a glance">
+    <li>3D, in the browser</li><li>Computer and phone</li><li>Building and management</li><li>One planet · 6 regions</li><li>7 elemental trains</li><li>30 to 45 minutes a term</li>
+  </ul>
+  <div class="hero-img"><img src="img/mock-globe.jpg" alt="The planet Oikumene, covered in neon city, cut away to show crystal-lined bores and a fire train crossing the molten core on a glowing line, with an orbital ring and glowing rails around it" width="1200" height="670"></div>
+</header>
+
+<main>
+<section class="wrap" id="pitch">
+  <div class="read">
+    <p class="tag">The pitch</p>
+    <h2>Run the trains of a planet with no room left</h2>
+    <p>You're the Chief Engineer of the <b>Arcane Transit Authority</b> on <b>Oikumene</b>, a planet covered pole to pole in a single glittering city. Tap two places and the game deals you <b>route cards</b>: across the rooftops (if you pay to clear the buildings), between mountain peaks, along the sea floor, through the rock, straight through the molten core, or around the planet on an orbital ring.</p>
+    <p>Pick one and a glowing <b>ley-rail</b>, a rail of arcane energy in that train's colour, draws itself into place. An elemental train rides it straight through the sky, the sea, the rock or the magma: each is an advanced machine built to harness its element and survive inside it.</p>
+    <p>Every district's goods flow through your network to the Warp Terminal, where deep space trains warp them to the Homeworld at the centre of the galaxy. The Homeworld is a light in the sky you will never visit. Each game is one <b>term</b> as Chief Engineer under a <b>Homeworld Charter</b>: meet its quotas, survive the disasters, turn demolished corridors into parks, and leave the planet humming like a perfect machine. Commend all six Charters and the Homeworld answers.</p>
+    <p class="note">The fantasy: you're the genius engineer who looks at a planet with no room for a single new rail and says "fine, we'll go through the core". It's the same planet every term, your planet, and you learn its seas, peaks and rift like a home city.</p>
+  </div>
+</section>
+
+<section class="wrap" id="asked">
+  <p class="tag">What was asked for</p>
+  <h2>Every idea in the original pitch, and where it lives</h2>
+  <ul class="checklist read">
+    <li><div><q>the whole planet's covered in the city</q> <span class="where">One planet, Oikumene: about 640 hexagonal districts on a globe you spin and zoom from orbit down to the streets. Its geography is the same every game; variety comes from its six regions, a fresh term each game, and six Homeworld Charters.</span></div></li>
+    <li><div><q>you have to clear buildings which is really expensive</q> <span class="where">Surface lines must demolish every block they cross. Dense blocks cost more, and they stop making riders.</span></div></li>
+    <li><div><q>Earth train … right through the core … or at least through some mountains</q> <span class="where">Earth trains bore their own straight tunnels through the rock, and shafts down to the core.</span></div></li>
+    <li><div><q>the core is too hot so you also need fire trains</q> <span class="where">Earth goes down a shaft, fire crosses the core, earth comes up the far side. The game builds all three as one route card.</span></div></li>
+    <li><div><q>from the top of Mount Everest to the top of Katahdin</q> <span class="where">Sky trains ride arcs of light from peak to peak.</span></div></li>
+    <li><div><q>water trains that go under the ocean … Atlantis</q> <span class="where">Water trains glide along the sea floor in their own bubbles, between glass-domed undersea cities.</span></div></li>
+    <li><div><q>space trains that go around the world</q> <span class="where">An orbital ring with space elevators down to the city.</span></div></li>
+    <li><div><q>deep space trains that warp away … you don't handle their other sides</q> <span class="where">They warp your exports away and come back with short dispatches. Neither their destinations nor the Homeworld is ever shown, only heard.</span></div></li>
+    <li><div><q>3D wormy … kind of trains</q> <span class="where">Articulated trains whose linked cars bend smoothly along every curve.</span></div></li>
+    <li><div><q>if you had magic trains</q> <span class="where">Seven elemental trains, one per element, each with its own clear colour, riding glowing ley-rails straight through the sky, sea, rock and magma.</span></div></li>
+    <li><div><q>a city … that Robotnik would love</q> <span class="where">An original neon machine megacity of megablocks, domes, cables and smokestacks.</span></div></li>
+    <li><div><q>maximize the throughput/efficiency of the Homeworld</q> <span class="where">Throughput (exports launched a minute) is the score that matters, against three quotas in each Charter.</span></div></li>
+    <li><div><q>buy and demolish buildings … add parks, trees, track-side attractions</q> <span class="where">Demolish any block, then plant groves and parks, or build a Giant Wheel, a Fountain Plaza or a Monument to the Engineers.</span></div></li>
+    <li><div><q>Overall victory is a job well done</q> <span class="where">Meet Quota III and the Charter is Commended. Commend all six and the Homeworld answers.</span></div></li>
+    <li><div><q>random disasters</q> <span class="where">Seven kinds, each with a warning and a choice: Brace, Reroute or Repair.</span></div></li>
+    <li><div><q>stations … interchanges … earth has to hand off to fire</q> <span class="where">Stations serving several layers become interchanges, and the Core Exchange is where earth hands off to fire.</span></div></li>
+    <li><div><q>a tech tree with upgrades per type of train</q> <span class="where">Seven branches of four upgrades each.</span></div></li>
+    <li><div><q>milestones … random so each game has a slightly different nudge</q> <span class="where">Three milestone cards are dealt each term from a pool of 30.</span></div></li>
+    <li><div><q>open them up roguelike style, buying them between games</q> <span class="where">Each term earns Merits, which buy new milestone cards, starting perks and liveries.</span></div></li>
+  </ul>
+</section>
+
+<section class="wrap" id="play">
+  <p class="tag">How it plays</p>
+  <h2>Tap two places, compare the route cards, watch it go</h2>
+  <div class="grid g2">
+    <div>
+      <ol class="steps">
+        <li><div><b>Tap a place</b>, a station or any district. The planet turns see-through so you can reach the far side, or you can pick from a list.</div></li>
+        <li><div><b>Tap another.</b> Route cards appear, one for each way to join them.</div></li>
+        <li><div><b>Compare.</b> Each card shows its <b>cost</b>, how many people and goods a minute it <b>carries</b>, and how much it adds to your exports. The path is previewed on the globe, with any blocks it would demolish outlined.</div></li>
+        <li><div><b>Pick one.</b> Every station, shaft and interchange it needs is built, the ley-rail draws itself across the world, and the first train glides out.</div></li>
+        <li><div><b>Read the flow.</b> Busy rails glow wider and pulse faster, full stretches flash, exports stream to the Warp Terminal as dots, and tapping the Throughput meter names the bottleneck.</div></li>
+      </ol>
+    </div>
+    <div>
+      <p class="note" style="margin-bottom:8px">Example: from your station to a district on the far side of the planet.</p>
+      <div class="route-cards" role="list" aria-label="Example route cards">
+        <div class="rc" role="listitem" style="--c:var(--surface)"><div class="k">Surface</div><div class="big">$9,100</div><div class="sub">carries 170/min · demolishes 22 blocks</div><span class="chip">Cheapest to run</span></div>
+        <div class="rc off" role="listitem" style="--c:var(--earth)"><div class="k">Earth</div><div class="big">—</div><div class="sub">160° apart: the crust allows 83°</div></div>
+        <div class="rc" role="listitem" style="--c:var(--fire)"><div class="k">Through the core</div><div class="big">$8,300</div><div class="sub">carries 169/min · +90 exports/min</div><span class="chip">Cheapest</span></div>
+        <div class="rc off" role="listitem" style="--c:var(--space)"><div class="k">Space</div><div class="big">—</div><div class="sub">needs Space Elevators (Tech)</div></div>
+      </div>
+      <p class="note">The cards make the key choice visible. Surface is cheap to run but costly through dense city. Earth goes under anything, but only so deep. Through the core reaches the far side. The best answer changes with distance, density and terrain. (In your first term, the Homeworld pays for your first crossing.)</p>
+    </div>
+  </div>
+  <div class="read" style="margin-top:28px">
+    <h3>The loops</h3>
+    <p><b>Ten seconds:</b> tap, tap, compare, build. <b>One minute:</b> fix the bottleneck the game names by adding a train, upgrading an interchange, buying a tech, building a second route, or clearing a block for a park. <b>One term (30 to 45 minutes):</b> grow from your starting region to the whole world and meet the Charter's Quota I, II and III before the Homeworld's Audit. <b>Between terms:</b> spend Merits, then pick a Charter and a starting region.</p>
+    <p><b>Ride</b> any line: a chase camera follows a train along its rail, down shafts and through the core. The title screen rides random lines by itself.</p>
+  </div>
+</section>
+
+<section class="wrap" id="trains">
+  <p class="tag">The seven trains</p>
+  <h2>Seven elemental trains, one element and one colour each</h2>
+  <p class="read note">Each train is an advanced machine built around its element: arcane engineering fused with cyberpunk technology. Its linked cars bend smoothly along curves, and it harnesses its element to travel straight through it. You can tell them apart by look and colour alone. These are concept pictures; each becomes a 3D model, with its element added in the game as moving effects.</p>
+  <div class="grid g3">
+    <article class="card train" style="--c:var(--surface)"><div class="pic"><img src="img/surface-train.jpg" alt="Gunmetal maglev train with yellow neon and crackling lightning" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Surface · lightning</h3><p>Rides a chrome maglev rail with a glowing seam, laid through the corridor you demolished. Fast and cheap to run.</p></div></article>
+    <article class="card train" style="--c:var(--sky)"><div class="pic"><img src="img/sky-train.jpg" alt="Pearl-white train wrapped in glowing ribbons of wind" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Sky · wind</h3><p>Rides arcs of light between mountain peaks, wrapped in ribbons of wind. Cheapest to build, but peaks only. Watch for meteors.</p></div></article>
+    <article class="card train" style="--c:var(--water)"><div class="pic"><img src="img/water-train.jpg" alt="Deep-blue train with glowing portholes inside a sheath of swirling water" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Water · the deep</h3><p>Glides along the sea floor in its own bubble of swirling water. The only way to reach the rich Atlantis domes. Seaquakes stop it.</p></div></article>
+    <article class="card train" style="--c:var(--earth)"><div class="pic"><img src="img/earth-train.jpg" alt="Grey stone train with an emerald crystal drill nose and green crystals" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Earth · stone and crystal</h3><p>Bores its own green-crystal-lined tunnels, straight under anything. Slow, and only as deep as the crust allows. Cave-ins happen.</p></div></article>
+    <article class="card train" style="--c:var(--fire)"><div class="pic"><img src="img/fire-train.jpg" alt="Obsidian train with glowing lava channels and windows full of magma" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Fire · magma</h3><p>Swims through the open lava of the core between two Core Exchanges: the far side of the planet for a fair price. Core flares overheat it.</p></div></article>
+    <article class="card train" style="--c:var(--space)"><div class="pic"><img src="img/space-train.jpg" alt="Train with dark glass panels full of stars and violet rings" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Space · stars</h3><p>Rides the orbital ring, reached by space elevators near the equator. Fastest and biggest. Solar storms slow it.</p></div></article>
+    <article class="card train" style="--c:var(--deep)"><div class="pic"><img src="img/deep-space-train.jpg" alt="Matte-black train with magenta rift light and a trail of warp sparks" width="1200" height="800" loading="lazy"></div><div class="body"><h3>Deep space · the void</h3><p>No rail: it warps from the Warp Terminal's launch ring every 30 seconds with your exports, and returns with a dispatch.</p></div></article>
+  </div>
+</section>
+
+<section class="wrap" id="layers">
+  <p class="tag">Ley-rails</p>
+  <h2>Each train runs straight through its element</h2>
+  <div class="read"><p>Every line is a <b>ley-rail</b>, a glowing rail of arcane energy in its train's colour. From orbit, the ley-rails are your network in seven colours. Up close, each train rides through its world in the open.</p></div>
+  <div class="grid g2">
+    <figure class="scene"><img src="img/mock-sky.jpg" alt="Ice-cyan arcs of light with floating ring pylons between snowy peaks, a white wind train riding one" width="1200" height="670" loading="lazy"><figcaption>Sky: arcs of light between peaks, with floating ring pylons and winged Sky Ports on the summits.</figcaption></figure>
+    <figure class="scene"><img src="img/mock-atlantis.jpg" alt="Glass domes of an undersea city with a deep-blue water train gliding above a glowing blue line" width="1200" height="670" loading="lazy"><figcaption>Water: Atlantis on the sea floor, and a water train in its own bubble on a blue ley-rail.</figcaption></figure>
+    <figure class="scene"><img src="img/mock-xray.jpg" alt="Cutaway of the planet with green-crystal bores down to the core and a fire train crossing the lava" width="1200" height="670" loading="lazy"><figcaption>X-ray: earth bores lined with green crystal down to the core, and a fire train swimming straight across it.</figcaption></figure>
+    <figure class="scene"><img src="img/mock-ring.jpg" alt="Chrome orbital ring with a violet glowing rail and a star-filled train above the night-side city" width="1200" height="670" loading="lazy"><figcaption>Space: the orbital ring and its violet ley-rail, with elevators down to the city.</figcaption></figure>
+  </div>
+</section>
+
+<section class="wrap" id="stations">
+  <p class="tag">Stations and places</p>
+  <h2>Where the layers meet</h2>
+  <div class="read">
+    <p>A station that serves more than one layer becomes an <b>interchange</b>: each added layer's module stacks on top, with a glowing ring that fills as people and goods change trains. A full ring flashes and the game names it as the bottleneck. Stations next to each other are joined by walkways automatically, so a pier joins the coastal district behind it.</p>
+    <p>The <b>Core Exchange</b> is the heart of the idea: a Bore Station sinks a shaft to the core, earth trains hand off to fire trains, and two Core Exchanges get you to the far side of the world.</p>
+  </div>
+  <div class="grid g4">
+    <article class="card"><div class="pic"><img src="img/station-surface.jpg" alt="Gunmetal station hub glowing yellow, with open portals and glowing yellow rails" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Surface and Bore station</h3><p>A Bore Station adds an emerald drill collar and a tunnel portal.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/skyport.jpg" alt="Winged spire with docking arms on a cloud-wrapped mountain peak" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Sky Port</h3><p>On bare peaks.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/sea-station.jpg" alt="Glass dome station on the sea floor glowing deep blue, with a blue rail leaving it" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Sea Station</h3><p>A dome beside Atlantis, or a pier on the coast.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/core-exchange.jpg" alt="Obsidian fortress with red-orange lava seams, an emerald crystal bore on top and open side portals" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Core Exchange</h3><p>Earth hands off to fire.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/warp-base.jpg" alt="Stepped launch platform with black pylons crackling with magenta void energy" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Warp Terminal</h3><p>A giant launch ring spins up above it.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/ring-elevator.jpg" alt="Star-filled ring station hub with violet neon rings on an elevator cable" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Ring Station</h3><p>Top of a space elevator.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/wheel-base.jpg" alt="Gunmetal A-frame base and hub of a giant wheel with warm-white and rose lights" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Giant Wheel</h3><p>A trackside attraction; its rim turns.</p></div></article>
+    <article class="card"><div class="pic"><img src="img/monument.jpg" alt="Gunmetal obelisk wrapped by a spiral of light in the seven train colours" width="1024" height="1024" loading="lazy"></div><div class="body"><h3>Monument to the Engineers</h3><p>A trackside attraction.</p></div></article>
+  </div>
+</section>
+
+<section class="wrap" id="greener">
+  <p class="tag">The inverted ecumenopolis</p>
+  <h2>Demolish, then build it back greener</h2>
+  <div class="grid g2">
+    <figure class="scene"><img src="img/mock-surface.jpg" alt="A yellow lightning train on a chrome maglev rail through a cleared corridor, with a park beside it" width="1200" height="670" loading="lazy"><figcaption>A surface line runs on its maglev rail through the corridor it cleared, and the blocks beside it are cheap to green.</figcaption></figure>
+    <div>
+      <p>Buy and demolish any block, or a whole line of blocks. The buildings sink in a cloud of dust. On cleared ground, plant <b>tree groves</b> and <b>parks</b>, which make nearby districts busier. Next to a line, build a <b>trackside attraction</b> (a Giant Wheel, a Fountain Plaza or a Monument to the Engineers) for a big boost to riders within two districts.</p>
+      <p>Greenery is one of the three stars you're graded on, alongside meeting the quota in time and finishing richer than you started.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="planet">
+  <p class="tag">The planet and the Charters</p>
+  <h2>One planet, six regions, six Homeworld Charters</h2>
+  <div class="read"><p><b>Oikumene</b> ("the inhabited world") is the only planet. Its geography never changes, so you learn it term after term. It has six regions you can start from, and the Far Wards: the ordinary city hinterland around the Warp Terminal, which stands on the equator 160° around the world from the Capital.</p><p>Each term, a new seed nudges how busy each district is, marks two or three <b>priority districts</b> in other parts of the world that export half as much again once you reach them, deals you milestones and disasters, and sometimes hands you a small network left by the previous Chief Engineer.</p></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Region</th><th>What it is</th><th>Starting there teaches</th><th>Unlocked by</th></tr></thead>
+      <tbody>
+        <tr><td data-label="Region"><b>The Capital</b></td><td data-label="What it is">The densest, oldest districts, with the two Capital Heights peaks</td><td data-label="Starting there teaches">The basics: dig under dense blocks, and your first trip through the core</td><td data-label="Unlocked by">The tutorial</td></tr>
+        <tr><td data-label="Region"><b>The Brine</b></td><td data-label="What it is">A great ocean with fourteen Atlantis domes and island cities</td><td data-label="Starting there teaches">Coasts, piers and Atlantis: water becomes essential, and Sea Stations come with the job when you start here</td><td data-label="Unlocked by">Commending Charter I</td></tr>
+        <tr><td data-label="Region"><b>The Rift</b></td><td data-label="What it is">A volcanic rift where the crust is thin</td><td data-label="Starting there teaches">The core is the main highway (Core Exchanges are cheap and shafts fast here), and Core Flares erupt</td><td data-label="Unlocked by">Commending Charter II</td></tr>
+        <tr><td data-label="Region"><b>The Spires</b></td><td data-label="What it is">A mountain range with about twenty peaks</td><td data-label="Starting there teaches">Sky networks, and deep rock that lets earth trains reach far</td><td data-label="Unlocked by">Commending Charter III</td></tr>
+        <tr><td data-label="Region"><b>The Flats</b></td><td data-label="What it is">Wide, flat, very dense industrial blocks</td><td data-label="Starting there teaches">Demolition is ruinous, so you go up, down and around</td><td data-label="Unlocked by">Commending Charter IV</td></tr>
+        <tr><td data-label="Region"><b>The Ringside</b></td><td data-label="What it is">The equatorial belt under the orbital ring</td><td data-label="Starting there teaches">Space elevators as the natural first big build; they come with the job when you start here</td><td data-label="Unlocked by">Commending Charter V</td></tr>
+        <tr><td data-label="Region"><b>The Far Wards</b></td><td data-label="What it is">Ordinary city around the Warp Terminal, on the far side of the world</td><td data-label="Starting there teaches">Not a starting region: it is where your network has to reach</td><td data-label="Unlocked by">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid g2" style="margin-top:22px">
+    <div>
+      <h3>The Charter ladder</h3>
+      <p class="note">Each term is played under one of six Homeworld Charters, stricter each time: higher quotas, tighter deadlines, less money, more disasters. Each Charter also has a <b>mandate</b>, one rule that changes what you build. Commending a Charter (holding its Quota III) unlocks the next Charter and a new starting region. Any Charter can be replayed from any unlocked region.</p>
+    </div>
+    <div>
+      <h3>The finale</h3>
+      <p class="note">Commend Charter VI and the Homeworld answers: every line pulses, a beam fires from the Warp Terminal to the galaxy's heart, and the Warp Conductor's last dispatch finally says where the trains go. You never travel there. After that, a Galactic Charter and free play remain.</p>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:18px">
+    <table>
+      <thead><tr><th>Charter</th><th>Mandate</th><th>What it changes</th></tr></thead>
+      <tbody>
+        <tr><td data-label="Charter"><b>I</b></td><td data-label="Mandate">First Crossing Grant: your first route through the core is free</td><td data-label="What it changes">The core comes first</td></tr>
+        <tr><td data-label="Charter"><b>II</b></td><td data-label="Mandate">Atlantean Trade: Atlantis exports double</td><td data-label="What it changes">Water becomes a main source of exports, not a side trip</td></tr>
+        <tr><td data-label="Charter"><b>III</b></td><td data-label="Mandate">Heritage Capital: no new demolition in the Capital</td><td data-label="What it changes">The Capital is served from below, above and around</td></tr>
+        <tr><td data-label="Charter"><b>IV</b></td><td data-label="Mandate">Frontier Link: the farthest priority district must reach the Terminal before Quota I counts</td><td data-label="What it changes">An early long-distance build to a place the term picks</td></tr>
+        <tr><td data-label="Charter"><b>V</b></td><td data-label="Mandate">Narrow Yard: the launch ring fires half as often until you upgrade it</td><td data-label="What it changes">Deep space capacity matters early</td></tr>
+        <tr><td data-label="Charter"><b>VI</b></td><td data-label="Mandate">Two mandates from II to V, dealt each term</td><td data-label="What it changes">The final test changes every time</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="read" style="margin-top:12px"><p class="note">Within a term, Quota I is gentle (about 10 minutes in), Quota II needs a network across the planet, and Quota III needs everything working at once. Miss the Audit deadline and Overtime gives you fifteen more minutes, at the cost of a star. Any term can be retried with the same seed.</p></div>
+</section>
+
+<section class="wrap" id="systems">
+  <p class="tag">Upgrades, milestones and unlocks</p>
+  <h2>Every term nudges you a different way</h2>
+  <div class="read"><h3>Tech tree: seven branches of four</h3></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Branch</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead>
+      <tbody>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--surface)"></span><b>Surface</b></td><td data-label="1">Express Cars</td><td data-label="2">Long Consists</td><td data-label="3">Cut-and-Cover (cheaper demolition)</td><td data-label="4">Elevated Viaducts (cross a little ocean)</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--sky)"></span><b>Sky</b></td><td data-label="1">Long Arcs</td><td data-label="2">Meteor Netting</td><td data-label="3">Cloud Liners</td><td data-label="4">Sky Lifts</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--water)"></span><b>Water</b></td><td data-label="1">Sea Stations</td><td data-label="2">Atlantis Charter</td><td data-label="3">Pressure Hulls</td><td data-label="4">Abyssal Express</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--earth)"></span><b>Earth</b></td><td data-label="1">Deep Bore</td><td data-label="2">Drill Heads</td><td data-label="3">Tunnel Bracing</td><td data-label="4">Fast Shafts</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--fire)"></span><b>Fire</b></td><td data-label="1">Heat Shielding</td><td data-label="2">Plasma Drive</td><td data-label="3">Wide Shafts</td><td data-label="4">Magma Express</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--space)"></span><b>Space</b></td><td data-label="1">Space Elevators</td><td data-label="2">Cheap Elevators</td><td data-label="3">Magnetic Shield</td><td data-label="4">Polar Ring</td></tr>
+        <tr><td data-label="Branch"><span class="dot" style="--c:var(--deep)"></span><b>Deep space and stations</b></td><td data-label="1">Bigger Interchanges</td><td data-label="2">Warp Consists</td><td data-label="3">Warp Anchor</td><td data-label="4">Twin Launch Ring</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid g2" style="margin-top:26px">
+    <div>
+      <h3>Milestones, dealt at random</h3>
+      <p class="note">Each term deals three cards from your pool. Finish one and it flips over with a bonus. The starting ten include <i>Long Haul</i> (track once around the planet, 31,400 miles), <i>Sky Fleet</i>, <i>Core Commuter</i>, <i>Green Belt</i>, <i>Atlantean Friend</i>, <i>Rush Hour</i>, <i>Ring of Fire</i>, <i>Clean Sweep</i>, <i>Interchange Master</i> and <i>Steady Exports</i>. Twenty more can be unlocked, such as <i>Every Peak</i>, <i>Untouchable</i> and <i>Half Way Round</i>.</p>
+    </div>
+    <div>
+      <h3>Unlocks between terms</h3>
+      <p class="note">Every term, won or lost, earns <b>Merits</b> for quotas, milestones and stars. The Merit Office sells new milestone cards for the pool, starting perks (extra money, a free tech, a free Core Exchange pair, an elevator already built, a reroll) and cosmetic train liveries. New Charters and starting regions unlock by Commending.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="disasters">
+  <p class="tag">Disasters</p>
+  <h2>Fifteen seconds' warning, then a choice</h2>
+  <div class="read"><p>A banner with Juno's face points at what's at risk, and fast-forward drops back to normal speed. <b>Brace</b> pays half the repair price now to halve the damage. <b>Reroute</b> closes the line early, so nobody aboard is lost. Or gamble, and <b>Repair all</b> afterwards. Each disaster has a home region it strikes first.</p></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Disaster</th><th>Hits</th><th>Home region</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td data-label="Disaster"><b>Meteor Shower</b></td><td data-label="Hits">a sky line</td><td data-label="Home region">the Spires</td><td data-label="Effect">breaks it until repaired</td></tr>
+        <tr><td data-label="Disaster"><b>Seaquake</b></td><td data-label="Hits">a water line</td><td data-label="Home region">the Brine</td><td data-label="Effect">stops it until repaired</td></tr>
+        <tr><td data-label="Disaster"><b>Core Flare</b></td><td data-label="Hits">fire lines and Core Exchanges</td><td data-label="Home region">the Rift</td><td data-label="Effect">halves their capacity for a minute</td></tr>
+        <tr><td data-label="Disaster"><b>Solar Storm</b></td><td data-label="Hits">the orbital ring</td><td data-label="Home region">the Ringside</td><td data-label="Effect">halves ring speed for a minute</td></tr>
+        <tr><td data-label="Disaster"><b>Cave-in</b></td><td data-label="Hits">an earth bore or shaft</td><td data-label="Home region">anywhere</td><td data-label="Effect">closes it until repaired</td></tr>
+        <tr><td data-label="Disaster"><b>Blackout</b></td><td data-label="Hits">a district</td><td data-label="Home region">anywhere</td><td data-label="Effect">closes nearby stations for 45 seconds</td></tr>
+        <tr><td data-label="Disaster"><b>Warp Drift</b></td><td data-label="Hits">deep space</td><td data-label="Home region">the Warp Terminal</td><td data-label="Effect">makes the next two departures late</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="wrap" id="story">
+  <p class="tag">Story</p>
+  <h2>Dispatches from beyond the warp</h2>
+  <div class="read"><p>Each returning deep space train brings two or three lines from somewhere you'll never see: a light, funny, slightly melancholy picture of a galaxy run on throughput. There are about sixty, building through the Charters toward the finale, where the Conductor finally says where the trains go.</p></div>
+  <div class="cast">
+    <div class="person"><img src="img/portrait-juno.png" alt="Juno Brasswick, a smiling dispatcher with a cyan hair streak, a neon-piped jacket and a hologram over her wrist" width="512" height="512" loading="lazy"><h3>Dispatcher Juno Brasswick</h3><p>An ATA dispatcher and your cheerful assistant: the tutorial, hints and disaster warnings.</p></div>
+    <div class="person"><img src="img/portrait-thrumm.png" alt="Auditor Ossian Thrumm, a stern older man with a monocle and a glowing data-ledger" width="512" height="512" loading="lazy"><h3>Auditor Ossian Thrumm</h3><p>Homeworld Office of Throughput. Dry, exacting, secretly fond of you. Quotas, deadlines and grades.</p></div>
+    <div class="person"><img src="img/portrait-conductor.png" alt="The Warp Conductor, a shadowed figure in an indigo coat with magenta eyes and a lantern of swirling warp light" width="512" height="512" loading="lazy"><h3>The Warp Conductor</h3><p>A mysterious voice who rides the deep space trains and sends the dispatches.</p></div>
+  </div>
+  <div class="read" style="margin-top:22px"><p class="note">Overheard: a planet of gardens that wants to know what a "building" is · a world where all the trains run backwards · a station at the galaxy's edge where one passenger has waited a thousand years.</p></div>
+</section>
+
+<section class="wrap" id="look">
+  <p class="tag">Look and sound</p>
+  <h2>Elemental trains in a neon cyberpunk megacity</h2>
+  <div class="read">
+    <p>A dense neon megacity at night: chrome and gunmetal megablocks, cables and glowing conduits, holographic light shapes, wet reflective streets and a rose and deep-teal haze, with puffing smokestacks and warm lit windows. Through it all run the ley-rails and their elemental trains. It leans cyberpunk but stays playful and easy to read. The world's own colours are kept clear of the seven train colours, so lines never vanish into the scenery.</p>
+    <div class="swatches" aria-label="Train colours">
+      <span class="sw" style="--c:var(--surface)"><i></i>Surface · yellow</span><span class="sw" style="--c:var(--sky)"><i></i>Sky · ice-cyan</span><span class="sw" style="--c:var(--water)"><i></i>Water · deep blue</span><span class="sw" style="--c:var(--earth)"><i></i>Earth · green</span><span class="sw" style="--c:var(--fire)"><i></i>Fire · red-orange</span><span class="sw" style="--c:var(--space)"><i></i>Space · violet</span><span class="sw" style="--c:var(--deep)"><i></i>Deep space · magenta</span>
+    </div>
+    <p style="margin-top:18px"><b>Big moments:</b> rails draw themselves across the globe as trains glide out along them. On your first trip through the core, the camera dives down a crystal bore, through the lava with the fire train and up the far side. When a quota is met, a beam fires from the Warp Terminal to the galaxy's heart. When a Charter is Commended, every line pulses around the world and fireworks go up over the cities.</p>
+    <p><b>Sound:</b> wondrous synthwave pads and strings on the title screen, an upbeat synthwave groove with a playful cyberpunk shimmer while you build (with a busier version as things heat up), a tense bed during disasters, and a fanfare for a job well done. Every action has a sound, and each train has its own voice: crackle, gust, bubble-glide, grinding rumble, roar, star-chime hum and warp zap.</p>
+  </div>
+</section>
+
+<section class="wrap" id="controls">
+  <p class="tag">Controls</p>
+  <h2>Mouse and keyboard, or touch</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Action</th><th>Computer</th><th>Phone or tablet (landscape)</th></tr></thead>
+      <tbody>
+        <tr><td data-label="Action">Spin the globe</td><td data-label="Computer">Drag, or arrow keys / WASD</td><td data-label="Phone or tablet (landscape)">One-finger drag</td></tr>
+        <tr><td data-label="Action">Zoom</td><td data-label="Computer">Mouse wheel, + / −</td><td data-label="Phone or tablet (landscape)">Pinch (tilt follows zoom)</td></tr>
+        <tr><td data-label="Action">Build a route</td><td data-label="Computer">Click A, click B, pick a card</td><td data-label="Phone or tablet (landscape)">Tap A, tap B, tap a card; cards open in a side column</td></tr>
+        <tr><td data-label="Action">Far side</td><td data-label="Computer">X-ray (V), or the Places list (/)</td><td data-label="Phone or tablet (landscape)">Turns see-through by itself; Places button</td></tr>
+        <tr><td data-label="Action">Flow and bottlenecks</td><td data-label="Computer">O, or click the Throughput meter</td><td data-label="Phone or tablet (landscape)">Flow button, tap the meter</td></tr>
+        <tr><td data-label="Action">Demolish and green</td><td data-label="Computer">X and G</td><td data-label="Phone or tablet (landscape)">Toolbar buttons; taps snap to the nearest valid spot and ask to confirm</td></tr>
+        <tr><td data-label="Action">Ride a train</td><td data-label="Computer">C with a line selected</td><td data-label="Phone or tablet (landscape)">Ride in the line panel</td></tr>
+        <tr><td data-label="Action">Speed, pause, undo</td><td data-label="Computer">F, Space, Ctrl+Z</td><td data-label="Phone or tablet (landscape)">Speed and pause buttons, Undo on the toast</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="read note" style="margin-top:14px">Toolbar buttons appear as the first term introduces them, so the game starts with just "pick two places".</p>
+</section>
+
+<section class="wrap" id="effort">
+  <p class="tag">Size of the job</p>
+  <h2>A large game</h2>
+  <div class="stat-row">
+    <div class="stat"><b>1</b><span>planet, 6 regions</span></div>
+    <div class="stat"><b>6</b><span>Homeworld Charters</span></div>
+    <div class="stat"><b>7</b><span>train types and ley-rails</span></div>
+    <div class="stat"><b>28</b><span>tech upgrades</span></div>
+    <div class="stat"><b>30</b><span>milestone cards</span></div>
+    <div class="stat"><b>~60</b><span>story dispatches</span></div>
+    <div class="stat"><b>12–15</b><span>3D models</span></div>
+    <div class="stat"><b>~40</b><span>sounds and 6 music tracks</span></div>
+  </div>
+  <div class="read">
+    <h3>Hardest parts</h3>
+    <p>Keeping the flow of people and goods fast, readable and repeatable. Drawing clean ley-rails through every layer, from the sea floor to the core to orbit, and making each train's element read clearly in motion. Keeping a whole planet-city smooth on phones. Making the see-through view clear. Proving every Charter can actually be won: a helper program plays each Charter to find a winning plan, and the game replays it with real taps and clicks.</p>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">
+  <p>Arcane Transit Authority · an idea by Rich Conlan · design reviewed by player, builder and art-and-sound reviewers · pictures are concept mock-ups and will be refined for the game.</p>
+</footer>
+
+</body>
+</html>

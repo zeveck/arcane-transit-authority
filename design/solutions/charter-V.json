@@ -1,0 +1,680 @@
+{
+ "charter": "V",
+ "region": "flats",
+ "termSeed": 515,
+ "tutorial": false,
+ "commended": true,
+ "commendedAt": 1260,
+ "termOver": null,
+ "overtime": false,
+ "quotas": [
+  {
+   "quota": 1,
+   "time": 240,
+   "hash": "ecf5c597",
+   "money": 4995,
+   "throughput": 213.59999999999943
+  },
+  {
+   "quota": 2,
+   "time": 1040,
+   "hash": "066a4d34",
+   "money": 4986,
+   "throughput": 596.7077748908717
+  },
+  {
+   "quota": 3,
+   "time": 1260,
+   "hash": "0b92c552",
+   "money": 1693,
+   "throughput": 841.4399999999997
+  }
+ ],
+ "actions": [
+  [
+   30,
+   {
+    "type": "buildRoute",
+    "a": 184,
+    "b": {
+     "station": 0
+    },
+    "kind": "surface"
+   }
+  ],
+  [
+   30,
+   {
+    "type": "buildRoute",
+    "a": 111,
+    "b": {
+     "station": 4
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   30,
+   {
+    "type": "buildRoute",
+    "a": {
+     "station": 3
+    },
+    "b": {
+     "station": 0
+    },
+    "kind": "core"
+   }
+  ],
+  [
+   60,
+   {
+    "type": "green",
+    "cell": 222,
+    "kind": "park"
+   }
+  ],
+  [
+   60,
+   {
+    "type": "green",
+    "cell": 262,
+    "kind": "park"
+   }
+  ],
+  [
+   90,
+   {
+    "type": "buyTech",
+    "id": "biggerInterchanges"
+   }
+  ],
+  [
+   180,
+   {
+    "type": "addTrain",
+    "line": 3
+   }
+  ],
+  [
+   180,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   240,
+   {
+    "type": "buyTech",
+    "id": "warpConsists"
+   }
+  ],
+  [
+   270,
+   {
+    "type": "buildRoute",
+    "a": 197,
+    "b": {
+     "station": 4
+    },
+    "kind": "surface"
+   }
+  ],
+  [
+   270,
+   {
+    "type": "addTrain",
+    "line": 3
+   }
+  ],
+  [
+   300,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   300,
+   {
+    "type": "upgradeInterchange",
+    "station": 4
+   }
+  ],
+  [
+   330,
+   {
+    "type": "addTrain",
+    "line": 1
+   }
+  ],
+  [
+   330,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   390,
+   {
+    "type": "buyTech",
+    "id": "warpAnchor"
+   }
+  ],
+  [
+   480,
+   {
+    "type": "buyTech",
+    "id": "twinLaunchRing"
+   }
+  ],
+  [
+   540,
+   {
+    "type": "buildRoute",
+    "a": 464,
+    "b": {
+     "station": 3
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   570,
+   {
+    "type": "green",
+    "cell": 159,
+    "kind": "park"
+   }
+  ],
+  [
+   570,
+   {
+    "type": "green",
+    "cell": 177,
+    "kind": "park"
+   }
+  ],
+  [
+   609,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   660,
+   {
+    "type": "buildRoute",
+    "a": 553,
+    "b": {
+     "station": 3
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   690,
+   {
+    "type": "addTrain",
+    "line": 3
+   }
+  ],
+  [
+   690,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   720,
+   {
+    "type": "upgradeInterchange",
+    "station": 3
+   }
+  ],
+  [
+   750,
+   {
+    "type": "addTrain",
+    "line": 3
+   }
+  ],
+  [
+   750,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   750,
+   {
+    "type": "buyTech",
+    "id": "deepBore"
+   }
+  ],
+  [
+   810,
+   {
+    "type": "buildRoute",
+    "a": 494,
+    "b": {
+     "station": 3
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   900,
+   {
+    "type": "buildRoute",
+    "a": 364,
+    "b": {
+     "station": 0
+    },
+    "kind": "core"
+   }
+  ],
+  [
+   928,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   930,
+   {
+    "type": "addTrain",
+    "line": 1
+   }
+  ],
+  [
+   930,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   930,
+   {
+    "type": "upgradeInterchange",
+    "station": 7
+   }
+  ],
+  [
+   943,
+   {
+    "type": "repairAll"
+   }
+  ],
+  [
+   960,
+   {
+    "type": "addTrain",
+    "line": 10
+   }
+  ],
+  [
+   990,
+   {
+    "type": "buildRoute",
+    "a": {
+     "station": 2
+    },
+    "b": {
+     "station": 12
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   1020,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1020,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1040,
+   {
+    "type": "buildRoute",
+    "a": 621,
+    "b": {
+     "station": 10
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   1040,
+   {
+    "type": "addTrain",
+    "line": 3
+   }
+  ],
+  [
+   1070,
+   {
+    "type": "addTrain",
+    "line": 5
+   }
+  ],
+  [
+   1070,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1100,
+   {
+    "type": "addTrain",
+    "line": 10
+   }
+  ],
+  [
+   1100,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1130,
+   {
+    "type": "upgradeInterchange",
+    "station": 12
+   }
+  ],
+  [
+   1130,
+   {
+    "type": "addTrain",
+    "line": 10
+   }
+  ],
+  [
+   1160,
+   {
+    "type": "buildRoute",
+    "a": 193,
+    "b": {
+     "station": 1
+    },
+    "kind": "sky"
+   }
+  ],
+  [
+   1220,
+   {
+    "type": "buildRoute",
+    "a": 99,
+    "b": {
+     "station": 5
+    },
+    "kind": "surface"
+   }
+  ],
+  [
+   1230,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   1250,
+   {
+    "type": "upgradeInterchange",
+    "station": 2
+   }
+  ],
+  [
+   1250,
+   {
+    "type": "green",
+    "cell": 86,
+    "kind": "park"
+   }
+  ]
+ ],
+ "idleGapMax": 0,
+ "types": [
+  "earth",
+  "fire",
+  "sky",
+  "surface"
+ ],
+ "trackShares": {
+  "surface": 0.183,
+  "earth": 0.323,
+  "core": 0.438,
+  "sky": 0.056
+ },
+ "moneyCurve": [
+  [
+   30,
+   14060
+  ],
+  [
+   60,
+   1601
+  ],
+  [
+   90,
+   1389
+  ],
+  [
+   120,
+   986
+  ],
+  [
+   150,
+   1329
+  ],
+  [
+   180,
+   2184
+  ],
+  [
+   210,
+   1326
+  ],
+  [
+   240,
+   4995
+  ],
+  [
+   270,
+   4008
+  ],
+  [
+   300,
+   1573
+  ],
+  [
+   330,
+   1863
+  ],
+  [
+   360,
+   2458
+  ],
+  [
+   390,
+   3319
+  ],
+  [
+   420,
+   1962
+  ],
+  [
+   450,
+   3068
+  ],
+  [
+   480,
+   5404
+  ],
+  [
+   510,
+   3065
+  ],
+  [
+   540,
+   4400
+  ],
+  [
+   570,
+   1858
+  ],
+  [
+   600,
+   2816
+  ],
+  [
+   630,
+   3840
+  ],
+  [
+   660,
+   5159
+  ],
+  [
+   690,
+   2147
+  ],
+  [
+   720,
+   2511
+  ],
+  [
+   750,
+   3270
+  ],
+  [
+   780,
+   2562
+  ],
+  [
+   810,
+   3578
+  ],
+  [
+   840,
+   2017
+  ],
+  [
+   870,
+   3379
+  ],
+  [
+   900,
+   5326
+  ],
+  [
+   930,
+   3152
+  ],
+  [
+   960,
+   2844
+  ],
+  [
+   990,
+   3691
+  ],
+  [
+   1020,
+   2526
+  ],
+  [
+   1040,
+   4986
+  ],
+  [
+   1070,
+   2244
+  ],
+  [
+   1100,
+   2679
+  ],
+  [
+   1130,
+   2690
+  ],
+  [
+   1160,
+   2912
+  ],
+  [
+   1190,
+   2140
+  ],
+  [
+   1220,
+   3868
+  ],
+  [
+   1250,
+   1927
+  ]
+ ],
+ "finalHash": "0b92c552",
+ "finalTime": 1260,
+ "money": 1693,
+ "stations": 18,
+ "lines": 16,
+ "cardStats": {
+  "comparisons": 2440,
+  "bothTagged": 990,
+  "bothByKind": {
+   "core": 310,
+   "earth": 620,
+   "hybrid": 60
+  },
+  "cheapestByKind": {
+   "core": 838,
+   "surface": 502,
+   "earth": 1001,
+   "hybrid": 78,
+   "sky": 21
+  },
+  "capacityByKind": {
+   "space": 674,
+   "core": 310,
+   "earth": 1305,
+   "surface": 91,
+   "hybrid": 60
+  },
+  "builds": {
+   "surface": 3,
+   "earth": 6,
+   "core": 2,
+   "sky": 1
+  }
+ },
+ "dbg": [],
+ "realSeconds": 32.7,
+ "perf": {
+  "worstTick": 16.758,
+  "avgTick": 0.137,
+  "worstTickWithRecompute": 31.458,
+  "worstRecompute": 14.116,
+  "worstFullRecompute": 14.7,
+  "avgUpdate": 0.0063,
+  "recomputes": 26
+ },
+ "throughput": 841.4399999999997
+}

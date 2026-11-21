@@ -1,0 +1,763 @@
+{
+ "note": "hash() at term start and after afterSeconds of game time with no actions (Node). The browser must produce the same.",
+ "rows": [
+  {
+   "charter": "I",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "aff6f2d5",
+   "after": "46828d6d",
+   "afterSeconds": 300,
+   "priority": [
+    136,
+    67
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "4b71881d",
+   "after": "4ff7f84b",
+   "afterSeconds": 300,
+   "priority": [
+    583,
+    286
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "77759720",
+   "after": "dbae53fb",
+   "afterSeconds": 300,
+   "priority": [
+    46,
+    217
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "2b7ac052",
+   "after": "4feae9e7",
+   "afterSeconds": 300,
+   "priority": [
+    402,
+    459
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "4e6ae62a",
+   "after": "617176f0",
+   "afterSeconds": 300,
+   "priority": [
+    246,
+    518
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "36c631e3",
+   "after": "f2691b30",
+   "afterSeconds": 300,
+   "priority": [
+    53,
+    598
+   ],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "01d7d43a",
+   "after": "035c12cc",
+   "afterSeconds": 300,
+   "priority": [
+    136,
+    67
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "d7ffe6e4",
+   "after": "fde2ffe8",
+   "afterSeconds": 300,
+   "priority": [
+    583,
+    286
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "eebfedf3",
+   "after": "09342528",
+   "afterSeconds": 300,
+   "priority": [
+    46,
+    217
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "76606c75",
+   "after": "6a541b1d",
+   "afterSeconds": 300,
+   "priority": [
+    402,
+    459
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "10807553",
+   "after": "9f7659fa",
+   "afterSeconds": 300,
+   "priority": [
+    246,
+    518
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "ef6c35a8",
+   "after": "263a015d",
+   "afterSeconds": 300,
+   "priority": [
+    53,
+    598
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "aa8df4e8",
+   "after": "a8047b21",
+   "afterSeconds": 300,
+   "priority": [
+    136,
+    67
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "95ca6324",
+   "after": "cfa855fb",
+   "afterSeconds": 300,
+   "priority": [
+    583,
+    286
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "677e53ad",
+   "after": "74bfed3b",
+   "afterSeconds": 300,
+   "priority": [
+    46,
+    217
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "dc9bba15",
+   "after": "97246c5a",
+   "afterSeconds": 300,
+   "priority": [
+    402,
+    459
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "ca45dac9",
+   "after": "6bcfd116",
+   "afterSeconds": 300,
+   "priority": [
+    246,
+    518
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "bdb96b0e",
+   "after": "15de97b9",
+   "afterSeconds": 300,
+   "priority": [
+    53,
+    598
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "8131051e",
+   "after": "17672003",
+   "afterSeconds": 300,
+   "priority": [
+    136,
+    67,
+    325
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "f7cb8960",
+   "after": "376d7445",
+   "afterSeconds": 300,
+   "priority": [
+    286,
+    583,
+    117
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "34d14c52",
+   "after": "306ee79c",
+   "afterSeconds": 300,
+   "priority": [
+    46,
+    217,
+    296
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "e93e8a9d",
+   "after": "db9bf791",
+   "afterSeconds": 300,
+   "priority": [
+    402,
+    459,
+    217
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "4b165f0f",
+   "after": "50d3f61c",
+   "afterSeconds": 300,
+   "priority": [
+    246,
+    518,
+    49
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "f9126530",
+   "after": "fcba75eb",
+   "afterSeconds": 300,
+   "priority": [
+    53,
+    598,
+    57
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "0a0a37d4",
+   "after": "747a2600",
+   "afterSeconds": 300,
+   "priority": [
+    136,
+    67,
+    325
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "4abd82ae",
+   "after": "609932ea",
+   "afterSeconds": 300,
+   "priority": [
+    583,
+    286,
+    117
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "781b30d6",
+   "after": "ac32c729",
+   "afterSeconds": 300,
+   "priority": [
+    46,
+    217,
+    296
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "d1516265",
+   "after": "d817bcd4",
+   "afterSeconds": 300,
+   "priority": [
+    402,
+    459,
+    217
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "8b910385",
+   "after": "2f8046bf",
+   "afterSeconds": 300,
+   "priority": [
+    246,
+    518,
+    49
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "32b12d0c",
+   "after": "99b8e8db",
+   "afterSeconds": 300,
+   "priority": [
+    53,
+    598,
+    57
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "capital",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "09a58a3d",
+   "after": "9b807675",
+   "afterSeconds": 300,
+   "priority": [
+    477,
+    77,
+    141
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "brine",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "7f73efac",
+   "after": "9d2fa37b",
+   "afterSeconds": 300,
+   "priority": [
+    422,
+    42,
+    262
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "rift",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "6cea9d93",
+   "after": "8b71c188",
+   "afterSeconds": 300,
+   "priority": [
+    115,
+    530,
+    107
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "spires",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "2091aee4",
+   "after": "e2ccca30",
+   "afterSeconds": 300,
+   "priority": [
+    561,
+    252,
+    102
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "flats",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "fb15646d",
+   "after": "f91ac6b6",
+   "afterSeconds": 300,
+   "priority": [
+    318,
+    386,
+    87
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "ringside",
+   "termSeed": 11,
+   "tutorial": false,
+   "start": "5ebb514b",
+   "after": "4f07694a",
+   "afterSeconds": 300,
+   "priority": [
+    484,
+    182,
+    612
+   ],
+   "mandates": [
+    "frontierLink",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "I",
+   "region": "capital",
+   "termSeed": 1,
+   "tutorial": true,
+   "start": "739aac7f",
+   "after": "a23f3fba",
+   "afterSeconds": 300,
+   "priority": [],
+   "mandates": [
+    "firstCrossing"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "II",
+   "region": "brine",
+   "termSeed": 202,
+   "tutorial": false,
+   "start": "2b3a9c28",
+   "after": "e4b7b987",
+   "afterSeconds": 300,
+   "priority": [
+    72,
+    336
+   ],
+   "mandates": [
+    "atlanteanTrade"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "III",
+   "region": "rift",
+   "termSeed": 303,
+   "tutorial": false,
+   "start": "6991891b",
+   "after": "7525d80a",
+   "afterSeconds": 300,
+   "priority": [
+    252,
+    266
+   ],
+   "mandates": [
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "IV",
+   "region": "spires",
+   "termSeed": 404,
+   "tutorial": false,
+   "start": "9aa74370",
+   "after": "6cfeae96",
+   "afterSeconds": 300,
+   "priority": [
+    517,
+    145,
+    250
+   ],
+   "mandates": [
+    "frontierLink"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "V",
+   "region": "flats",
+   "termSeed": 515,
+   "tutorial": false,
+   "start": "d9f68f7d",
+   "after": "325fa6d3",
+   "afterSeconds": 300,
+   "priority": [
+    364,
+    45,
+    162
+   ],
+   "mandates": [
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "VI",
+   "region": "ringside",
+   "termSeed": 626,
+   "tutorial": false,
+   "start": "1ee34668",
+   "after": "f32a4dd6",
+   "afterSeconds": 300,
+   "priority": [
+    575,
+    460,
+    192
+   ],
+   "mandates": [
+    "atlanteanTrade",
+    "heritageCapital"
+   ],
+   "geoHash": "d176ef3d"
+  },
+  {
+   "charter": "G",
+   "region": "ringside",
+   "termSeed": 717,
+   "tutorial": false,
+   "start": "98683e55",
+   "after": "e3275169",
+   "afterSeconds": 300,
+   "priority": [
+    15,
+    309,
+    637
+   ],
+   "mandates": [
+    "atlanteanTrade",
+    "narrowYard"
+   ],
+   "geoHash": "d176ef3d"
+  }
+ ]
+}
