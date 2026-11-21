@@ -45,15 +45,15 @@
 - Budget: **$50** (request 32), of which ≈ $7.58 already spent on mock pictures → ≈ $42.42 left for the build
 - Rounds: 2
 - Feedback: on (Report a bug button; Ctrl+Shift+F)
-- Art sheet: yes (on the plans page, since the plans page is on)
+- Art sheet: https://synapticnoise.com/plans/arcane-transit-authority/art/ (pictures and sound linked from the live game; built from .gamegen/art-sheet/manifest.json)
 - Publish at the end: yes, --no-confirm (domain synapticnoise.com, gallery zeveck/synapticnoise, making-of on, from .env)
 - Credit: Rich Conlan (from GAMEGEN_CREDIT)
 - ElevenLabs tier: creator
 - Available (2026-11-20): imagegen2 (OpenAI), nanogen (Gemini), audiogen (ElevenLabs, 236,689 credits), meshgen (Meshy, 1,441 credits), node, python3 + Pillow, playwright-cli; plugins up to date
 - Folder: the project root (was empty); git repository from publishing
-- Plans page: yes (card added 2026-11-20, status Planned: https://synapticnoise.com/plans/ ; plan files in zeveck/synapticnoise plans/arcane-transit-authority/, design page https://synapticnoise.com/plans/arcane-transit-authority/)
+- Plans page: yes (card added 2026-11-20; Published 2026-11-21: https://synapticnoise.com/plans/ ; plan files in zeveck/synapticnoise plans/arcane-transit-authority/, design page https://synapticnoise.com/plans/arcane-transit-authority/)
 - Shared design comments (read 2026-11-20): none
-- Publish plan: https://arcanetransitauthority.synapticnoise.com, new public repo zeveck/arcane-transit-authority (making-of: design/ included except design/mockups and design/screenshots), DNS CNAME via GoDaddy, gallery zeveck/synapticnoise (top), plans card → Published
+- Published: https://arcanetransitauthority.synapticnoise.com (repo https://github.com/zeveck/arcane-transit-authority, public, making-of; design/mockups and design/screenshots kept out). Gallery: zeveck/synapticnoise, at the top.
 - GitHub preview image: to upload (none set)
 
 ## Phases
@@ -67,4 +67,4 @@
 - [x] 6. Play-test — done by a fresh tester (tutorial + Charter I by hand, II–VI by replay, finale + credits; every screen at 1280/800/1920; play-wrong; saves; offline; phone notice; Report a bug; 42 start hashes match in the browser; 6×2 replays PASS). Fixed 3 must-fix (double-banked finale term, endless keep-playing term, mountain picking) + ~20 smaller. Then the fixer fixed the open items (no auto X-ray on the route tool, readable card reasons, Hybrid 0/min, earth-to-Terminal portal slots, title loads first (19.5 s on slow 4G, was >25 s), Low ≤300k tris, Charter board/setup show the globe and mandate rules, Station tool lights cells, P toggles pause, lead-car scale). Tests 26/26, verify 6/6, start hashes 42/42, contrast OK, 6×2 browser replays PASS.
 - [x] 7. Final review: rounds 1–2 (playtester + bug hunter each) and a round-3 verification; all must-fix and should-fix fixed (REVIEW_LOG.md). Changes: surface traces for underground lines, place/station/line names, honest card export numbers, Surface/Earth/Core rebalance, save slots (request 33), end-screen and Ride soft-locks, perks, undo scope. Tests 41/41, sweep 84/84, 7×2 browser replays PASS.
 - [x] 8. Polish pass: fresh reviewer at 1280/800/1920 + iPhone notice; frame log and first load clean; everything it found fixed (Limit chip, tutorial text vs cards, 800×600 title, credits, naming, keycaps, perk/livery texts, Report a bug styling, help pictures, lone words). Re-screenshotted (fb3-*); 7×2 replays PASS after.
-- [ ] 9. Wrap up — doing: art sheet, preview pictures, README, Pages workflow, publish
+- [x] 9. Wrap up: social card + GitHub preview + 8 README screenshots; README with the making-of; Pages workflow; published 2026-11-21 at https://arcanetransitauthority.synapticnoise.com (repo zeveck/arcane-transit-authority, public; DNS CNAME added at GoDaddy; HTTPS on); added to the top of synapticnoise.com; plans card → Published with Plan/Design/Art/Play; shared design page updated (claude.ai link unchanged).
