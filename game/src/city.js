@@ -66,6 +66,10 @@ export class City {
     const share = new Map();
     cells.forEach((c) => grid.corners[c.id].forEach((k) => { const s = key(k); if (!share.has(s)) share.set(s, []); share.get(s).push(c.id); }));
     const cornerR = (k) => { const ids = share.get(key(k)) || []; return ids.reduce((s, i) => s + cellRadius(cells[i]), 0) / Math.max(1, ids.length); };
+    // night-lights glow per vertex: the cell's density (0..1), averaged at shared corners so it fades softly across borders
+    const glowOf = (i) => (cells[i].isCity ? Math.min(1, (cells[i].density || 0) / 5) : 0);
+    const cornerGlow = (k) => { const ids = share.get(key(k)) || []; return ids.reduce((s, i) => s + glowOf(i), 0) / Math.max(1, ids.length); };
+    this._glowCorner = cornerGlow;
     const cornerTint = (k) => {
       const ids = share.get(key(k)) || []; const col = new THREE.Color(0, 0, 0);
       ids.forEach((i) => col.add(hexc(REGION_GROUND[cells[i].areaId]))); return col.multiplyScalar(1 / Math.max(1, ids.length));
@@ -85,7 +89,7 @@ export class City {
       sea: this.groundMaterial(this.tex.seafloor, 'sea'),
     };
     for (const [b, list] of Object.entries(buckets)) {
-      const P = [], N = [], UV = [], C = [], S = [];
+      const P = [], N = [], UV = [], C = [], S = [], GL = [];
       let vcount = 0;
       for (const c of list) {
         const start = vcount;
@@ -98,7 +102,8 @@ export class City {
         const centreR = rc;
         const tint = hexc(REGION_GROUND[c.areaId]);
         const uvs = (p) => { const d = [p[0] * R - Cn[0] * R, p[1] * R - Cn[1] * R, p[2] * R - Cn[2] * R]; const sc = b === 'city' ? 1 / 9 : 1 / 14; return [(d[0] * e1[0] + d[1] * e1[1] + d[2] * e1[2]) * sc + c.id * 0.37, (d[0] * e2[0] + d[1] * e2[1] + d[2] * e2[2]) * sc + c.id * 0.61]; };
-        const push = (u, r, col, snow) => { P.push(u[0] * r, u[1] * r, u[2] * r); const t = uvs(u); UV.push(t[0], t[1]); C.push(col.r, col.g, col.b); S.push(snow); vcount++; };
+        const gc = glowOf(c.id);
+        const push = (u, r, col, snow, gl = gc) => { P.push(u[0] * r, u[1] * r, u[2] * r); const t = uvs(u); UV.push(t[0], t[1]); C.push(col.r, col.g, col.b); S.push(snow); GL.push(gl); vcount++; };
         const inner = corners.map((k) => nrm(mix3(Cn, k, 0.74)));
         const jit = corners.map((_, j) => mountain ? (0.82 + 0.18 * Math.abs(Math.sin(c.id * 12.9898 + j * 78.233) * 43758.5453 % 1)) : 1);
         const snowC = c.peak ? 1 : mountain && c.height > 7 ? 0.5 : 0;
@@ -111,8 +116,9 @@ export class City {
           push(Cn, centreR, tint, snowC); push(inner[j], r1, tint, snowI); push(inner[j2], r2, tint, snowI);
           // skirt quad
           const t1 = cornerTint(k1), t2 = cornerTint(k2);
-          push(inner[j], r1, tint, snowI); push(k1, cornerR(k1), t1, 0); push(k2, cornerR(k2), t2, 0);
-          push(inner[j], r1, tint, snowI); push(k2, cornerR(k2), t2, 0); push(inner[j2], r2, tint, snowI);
+          const g1 = cornerGlow(k1), g2 = cornerGlow(k2);
+          push(inner[j], r1, tint, snowI); push(k1, cornerR(k1), t1, 0, g1); push(k2, cornerR(k2), t2, 0, g2);
+          push(inner[j], r1, tint, snowI); push(k2, cornerR(k2), t2, 0, g2); push(inner[j2], r2, tint, snowI);
         }
         this.cellVerts.set(c.id, { bucket: b, start, count: vcount - start });
       }
@@ -121,6 +127,7 @@ export class City {
       g.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2));
       g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
       g.setAttribute('snow', new THREE.Float32BufferAttribute(S, 1));
+      g.setAttribute('glow', new THREE.Float32BufferAttribute(GL, 1));
       g.computeVertexNormals();
       // fix winding so faces point outward
       const pos = g.attributes.position.array;
@@ -133,6 +140,7 @@ export class City {
       g.computeVertexNormals();
       this.origColors = this.origColors || {};
       this.origColors[b] = g.attributes.color.array.slice();
+      this.origGlow = this.origGlow || {}; this.origGlow[b] = g.attributes.glow.array.slice();
       const mesh = new THREE.Mesh(g, mats[b]);
       mesh.name = 'ground-' + b;
       this.root.add(mesh);
@@ -145,8 +153,8 @@ export class City {
     const uni = this.groundUniforms = this.groundUniforms || { uLights: { value: 1 }, uFar: { value: 0 }, uTime: XRAY.uniforms.uTime };
     clipMaterial(m, (sh) => {
       sh.uniforms.uLights = uni.uLights; sh.uniforms.uFar = uni.uFar; sh.uniforms.uTime = uni.uTime;
-      sh.vertexShader = 'attribute float snow; varying float vSnow;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvSnow = snow;');
-      sh.fragmentShader = 'varying float vSnow; uniform float uLights; uniform float uFar; uniform float uTime;\n' + sh.fragmentShader;
+      sh.vertexShader = 'attribute float snow; attribute float glow; varying float vSnow; varying float vGlow;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvSnow = snow; vGlow = glow;');
+      sh.fragmentShader = 'varying float vSnow; varying float vGlow; uniform float uLights; uniform float uFar; uniform float uTime;\n' + sh.fragmentShader;
       if (kind === 'city') {
         sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `
           vec4 texel = texture2D(map, vMapUv);
@@ -155,18 +163,39 @@ export class City {
         `).replace('#include <emissivemap_fragment>', `
           float lit = smoothstep(0.12, 0.32, lum);
           totalEmissiveRadiance += vec3(1.0,0.78,0.52) * lit * 1.1 * uLights;
-          // a glitter of city lights: hashed dots on a fine grid, warm white with a few pale-blue and rose neon
+          // Night lights, pre-filtered so nothing shimmers as the globe turns (request 34). Every detail fades to its
+          // own average once it would be smaller than a few pixels (screen-space derivatives), and nothing twinkles.
+          // 1) district lights: hashed dots on a fine grid, warm white with a few pale-blue and rose neon; drawn only
+          //    while a dot covers >= ~3 px, then replaced by their mean glow
           vec2 gg = vMapUv * 16.0; vec2 gid = floor(gg); float hh = fract(sin(dot(gid, vec2(127.1, 311.7))) * 43758.5453);
-          vec2 jo = vec2(fract(hh * 13.7), fract(hh * 7.3)) * 0.5 - 0.25;
-          float dm = smoothstep(0.2, 0.0, length(fract(gg) - 0.5 - jo)) * step(0.4, hh);
-          vec3 lc = hh > 0.95 ? vec3(1.0, 0.43, 0.57) : hh > 0.88 ? vec3(0.72, 0.85, 1.0) : vec3(1.0, 0.82, 0.58);
-          float tw = 0.75 + 0.25 * sin(uTime * (1.0 + hh * 4.0) + hh * 50.0);
-          totalEmissiveRadiance += lc * dm * tw * uFar * 2.6;
-          // neon street lines (rose and teal, capped low)
-          vec2 sl = abs(fract(vMapUv * 2.0) - 0.5);
-          float line = smoothstep(0.015, 0.0, min(sl.x, sl.y));
+          // soft clusters: smooth value noise at ~4 units (many pixels wide even from orbit, so it never aliases)
+          vec2 cq = vMapUv * 2.2; vec2 ci = floor(cq); vec2 cf = fract(cq); cf = cf * cf * (3.0 - 2.0 * cf);
+          float h00 = fract(sin(dot(ci, vec2(41.3, 289.1))) * 43758.5453), h10 = fract(sin(dot(ci + vec2(1.0, 0.0), vec2(41.3, 289.1))) * 43758.5453);
+          float h01 = fract(sin(dot(ci + vec2(0.0, 1.0), vec2(41.3, 289.1))) * 43758.5453), h11 = fract(sin(dot(ci + vec2(1.0, 1.0), vec2(41.3, 289.1))) * 43758.5453);
+          float cn = mix(mix(h00, h10, cf.x), mix(h01, h11, cf.x), cf.y);
+          // 2) from orbit: the dots' mean light as a smooth glow, brighter toward dense districts and in soft clusters
+          float dens = 0.1 + 3.4 * vGlow * vGlow * (0.25 + 1.6 * cn * cn);
+          vec3 dotsAvg = mix(vec3(0.85, 0.88, 1.0), vec3(1.0, 0.78, 0.5), vGlow) * 0.017 * dens;
+          float fwG = max(fwidth(gg).x, fwidth(gg).y);
+          float dotDetail = 1.0 - smoothstep(0.05, 0.12, fwG);
+          vec3 dots = dotsAvg;
+          if (dotDetail > 0.0) {
+            vec2 jo = vec2(fract(hh * 13.7), fract(hh * 7.3)) * 0.5 - 0.25;
+            float dm = smoothstep(0.2, 0.0, length(fract(gg) - 0.5 - jo)) * step(0.4, hh);
+            vec3 lc = hh > 0.95 ? vec3(1.0, 0.43, 0.57) : hh > 0.88 ? vec3(0.72, 0.85, 1.0) : vec3(1.0, 0.82, 0.58);
+            dots = mix(dotsAvg, lc * dm * 0.75, dotDetail);
+          }
+          totalEmissiveRadiance += dots * uFar * 2.6;
+          // 3) neon street lines (rose and teal, capped low): anti-aliased, and faded out before they get thinner
+          //    than a pixel or their grid starts to beat against the pixel grid (no moire at any angle or zoom)
+          vec2 sc2 = vMapUv * 2.0; vec2 fwS = max(fwidth(sc2), vec2(1e-5));
+          vec2 sl = abs(fract(sc2) - 0.5);
+          vec2 lxy = 1.0 - smoothstep(vec2(0.0), vec2(0.015) + fwS, sl);
+          float lineDetail = 1.0 - smoothstep(0.012, 0.03, max(fwS.x, fwS.y));
+          float line = max(lxy.x, lxy.y);
           vec3 nc = fract(hh * 3.1) > 0.5 ? vec3(1.0, 0.435, 0.569) : vec3(0.07, 0.44, 0.48) * 2.0;
-          totalEmissiveRadiance += nc * line * 0.3;
+          // far away the lines become their mean: a faint, even rose-teal haze (their average colour, never per-pixel)
+          totalEmissiveRadiance += mix(vec3(0.57, 0.66, 0.76) * 0.035, nc * line, lineDetail) * 0.3;
         `);
       } else if (kind === 'lava') {
         sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `
@@ -198,6 +227,9 @@ export class City {
       for (let q = 0; q < 3; q++) arr[i * 3 + q] = col ? orig[i * 3 + q] * (1 - amount) + [col.r, col.g, col.b][q] * amount : orig[i * 3 + q];
     }
     g.attributes.color.needsUpdate = true;
+    // cleared corridors and parks have no night lights: dim the cell's glow by the same amount
+    const ga = g.attributes.glow, og = this.origGlow?.[v.bucket];
+    if (ga && og) { for (let i = v.start; i < v.start + v.count; i++) ga.array[i] = col ? og[i] * (1 - amount) : og[i]; ga.needsUpdate = true; }
   }
 
   // ------------------------------------------------------------------ mountains: rock crags with snow
@@ -348,7 +380,7 @@ export class City {
     if (tint && this._bmatT?.[tint]) return this._bmatT[tint];
     const win = this.tex.windows;
     const m = new THREE.MeshStandardMaterial({ color: tint ? new THREE.Color(tint) : 0xffffff, roughness: 0.28, metalness: 0.7, envMapIntensity: 1.3 });
-    const uni = this.buildUniforms = { uWin: { value: win }, uLit: { value: 1 }, uTime: XRAY.uniforms.uTime };
+    const uni = this.buildUniforms = this.buildUniforms || { uWin: { value: win }, uLit: { value: 1 }, uTime: XRAY.uniforms.uTime, uFar: { value: 0 } };
     clipMaterial(m, (sh) => {
       Object.assign(sh.uniforms, uni);
       sh.vertexShader = 'attribute vec3 accent; varying vec3 vAcc; varying float vBand; varying vec2 vWinUv; varying float vWall; varying float vSeed;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
@@ -361,20 +393,23 @@ export class City {
           vBand = position.y*sy;
           vSeed = fract(sin(dot(instanceMatrix[3].xyz, vec3(12.9898,78.233,37.719)))*43758.5453);
         }`);
-      sh.fragmentShader = 'uniform sampler2D uWin; uniform float uLit; uniform float uTime; varying vec3 vAcc; varying float vBand; varying vec2 vWinUv; varying float vWall; varying float vSeed;\n' + sh.fragmentShader
+      sh.fragmentShader = 'uniform sampler2D uWin; uniform float uLit; uniform float uTime; uniform float uFar; varying vec3 vAcc; varying float vBand; varying vec2 vWinUv; varying float vWall; varying float vSeed;\n' + sh.fragmentShader
         .replace('#include <map_fragment>', `
           vec4 wc = texture2D(uWin, vWinUv + vec2(vSeed*7.0, vSeed*3.0));
           float wl = dot(wc.rgb, vec3(0.33));
           diffuseColor.rgb *= mix(vec3(0.2), mix(vec3(0.22), wc.rgb*1.2, 0.7), vWall);
         `)
         .replace('#include <emissivemap_fragment>', `
-          float flick = 0.85 + 0.15*sin(uTime*(1.0+vSeed*3.0) + vSeed*40.0);
+          // window flicker only up close: from orbit a block is a few pixels and a flicker reads as twinkling noise
+          float flick = 0.85 + 0.15*sin(uTime*(1.0+vSeed*3.0) + vSeed*40.0) * (1.0 - uFar);
           vec3 warm = vec3(1.0, 0.85, 0.62);
           totalEmissiveRadiance += mix(wc.rgb, warm * wl * 1.6, 0.35) * smoothstep(0.26, 0.6, wl) * 2.1 * uLit * vWall * flick;
           float band = smoothstep(0.86, 0.94, fract(vBand / 2.2)) * (1.0 - smoothstep(0.94, 1.0, fract(vBand / 2.2)));
           totalEmissiveRadiance += vAcc * band * vWall * 1.6;
-          totalEmissiveRadiance += vAcc * (1.0 - vWall) * (0.1 + (uLit - 1.0) * 0.35);
-        `);
+          totalEmissiveRadiance += vAcc * (1.0 - vWall) * (0.1 + (uLit - 1.0) * 0.35) * (1.0 - uFar * 0.6);
+        `)
+        // from orbit, rougher metal: sub-pixel sun and env highlights on thousands of tiny blocks sparkle as the globe turns
+        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n roughnessFactor = mix(roughnessFactor, 0.75, uFar);');
     }, 'blocks');
     if (tint) { this._bmatT = this._bmatT || {}; this._bmatT[tint] = m; } else this._bmat = m;
     return m;
@@ -724,7 +759,7 @@ export class City {
     // window lights brighter when close; ground lights dimmer when close (blocks carry it)
     const far = Math.min(1, Math.max(0, (camDist - 160) / 170));
     if (this.groundUniforms) { this.groundUniforms.uLights.value = 0.6 + far * 0.8; this.groundUniforms.uFar.value = far; }
-    if (this.buildUniforms) this.buildUniforms.uLit.value = 1 + far * 1.2;
+    if (this.buildUniforms) { this.buildUniforms.uLit.value = 1 + far * 0.7; this.buildUniforms.uFar.value = far; }
   }
 }
 

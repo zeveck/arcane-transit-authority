@@ -209,17 +209,37 @@ function updateAttract(dt) {
   a.t += dt;
   if (a.ride) {
     a.ride.t += dt;
-    if (a.ride.t > 15 || cam.mode !== 'follow') { cam.exitFollow(); cam.mode = 'attract'; a.ride = null; a.nextRide = a.t + 20; cam.dist = 330; cam.tiltManual = 0; }
+    if (a.ride.t > (a.ride.dur || 15) || cam.mode !== 'follow') { cam.exitFollow(); cam.mode = 'attract'; a.ride = null; a.nextRide = a.t + 20; cam.dist = 330; cam.tiltManual = 0; endAttractRide(); }
     return;
   }
   cam.lon = a.baseLon + Math.sin(a.t * 0.05) * 30;
   cam.lat = a.baseLat + Math.sin(a.t * 0.031) * 10;
   cam.dist = 330 + Math.sin(a.t * 0.07) * 12;
   if (a.t > a.nextRide && G.net?.attractRide) {
-    const ok = G.net.attractRide(cam);
-    if (ok) a.ride = { t: 0 }; else a.nextRide = a.t + 20;
+    const r = G.net.attractRide(cam);
+    if (r) a.ride = { t: 0, dur: r.dur || 15 }; else a.nextRide = a.t + 20;
   }
 }
+/**
+ * An attract ride below ground or under the sea gets exactly the scene Ride and the crossing cinematic use: below
+ * ground the X-ray (rock interior, cutaway bores, the lava core; the city surface hidden by setInside), under the
+ * sea the underwater look. Never stars and nothing else (request 34).
+ */
+function attractScene() {
+  const p = G.net?.attractActive ? G.net.attractPose : null;
+  if (!p) return;
+  const below = !!p.below, water = !!p.water;
+  if (below !== !!G.attractBelow) { G.attractBelow = below; G.xrayTarget = below ? 1 : baseXray(); }
+  G.game?.setUnderwater?.(water);
+}
+const baseXray = () => (G.screen === 'play' && G.game ? ((G.game.xrayUser || G.game.xrayAuto) ? 1 : 0) : 0);
+function endAttractRide() {
+  if (!G.net?.attractActive) return;
+  G.net.endAttractRide();
+  if (G.attractBelow) { G.attractBelow = false; G.xrayTarget = baseXray(); }
+  G.game?.setUnderwater?.(false);
+}
+G.endAttractRide = endAttractRide;
 
 const menuCtx = {
   settings: () => ({ ...settings, ...audio.getSettings() }),
@@ -346,8 +366,8 @@ const inputHandlers = {
   anyInput(kind, code) {
     audio.unlockAudio();
     G.pauseIdle = 0;
-    if (G.screen === 'title' && G.attract?.ride && kind !== 'none') { cam.exitFollow(); cam.mode = 'attract'; G.attract.ride = null; G.attract.nextRide = G.attract.t + 20; }
-    if (isShown('pause') && (cam.mode === 'attract' || (cam.mode === 'follow' && G.pauseAttract))) { cam.exitFollow(); G.attract = null; G.pauseAttract = false; cam.mode = 'orbit'; }
+    if (G.screen === 'title' && G.attract?.ride && kind !== 'none') { cam.exitFollow(); cam.mode = 'attract'; G.attract.ride = null; G.attract.nextRide = G.attract.t + 20; endAttractRide(); }
+    if (isShown('pause') && (cam.mode === 'attract' || (cam.mode === 'follow' && G.attract?.ride))) { cam.exitFollow(); G.attract = null; cam.mode = 'orbit'; endAttractRide(); }
     return !!G.game?.anyInput?.(kind, code);
   },
   pointerDown(x, y, b) { G.game?.pointerDown?.(x, y, b); },
@@ -407,13 +427,16 @@ function visuals(dt) {
   const t = G.renderTime;
   XRAY.uniforms.uTime.value = t;
   if (G.screen === 'title' && cam.mode === 'orbit' && !G.overlays.length) { G.titleIdle = (G.titleIdle || 0) + dt; if (G.titleIdle > 10) startAttract(); }
-  if (G.screen === 'title' || (cam.mode === 'attract')) updateAttract(dt);
+  if (G.screen === 'title' || cam.mode === 'attract' || (G.attract?.ride && cam.mode === 'follow')) updateAttract(dt);
   if (isShown('pause') && G.screen === 'play') {
     G.pauseIdle = (G.pauseIdle || 0) + dt;
     if (G.pauseIdle > 10 && cam.mode === 'orbit') { cam.mode = 'attract'; const [la, lo] = [cam.lat, cam.lon]; G.attract = { t: 0, baseLat: la, baseLon: lo, ride: null, nextRide: 20 }; }
   }
   G.game?.visuals?.(dt, t);
+  // an attract ride ended some other way (a term started, the pause menu closed, an end screen): drop its scene
+  if (G.net?.attractActive && !(G.attract?.ride && cam.mode === 'follow')) endAttractRide();
   cam.update(dt);
+  attractScene();
   // X-ray fade
   if (Math.abs(G.xray - G.xrayTarget) > 0.001) {
     G.xray += Math.sign(G.xrayTarget - G.xray) * Math.min(Math.abs(G.xrayTarget - G.xray), dt * 4);

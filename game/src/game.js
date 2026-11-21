@@ -47,7 +47,7 @@ export class Game {
       const toArrL = (f) => { const o = []; for (let i = 0; i < f.length; i += 3) o.push([f[i], f[i + 1], f[i + 2]]); return o; };
       G.net.demo = {
         stations: d.stations().map((x) => ({ ...x, terminal: x.kind === 'terminal', core: x.kind === 'core' })),
-        lines: d.lines().map((l) => ({ id: l.id, type: l.type, samples: toArrL(d.lineSamples(l.id).samples), trains: 2, cars: l.cars, load: 0.4, born: -10 })),
+        lines: d.lines().map((l) => ({ id: l.id, type: l.type, shaft: l.shaft, a: l.a, b: l.b, samples: toArrL(d.lineSamples(l.id).samples), trains: 2, cars: l.cars, load: 0.4, born: -10 })),
         walkways: d.walkways().map((w) => ({ a: w.a, b: w.b, samples: w.geo ? toArrL(w.geo.samples) : null })),
       };
       if (G.net.demoOn) G.net.showDemo(true);
@@ -160,7 +160,7 @@ export class Game {
   /** End a Ride or the crossing cinematic without any fly-to or story step (leaving play, pausing, end screens). */
   stopCameraModes() {
     if (this.ride) this.exitRide(true);
-    if (this.cinematic) { this.cinematic = null; this.G.net.cineTrain = null; this.G.cam.exitFollow(); this.xrayAuto = false; this.applyXray(); this.hud.setCinematic(false); if (this.story.tut?.step === 3) this.story.afterCrossing?.(); }
+    if (this.cinematic) { this.cinematic = null; this.G.net.cineTrain = null; this.G.net.cineHide = null; this.G.cam.exitFollow(); this.xrayAuto = false; this.applyXray(); this.hud.setCinematic(false); if (this.story.tut?.step === 3) this.story.afterCrossing?.(); }
     this.G.net.riding = false; this.setUnderwater(false); this.hud.setRiding(null); audio.ambience('amb-deep', 0);
   }
   leavePlay() {
@@ -847,15 +847,22 @@ export class Game {
     // follow the train down shaft A, across the core on the fire line, up shaft B
     const lines = e.lines.map((id) => this.sim.lines().find((l) => l.id === id)).filter(Boolean);
     const order = [lines.find((l) => l.shaft && l.a !== 0 && l.b !== 0 && this.sim.stations().find((s) => s.id === l.a)?.kind !== 'terminal') || lines[0], lines.find((l) => l.type === 'fire'), lines.find((l, i) => l.shaft && i > 0 && l !== lines[0])].filter(Boolean);
-    const paths = order.map((l) => ({ type: l.type, ...this.sim.lineSamples(l.id) }));
+    // the drawn rails (render-net may have moved a line into its own lane), so the consist rides what is drawn
+    // the drawn rails (render-net may have moved a line into its own lane), so the consist rides what is drawn
+    const net = this.G.net;
+    const paths = order.map((l) => ({ id: l.id, type: l.type, samples: net.lineById.get(l.id)?.samples || toArr(this.sim.lineSamples(l.id).samples) }));
     // orient each leg so they chain: the end of one is the start of the next
-    const pts = []; const ptype = [];
+    const pts = []; const ptype = []; const hide = new Map();
     for (const p of paths) {
-      let arr = toArr(p.samples);
-      if (pts.length) { const last = V(pts[pts.length - 1]); if (V(arr[arr.length - 1]).distanceTo(last) < V(arr[0]).distanceTo(last)) arr = arr.reverse(); }
-      else if (paths[1]) { const f = toArr(paths[1].samples); const end0 = V(arr[arr.length - 1]); const d0 = Math.min(end0.distanceTo(V(f[0])), end0.distanceTo(V(f[f.length - 1]))); const st0 = V(arr[0]); const d1 = Math.min(st0.distanceTo(V(f[0])), st0.distanceTo(V(f[f.length - 1]))); if (d1 < d0) arr = arr.reverse(); }
+      let rev = false; const arr0 = p.samples;
+      if (pts.length) { const last = V(pts[pts.length - 1]); if (V(arr0[arr0.length - 1]).distanceTo(last) < V(arr0[0]).distanceTo(last)) rev = true; }
+      else if (paths[1]) { const f = paths[1].samples; const end0 = V(arr0[arr0.length - 1]); const d0 = Math.min(end0.distanceTo(V(f[0])), end0.distanceTo(V(f[f.length - 1]))); const st0 = V(arr0[0]); const d1 = Math.min(st0.distanceTo(V(f[0])), st0.distanceTo(V(f[f.length - 1]))); if (d1 < d0) rev = true; }
+      // ride in the lane of its direction of travel; the line's own trains going the same way are hidden meanwhile
+      const arr = net.laneSamples?.(p.id, !rev) || (rev ? arr0.slice().reverse() : arr0.slice());
+      hide.set(p.id, rev ? -1 : 1);
       pts.push(...arr); for (let q = 0; q < arr.length; q++) ptype.push(p.type);
     }
+    net.cineHide = hide;
     if (pts.length < 4) return;
     const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + V(pts[i]).distanceTo(V(pts[i - 1])));
     const total = cum[cum.length - 1];
@@ -885,7 +892,7 @@ export class Game {
   }
   endCinematic() {
     if (!this.cinematic) return;
-    this.cinematic = null; this.G.cam.exitFollow(); this.G.net.cineTrain = null;
+    this.cinematic = null; this.G.cam.exitFollow(); this.G.net.cineTrain = null; this.G.net.cineHide = null;
     this.G.cam.dist = Math.max(this.G.cam.dist, 220);
     this.G.cam.flyTo(V(this.cells[this.meta.terminal].pos), 230, 1.6);
     this.xrayAuto = false; this.applyXray();

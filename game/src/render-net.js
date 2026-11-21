@@ -20,6 +20,14 @@ const CLIPPED = { surface: 1, sky: 1, water: 1, earth: 0, fire: 0, space: 1, dee
 const col = (h) => new THREE.Color(h);
 const WHITE = new THREE.Color(1, 1, 1);
 const V = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+// Lanes (request 34): every line is drawn as a double track. A train rides half a lane to the side of its rail's
+// centre line by direction (opposite directions never meet), and lines whose rails would run within CLEAR of another
+// line's (two space lines on one ring arc, two elevators from one station, corridors the sim's slots don't separate)
+// get their own lateral lane, LINE_LANE apart. Cars are 0.56 across: 2 × DIR_LANE and LINE_LANE − 2 × DIR_LANE both clear them.
+const DIR_LANE = { surface: 0.3, sky: 0.3, water: 0.3, earth: 0.28, fire: 0.3, space: 0.3, deep: 0 };
+const LINE_LANE = 1.2, CLEAR = 1.15;
+const END_STOP = 1.8; // trains stop this far short of the station point (still under its model) at either end (see trainS)
+const BORE_R = 0.62; // earth bores hold both lanes (0.28 + 0.28 car radius)
 
 // ------------------------------------------------------------------ ley-rail material
 function railMaterial(type) {
@@ -28,7 +36,7 @@ function railMaterial(type) {
   const lifted = c.clone().lerp(new THREE.Color(1, 1, 1), 0.3);
   return new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: c }, uCore: { value: lifted }, uTime: XRAY.uniforms.uTime, uWidth: { value: type === 'surface' ? 0.45 : 0.55 },
+      uColor: { value: c }, uCore: { value: lifted }, uTime: XRAY.uniforms.uTime, uWidth: { value: type === 'surface' ? 0.6 : 0.7 },
       uBright: { value: 1 }, uFlow: { value: 0 }, uClip: { value: CLIPPED[type] }, uGhost: { value: 0 }, uMinPx: { value: 0.0085 },
       uClipOn: XRAY.uniforms.uClipOn, uClipDir: XRAY.uniforms.uClipDir, uClipDist: XRAY.uniforms.uClipDist, uFade: { value: 1 },
       uTrace: { value: 0 }, uEmber: { value: type === 'fire' ? 1 : 0 },
@@ -135,6 +143,120 @@ function sampleAt(line, s, outP, outD) {
   outP.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
   if (outD) { outD.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]); if (outD.lengthSq() < 1e-9) outD.set(0, 0, 1); outD.normalize(); }
   return outP;
+}
+
+/** Lateral unit vector (the lane direction) at arc length s. */
+function sideAt(line, s, out) {
+  const L = line.cum, S = line.side, n = S.length;
+  s = Math.max(0, Math.min(L[n - 1], s));
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (L[m] <= s) lo = m; else hi = m; }
+  const t = (s - L[lo]) / ((L[hi] - L[lo]) || 1); const a = S[lo], b = S[hi];
+  out.set(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
+  const l2 = out.lengthSq(); if (l2 > 1e-9) out.multiplyScalar(1 / Math.sqrt(l2)); else out.set(0, 1, 0);
+  return out;
+}
+/**
+ * Per-sample lateral unit vectors of a polyline: tangent × radial up. Straight chords (earth, fire) use one
+ * constant side (a chord through the centre would flip its radial up). Where the tangent runs radially (shafts,
+ * elevators) the side is carried over from the nearest sample that has one, then smoothed along the line.
+ */
+function sideVectors(S, straight) {
+  const n = S.length, out = new Array(n);
+  const tan = (i) => { const a = S[Math.max(0, i - 1)], b = S[Math.min(n - 1, i + 1)]; const t = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]; const l = Math.hypot(...t) || 1; return [t[0] / l, t[1] / l, t[2] / l]; };
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const unit = (v) => { const l = Math.hypot(...v); return l > 1e-9 ? [v[0] / l, v[1] / l, v[2] / l] : null; };
+  const fallback = (t) => unit(cross(t, Math.abs(t[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]));
+  if (straight) {
+    const a = S[0], b = S[n - 1]; const t = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]) || [0, 0, 1];
+    const mid = unit([a[0] + b[0], a[1] + b[1], a[2] + b[2]]);
+    let sd = mid && Math.abs(t[0] * mid[0] + t[1] * mid[1] + t[2] * mid[2]) < 0.9 ? unit(cross(t, mid)) : null;
+    if (!sd) sd = fallback(t);
+    for (let i = 0; i < n; i++) out[i] = sd;
+    return out;
+  }
+  const T = []; let any = false;
+  for (let i = 0; i < n; i++) {
+    const t = tan(i); T.push(t); const up = unit(S[i]);
+    if (up && Math.abs(t[0] * up[0] + t[1] * up[1] + t[2] * up[2]) < 0.9) { out[i] = unit(cross(t, up)); any = true; } else out[i] = null;
+  }
+  if (!any) { for (let i = 0; i < n; i++) out[i] = fallback(T[i]) || [0, 1, 0]; return out; }
+  for (let i = 1; i < n; i++) if (!out[i] && out[i - 1]) out[i] = out[i - 1];
+  for (let i = n - 2; i >= 0; i--) if (!out[i] && out[i + 1]) out[i] = out[i + 1];
+  // smooth, keeping each side perpendicular to its tangent
+  let cur = out.map((v, i) => { const t = T[i]; const d = v[0] * t[0] + v[1] * t[1] + v[2] * t[2]; return unit([v[0] - d * t[0], v[1] - d * t[1], v[2] - d * t[2]]) || v; });
+  for (let k = 0; k < 4; k++) {
+    cur = cur.map((v, i) => {
+      const a = cur[Math.max(0, i - 1)], b = cur[Math.min(n - 1, i + 1)], t = T[i];
+      const m = [a[0] + 2 * v[0] + b[0], a[1] + 2 * v[1] + b[1], a[2] + 2 * v[2] + b[2]]; const d = m[0] * t[0] + m[1] * t[1] + m[2] * t[2];
+      return unit([m[0] - d * t[0], m[1] - d * t[1], m[2] - d * t[2]]) || v;
+    });
+  }
+  return cur;
+}
+/**
+ * Round sharp corners of a drawn rail (the elevator meeting the ring, a water spur meeting a dome): a few
+ * smoothing passes on the points where the line turns by more than ~20°, ends fixed. At a kink the two lanes'
+ * paths would cross, so opposite trains there would touch; rounded to a radius well over a lane they don't.
+ */
+function roundCorners(S0) {
+  const n = S0.length; if (n < 4) return S0;
+  let S = S0.map((p) => p.slice());
+  const turn = (i) => {
+    const a = S[i - 1], b = S[i], c = S[i + 1];
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
+    const lu = Math.hypot(...u), lv = Math.hypot(...v); if (lu < 1e-6 || lv < 1e-6) return 0;
+    return Math.acos(Math.max(-1, Math.min(1, (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (lu * lv))));
+  };
+  let changed = false;
+  for (let pass = 0; pass < 8; pass++) {
+    const mark = new Uint8Array(n);
+    for (let i = 1; i < n - 1; i++) if (turn(i) > 0.35) for (let k = Math.max(1, i - 2); k <= Math.min(n - 2, i + 2); k++) mark[k] = 1;
+    if (!mark.some((x) => x)) break;
+    changed = true;
+    S = S.map((p, i) => (mark[i] ? [0, 1, 2].map((q) => (S[i - 1][q] + 2 * p[q] + S[i + 1][q]) / 4) : p));
+  }
+  return changed ? S : S0;
+}
+/**
+ * Give every line its lane (see DIR_LANE / LINE_LANE). Lines are placed in id order (so an older line keeps its
+ * place as the network grows): each takes the first lateral lane (0, +1, −1, +2, …) whose rail stays CLEAR of
+ * every line placed before it, ignoring the first and last 3 units (lines meet at shared stations). Sets
+ * l.samples (the drawn, picked and ridden rail), l.side and l.lane; the source samples are kept in l.src.
+ */
+function assignLanes(lines) {
+  const H = CLEAR, grid = new Map();
+  const key = (x, y, z) => `${Math.floor(x / H)},${Math.floor(y / H)},${Math.floor(z / H)}`;
+  const near = (p, id) => {
+    const cx = Math.floor(p[0] / H), cy = Math.floor(p[1] / H), cz = Math.floor(p[2] / H);
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+      const b = grid.get(`${cx + dx},${cy + dy},${cz + dz}`); if (!b) continue;
+      for (const q of b) if (q.id !== id && (q.p[0] - p[0]) ** 2 + (q.p[1] - p[1]) ** 2 + (q.p[2] - p[2]) ** 2 < CLEAR * CLEAR) return true;
+    }
+    return false;
+  };
+  const order = [...lines].sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0));
+  for (const l of order) {
+    if (!l.src) l.src = (l.type === 'earth' || l.type === 'fire') ? l.samples : roundCorners(l.samples);
+    const src = l.src;
+    l.side = sideVectors(src, (l.type === 'earth' || l.type === 'fire'));
+    const cum = lengths(src), total = cum[cum.length - 1], skip = Math.min(3, total * 0.25);
+    const mid = []; for (let i = 0; i < src.length; i++) if (cum[i] > skip && cum[i] < total - skip) mid.push(i);
+    const at = (i, off) => { const p = src[i], sd = l.side[i]; return [p[0] + sd[0] * off, p[1] + sd[1] * off, p[2] + sd[2] * off]; };
+    let lane = 0;
+    if (l.type !== 'deep' && mid.length) {
+      let best = null;
+      for (const k of [0, 1, -1, 2, -2, 3, -3]) {
+        let hits = 0; for (const i of mid) if (near(at(i, k * LINE_LANE), l.id)) hits++;
+        if (!best || hits < best.hits) best = { k, hits };
+        if (!hits) break;
+      }
+      lane = best.k;
+    }
+    l.lane = lane;
+    l.samples = lane ? src.map((_, i) => at(i, lane * LINE_LANE)) : src;
+    if (l.type !== 'deep') for (const i of mid) { const p = l.samples[i]; const kk = key(p[0], p[1], p[2]); if (!grid.has(kk)) grid.set(kk, []); grid.get(kk).push({ id: l.id, p }); }
+  }
 }
 
 export class NetRenderer {
@@ -325,7 +447,7 @@ export class NetRenderer {
     this.capsBand = new THREE.InstancedBufferAttribute(new Float32Array(3000 * 3), 3); capsG.setAttribute('band', this.capsBand);
     this.root.add(this.caps);
     // water bubbles: one stretched fresnel capsule per water car
-    const bubG = new THREE.CapsuleGeometry(0.55, 1.0, 4, 12); bubG.rotateX(Math.PI / 2); bubG.translate(0, 0.3, 0);
+    const bubG = new THREE.CapsuleGeometry(0.34, 1.0, 4, 12); // fits its lane (request 34: was 0.55, overlapping the other lane) bubG.rotateX(Math.PI / 2); bubG.translate(0, 0.3, 0);
     const bubMat = new THREE.ShaderMaterial({
       uniforms: { uTime: XRAY.uniforms.uTime, ...XRAY.uniforms },
       vertexShader: `varying vec3 vN; varying vec3 vW; ${XRAY_GLSL.vertDecl} void main(){ vec4 w = modelMatrix*instanceMatrix*vec4(position,1.); vW=w.xyz; vXWorld=vW; vN=normalize(mat3(modelMatrix*instanceMatrix)*normal); gl_Position=projectionMatrix*viewMatrix*w; }`,
@@ -444,8 +566,9 @@ export class NetRenderer {
    */
   setNetwork(net, opts = {}) {
     this.net = net;
-    const lines = net.lines.filter((l) => l.samples && l.samples.length >= 2);
-    for (const l of lines) { l.cum = lengths(l.samples); l.len = l.cum[l.cum.length - 1]; }
+    const lines = net.lines.filter((l) => (l.src || l.samples) && (l.src || l.samples).length >= 2);
+    assignLanes(lines);
+    for (const l of lines) { l.cum = lengths(l.samples); l.len = l.cum[l.cum.length - 1]; const c0 = lengths(l.src); l.srcLen = c0[c0.length - 1] || l.len; }
     this.lines = lines; this.lineById = new Map(lines.map((l) => [l.id, l]));
     this.stations = net.stations; this.stationById = new Map(net.stations.map((s) => [s.id, s]));
     // rails per type
@@ -601,7 +724,7 @@ export class NetRenderer {
       const pts = l.samples.filter((_, i) => i % 2 === 0 || i === l.samples.length - 1).map(V);
       if (pts.length < 2) continue;
       const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0);
-      const tg = new THREE.TubeGeometry(curve, Math.max(4, Math.ceil(l.len / 2)), 0.5, 7, false);
+      const tg = new THREE.TubeGeometry(curve, Math.max(4, Math.ceil(l.len / 2)), BORE_R, 7, false);
       tg.deleteAttribute('uv'); const uvs = new Float32Array(tg.attributes.position.count * 2);
       for (let i = 0; i < uvs.length / 2; i++) { uvs[i * 2] = (i % 8) / 8; uvs[i * 2 + 1] = Math.floor(i / 8) * 0.25; }
       tg.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
@@ -610,7 +733,7 @@ export class NetRenderer {
         sampleAt(l, s, p, d); const ang = rnd() * Math.PI * 2;
         const side = new THREE.Vector3().crossVectors(d, Math.abs(d.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0)).normalize();
         side.applyAxisAngle(d, ang);
-        p.addScaledVector(side, 0.42);
+        p.addScaledVector(side, BORE_R + 0.06); // set into the bore wall, clear of both lanes
         m.lookAt(tgt.copy(p).add(side), p, d); m.setPosition(p);
         m.scale(new THREE.Vector3(0.6 + rnd(), 0.6 + rnd(), 0.6 + rnd()));
         this.crystals.setMatrixAt(nc++, m);
@@ -618,10 +741,10 @@ export class NetRenderer {
     }
     for (const [a, b] of wells) {
       const curve = new THREE.LineCurve3(V(a), V(b));
-      const tg = new THREE.TubeGeometry(curve, 4, 0.5, 7, false); tubes.push(tg);
+      const tg = new THREE.TubeGeometry(curve, 4, BORE_R, 7, false); tubes.push(tg);
     }
     // round caps on every bore and shaft end, so a tube never shows a cut-open edge (the crossing cinematic, X-ray)
-    const cap = (p) => { const g = new THREE.SphereGeometry(0.5, 8, 6); g.deleteAttribute('uv'); g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2)); g.translate(p[0], p[1], p[2]); return g; };
+    const cap = (p) => { const g = new THREE.SphereGeometry(BORE_R, 8, 6); g.deleteAttribute('uv'); g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2)); g.translate(p[0], p[1], p[2]); return g; };
     const ends = [];
     for (const l of lines) if (l.type === 'earth' && l.samples.length >= 2) ends.push(l.samples[0], l.samples[l.samples.length - 1]);
     for (const [a, b] of wells) ends.push(a, b);
@@ -779,12 +902,22 @@ export class NetRenderer {
     }
   }
   /** Position along a ping-pong line at time t: returns { s, dir (+1/-1) } */
+  /**
+   * Position along a line, drawn: the run is mapped onto [m, len − m] with m = END_STOP, so a train stops a car's
+   * length short of the station point. Lines that share a station (a shaft and its fire chord at a Core Exchange,
+   * a shaft and a space line at the Terminal) would otherwise have trains meeting in the same spot there.
+   */
   trainS(tr, t) {
+    const r = this.trainS0(tr, t); const L = tr.line.len; const m = Math.min(END_STOP, L * 0.2);
+    return { s: m + r.s * (L - 2 * m) / (L || 1), dir: r.dir };
+  }
+  trainS0(tr, t) {
     const l = tr.line;
     if (this.trainSource && this.useGameTime) {
       const arr = this.trainSource(l.id);
       const x = arr && arr[tr.i];
-      if (x) { const dir = x.dir || tr.lastDir || 1; tr.lastDir = dir; tr.lastS = x.s; return { s: x.s, dir: x.dir === 0 ? (x.s > l.len / 2 ? 1 : -1) : dir }; }
+      // the sim's distance along its own rail, scaled onto the drawn rail (a lane offset changes its length a little)
+      if (x) { const xs = x.s * (l.len / (l.srcLen || l.len)); const dir = x.dir || tr.lastDir || 1; tr.lastDir = dir; tr.lastS = xs; return { s: xs, dir: x.dir === 0 ? (xs > l.len / 2 ? 1 : -1) : dir }; }
     } const sp = (l.speed || ({ surface: 3, sky: 4, water: 2.5, earth: 2, fire: 6, space: 8, deep: 8 })[l.type]) * (l.speedMult ?? 1);
     const dwell = 4;
     const leg = l.len / sp; const cycle = 2 * (leg + dwell);
@@ -802,7 +935,7 @@ export class NetRenderer {
     this.time = t;
     const gt = this.useGameTime ? this.gameTime : t;
     const near = camDist < NEAR || this.riding;
-    const m = new THREE.Matrix4(), p = new THREE.Vector3(), d = new THREE.Vector3(), up = new THREE.Vector3(), tgt = new THREE.Vector3(), pp = new THREE.Vector3();
+    const m = new THREE.Matrix4(), p = new THREE.Vector3(), d = new THREE.Vector3(), up = new THREE.Vector3(), tgt = new THREE.Vector3(), pp = new THREE.Vector3(), sdv = new THREE.Vector3();
     const leadCount = {}; for (const k of TYPES) leadCount[k] = 0;
     let nc = 0, nb = 0;
     const camPos = this.G.camera.position;
@@ -815,11 +948,17 @@ export class NetRenderer {
     for (const tr of this.trains) {
       const l = tr.line; if (!this.layerVisible[l.type]) continue;
       const { s, dir } = this.trainS(tr, gt);
-      const spacing = 1.35;
+      // the crossing cinematic's own consist rides this lane now: the line's trains going the same way step aside
+      if (this.cineTrain && this.cineHide?.get(l.id) === dir) continue;
+      const spacing = 1.35, stop = Math.min(END_STOP, l.len * 0.2);
       const moving = !(s <= 0.001 || s >= l.len - 0.001) && !l.stopped;
       for (let c = 0; c < tr.cars; c++) {
         const sc = s - dir * c * spacing;
+        // a car still inside the station (the consist pulling out) isn't drawn: piled up on the station point it
+        // would sit inside the cars of every other line that ends there
+        if (c > 0 && (sc < stop - 1e-3 || sc > l.len - stop + 1e-3)) continue;
         sampleAt(l, sc, p, d); if (dir < 0) d.negate();
+        p.addScaledVector(sideAt(l, sc, sdv), dir * (DIR_LANE[l.type] || 0)); // its direction's lane
         // up: radial, except on vertical runs (shafts) where we pick a stable perpendicular
         up.copy(p).normalize(); if (Math.abs(up.dot(d)) > 0.95) up.set(0, 1, 0).cross(d).normalize();
         m.lookAt(tgt.copy(p).add(d), p, up); m.setPosition(p.x - up.x * 0.3, p.y - up.y * 0.3, p.z - up.z * 0.3);
@@ -843,7 +982,7 @@ export class NetRenderer {
           this.effect(l.type, p, d, up, c, dt);
           if (l.type === 'surface' && c < tr.cars - 1 && nBolt < 1950) {
             // lightning arc to the next car and down to the seam
-            sampleAt(l, sc - dir * spacing, pp, null);
+            sampleAt(l, sc - dir * spacing, pp, null); pp.addScaledVector(sideAt(l, sc - dir * spacing, sdv), dir * (DIR_LANE[l.type] || 0));
             nBolt = this.boltLine(bolt, nBolt, p, pp, up, 0.25);
             if (Math.random() < 0.5) nBolt = this.boltLine(bolt, nBolt, p, p.clone().addScaledVector(up, -0.9), d, 0.15);
           }
@@ -1015,7 +1154,7 @@ export class NetRenderer {
   applyXray() {
     const on = this.xray > 0.5;
     // X-ray: the fire chord and its trains draw over the opaque core (outside X-ray the crust must still hide them)
-    this.mats.fire.depthTest = !on; this.mats.fire.uniforms.uWidth.value = on && !this.inside ? 0.8 : this.inside ? 1.4 : 0.55;
+    this.mats.fire.depthTest = !on; this.mats.fire.uniforms.uWidth.value = on && !this.inside ? 0.8 : this.inside ? 1.4 : 0.7;
     if (this.xpins) this.xpins.visible = on && this.layerVisible.fire;
     const fade = Math.max(0, 1 - this.xray * 1.6);
     for (const t of Object.keys(UNDERGROUND)) {
@@ -1034,7 +1173,7 @@ export class NetRenderer {
   }
   setInside(on) {
     if (this.inside === on) return; this.inside = on;
-    this.mats.earth.uniforms.uWidth.value = on ? 0.8 : 0.55;
+    this.mats.earth.uniforms.uWidth.value = on ? 0.8 : 0.7;
     for (const o of [this.beams, this.sleepers, this.piers, this.collars, this.portals, this.terminal, this.walkGroup]) o.visible = !on;
     this.applyXray();
   }
@@ -1214,7 +1353,9 @@ export class NetRenderer {
     const l = pose.tr.line; const ty = l.type;
     const back = ty === 'space' ? 9 : ty === 'sky' ? 8 : 6.5, upo = ty === 'space' ? 4.5 : ty === 'sky' ? 3 : ty === 'water' ? 1.6 : 2.4;
     // positions taken along the path itself (behind and ahead of the train), so the camera bends smoothly with the rail
-    const sd = pose.sdir; const at = (ds) => { const q = new THREE.Vector3(); sampleAt(l, pose.s + sd * ds, q, null); return q; };
+    // ... in the train's own lane
+    const sd = pose.sdir, lane = sd * (DIR_LANE[ty] || 0), sv = new THREE.Vector3();
+    const at = (ds) => { const q = new THREE.Vector3(); sampleAt(l, pose.s + sd * ds, q, null); return q.addScaledVector(sideAt(l, pose.s + sd * ds, sv), lane); };
     const behind = at(-back), ahead = at(9), up = pose.up.clone();
     const upB = behind.clone().normalize(); if (Math.abs(upB.dot(pose.dir)) > 0.95) upB.copy(up);
     const pos = behind.addScaledVector(upB, upo);
@@ -1235,14 +1376,83 @@ export class NetRenderer {
     if (below && ty !== 'water' && pos.length() > 98) pos.setLength(98);
     return { pos, look, up, below: below && ty !== 'water', water: ty === 'water' && pos.length() < 100 };
   }
-  /** Attract camera: ride a random line for 15 s. */
+  /**
+   * Attract camera (title, and the pause menu left idle). Every other ride is the core crossing when the network
+   * has one (down a shaft, across the core on the fire line, up the far shaft), shown in the proper below-ground
+   * scene; the rest ride a random above-ground line (surface, sky, water, space) for 15 s. Underground lines are
+   * never ridden on their own. While a ride runs, `attractPose` carries the pose flags (below, water) that main.js
+   * turns into the below-ground scene (X-ray clip, rock interior, core, city surface hidden) or the underwater look.
+   * Returns { dur } or null.
+   */
   attractRide(cam) {
-    if (!this.lines.length) return false;
-    const pick = this.lines[Math.floor(Math.random() * this.lines.length)];
-    this.riding = true;
-    cam.startFollow(() => this.ridePose(pick.id, 0) || null);
-    setTimeout(() => { this.riding = false; }, 15500);
-    return true;
+    if (!this.lines.length) return null;
+    this.attractN = (this.attractN || 0) + 1;
+    const chain = this.attractN % 2 === 1 ? this.crossingChain() : null;
+    if (chain) {
+      const { pts, ptype, cum, total } = chain; const dur = 13;
+      const at = (q) => { q = Math.max(0, Math.min(total, q)); let i = 1; while (i < cum.length - 1 && cum[i] < q) i++; const t = (q - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); return pts[i - 1].clone().lerp(pts[i], t); };
+      const idx = (q) => { let i = 1; while (i < cum.length - 1 && cum[i] < q) i++; return i; };
+      const c = { t0: this.time, dur };
+      this.riding = true; this.attractActive = true;
+      cam.startFollow(() => {
+        // the same framing as the game's crossing cinematic: beside and a little above a consist that runs ahead
+        const u = Math.min(1, (this.time - c.t0) / dur); const e2 = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+        const q = e2 * (total - 9); const p = at(q), ahead = at(q + 3.5);
+        const ts = q + 3; const cars = [];
+        for (let k = 0; k < 4; k++) { const a = at(ts - k * 1.35), b2 = at(ts - k * 1.35 + 0.5); cars.push({ p: a, d: b2.clone().sub(a).normalize() }); }
+        this.cineTrain = { type: ptype[idx(ts)] || 'earth', cars };
+        const dir = ahead.clone().sub(p).normalize();
+        let up = p.clone().normalize(); if (Math.abs(up.dot(dir)) > 0.9) up = new THREE.Vector3(0, 1, 0).cross(dir).normalize();
+        const side = new THREE.Vector3().crossVectors(dir, up).normalize();
+        const pose = { pos: p.clone().addScaledVector(dir, -0.5).addScaledVector(up, 1.5).addScaledVector(side, 3.4), look: ahead, up, below: true, water: false };
+        this.attractPose = pose; return pose;
+      });
+      return { dur: dur + 0.3, crossing: true };
+    }
+    const above = this.lines.filter((l) => !UNDERGROUND[l.type] && l.type !== 'deep' && this.layerVisible[l.type] && !l.stopped);
+    if (!above.length) return null;
+    const pick = above[Math.floor(Math.random() * above.length)];
+    // a train that is moving (not dwelling at either end), if any
+    const poses = (this.trainPoses || []).filter((x) => x.tr.line.id === pick.id);
+    const mv = poses.find((x) => x.s > 0.5 && x.s < pick.len - 0.5);
+    const ti = mv ? mv.tr.i : 0;
+    this.riding = true; this.attractActive = true;
+    cam.startFollow(() => { const pose = this.ridePose(pick.id, ti); this.attractPose = pose; return pose || null; });
+    return { dur: 15, line: pick.id, type: pick.type };
+  }
+  /** A line's rail in the lane of one direction of travel, in travel order (forward = sample order). */
+  laneSamples(lineId, forward = true) {
+    const l = this.lineById.get(lineId); if (!l?.side) return null;
+    const k = (forward ? 1 : -1) * (DIR_LANE[l.type] || 0);
+    const out = l.samples.map((p, i) => { const sd = l.side[i]; return [p[0] + sd[0] * k, p[1] + sd[1] * k, p[2] + sd[2] * k]; });
+    return forward ? out : out.reverse();
+  }
+  endAttractRide() {
+    if (!this.attractActive) return;
+    this.attractActive = false; this.riding = false; this.cineTrain = null; this.cineHide = null; this.attractPose = null;
+  }
+  /** The core crossing for the attract camera: shaft down, fire chord, shaft up, chained end to end (or null). */
+  crossingChain() {
+    const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 3;
+    const ends = (l) => [l.samples[0], l.samples[l.samples.length - 1]];
+    const shafts = this.lines.filter((l) => l.type === 'earth' && l.shaft && this.layerVisible.earth);
+    for (const f of this.lines.filter((l) => l.type === 'fire' && this.layerVisible.fire)) {
+      const [fa, fb] = ends(f);
+      const down = shafts.find((l) => ends(l).some((e) => near(e, fa)));
+      const up = shafts.find((l) => l !== down && ends(l).some((e) => near(e, fb)));
+      if (!down || !up) continue;
+      // each leg in the lane of its direction of travel: down the shaft (top first), across, up the far shaft
+      const fwdDown = V(down.samples[0]).length() >= V(down.samples[down.samples.length - 1]).length();
+      const fwdUp = V(up.samples[0]).length() <= V(up.samples[up.samples.length - 1]).length();
+      const legs = [['earth', this.laneSamples(down.id, fwdDown)], ['fire', this.laneSamples(f.id, true)], ['earth', this.laneSamples(up.id, fwdUp)]];
+      this.cineHide = new Map([[down.id, fwdDown ? 1 : -1], [f.id, 1], [up.id, fwdUp ? 1 : -1]]);
+      const pts = [], ptype = [];
+      for (const [ty, arr] of legs) for (const q of arr) { pts.push(V(q)); ptype.push(ty); }
+      const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+      const total = cum[cum.length - 1]; if (total < 20) continue;
+      return { pts, ptype, cum, total };
+    }
+    return null;
   }
 }
 
@@ -1271,4 +1481,4 @@ function makeMarker(color) {
   return g;
 }
 
-export { sampleAt, lengths };
+export { sampleAt, sideAt, lengths, DIR_LANE };
