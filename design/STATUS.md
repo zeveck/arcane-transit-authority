@@ -60,7 +60,6 @@
 - Plans page: yes (card added 2026-11-20; Published 2026-11-21: https://synapticnoise.com/plans/ ; plan files in zeveck/synapticnoise plans/arcane-transit-authority/, design page https://synapticnoise.com/plans/arcane-transit-authority/)
 - Shared design comments (read 2026-11-20): none
 - Published: https://arcanetransitauthority.synapticnoise.com (repo https://github.com/zeveck/arcane-transit-authority, public, making-of; design/mockups and design/screenshots kept out). Gallery: zeveck/synapticnoise, at the top.
-- GitHub preview image: to upload (none set)
 
 ## Phases
 
