@@ -149,7 +149,8 @@ function pageScript(sol) {
         const i = cards.findIndex((c) => c.kind === a.kind && c.feasible);
         if (i < 0) fail('no feasible ' + a.kind + ' card');
         await page.hover('.rcard[data-i="' + i + '"]'); await step(0);
-        await page.click('.rcard[data-i="' + i + '"]'); await step(0);
+        // the card's Build button (Plan it sits beside it; a click on the card body could land on it)
+        await page.click('.rcard[data-i="' + i + '"] [data-build]'); await step(0);
         if ((await logLen()) === n0) fail('card click did not build: ' + JSON.stringify(await ev((i) => ({ card: __game.routeCards()[i], hi: __game.state().highlighted, cardsOpen: __game.state().cards, money: Math.round(__game.state().money), toasts: [...document.querySelectorAll('#hud-root .toast')].map((t) => t.textContent), dispatch: [...document.querySelectorAll('#hud-root .dispatch')].map((t) => t.innerText.slice(0, 120)) }), i)));
       } else if (a.type === 'addTrain' || a.type === 'removeTrain') {
         await clearUi(); await page.keyboard.press('Slash'); await step(0);

@@ -3,7 +3,7 @@
 // and the inherited network. A card's numbers come from trial-applying its plan to the live network and
 // rolling it back (the same geometry and capacity code the sim uses).
 
-import { TYPES, CHARTERS, REGIONS, SIM, PLANET, TRAINS_PER_NEW_LINE, INTERCHANGE_LAYER_FEE, VIADUCT_TRACK_MULT, VIADUCT_MAX_OCEAN, TRANSFER, EARTH_LONG_CHORD, SHAFT_TRAINS } from './tuning.js';
+import { TYPES, CHARTERS, REGIONS, SIM, PLANET, TRAINS_PER_NEW_LINE, INTERCHANGE_LAYER_FEE, VIADUCT_TRACK_MULT, VIADUCT_MAX_OCEAN, TRANSFER, EARTH_LONG_CHORD, SHAFT_TRAINS, TUTORIAL } from './tuning.js';
 import { TERRAIN, hexDistances, isWater, cellMeta } from './planet.js';
 import { angleDeg, angleRad, gcDist, dot } from './geo.js';
 import { Heap, computePaths } from './paths.js';
@@ -71,9 +71,9 @@ export function applyOps(g, ops, { inherited = false } = {}) {
         S.lines.push({ id, type: op.type, a: res(op.a), b: res(op.b), trains: op.trains ?? TRAINS_PER_NEW_LINE, shaft: !!op.shaft, cells: op.cells || null,
           slot: op.slot || 0, skyExtra: op.skyExtra || 0, portal: op.portal || [0, 0], ring: op.ring || null, inherited, built: S.time, closed: false, broken: null, core: !!op.coreRoute });
         refs[op.ref || ('L' + id)] = id;
+        if (op.type === 'fire' && !inherited) S.firstCrossingUsed = true; // "a core route has been built" (the first-crossing cinematic)
         break;
       }
-      case 'firstCrossing': S.firstCrossingUsed = true; break;
     }
   }
   g.invalidate();
@@ -213,11 +213,13 @@ function planSurface(g, A, B, opts = {}) {
   let slot = 0;
   for (const l of liveLines(g)) if (l.type === 'surface' && l.cells) { for (let i = 0; i < l.cells.length - 1; i++) if (pairs.has(Math.min(l.cells[i], l.cells[i + 1]) + ':' + Math.max(l.cells[i], l.cells[i + 1]))) { slot++; break; } }
   const stationDemolished = []; // Surface stations no longer demolish their own cell (round 2)
-  const ops = [...ea.ops, ...eb.ops, { op: 'demolish', cells: demolishCells }, { op: 'line', type: 'surface', a: ea.ref, b: eb.ref, cells: path, slot, ref: 'L1' }];
+  // the tutorial's first line starts with TUTORIAL.firstLineTrains (1) so it gets busy: the add-a-train lesson
+  const nTrains = g.s.tutorial && !liveLines(g).length ? TUTORIAL.firstLineTrains : TRAINS_PER_NEW_LINE;
+  const ops = [...ea.ops, ...eb.ops, { op: 'demolish', cells: demolishCells }, { op: 'line', type: 'surface', a: ea.ref, b: eb.ref, cells: path, slot, ref: 'L1', trains: nTrains }];
   return {
     kind: 'surface', feasible: true, ops, legs: [{ ref: 'L1', type: 'surface' }], interior: [],
     fixedCost: ea.cost + eb.cost + demolition, demolition, stationsCost: ea.cost + eb.cost - stationDemolished.reduce((s, c) => s + demolitionPrice(g, c, true), 0),
-    trackRate: { L1: tm }, oceanCells, trains: trainCost(g, 'surface'), demolishCells: [...stationDemolished, ...demolishCells],
+    trackRate: { L1: tm }, oceanCells, trains: trainCost(g, 'surface', nTrains), demolishCells: [...stationDemolished, ...demolishCells],
     newStations: ea.newStations + eb.newStations, layersAdded: ea.layersAdded + eb.layersAdded,
   };
 }
@@ -387,9 +389,7 @@ function planCore(g, A, B) {
   legs.push(b.newShaft ? { ref: b.newShaft, type: 'earth' } : { line: b.existingShaft?.id, type: 'earth' });
   interior.push(a.core, b.core);
   const tm = TYPES.fire.track * g.mods.trackCost.fire * pm(g);
-  const grant = g.s.mandates.includes('firstCrossing') && !g.s.firstCrossingUsed;
-  if (grant) ops.push({ op: 'firstCrossing' });
-  return { kind: 'core', feasible: true, ops, legs: legs.filter((l) => l.ref || l.line != null), interior, fixedCost: fixed, stationsCost, trackRate: { F: tm }, trains, demolishCells: [], newStations, layersAdded, free: grant, angle: ang };
+  return { kind: 'core', feasible: true, ops, legs: legs.filter((l) => l.ref || l.line != null), interior, fixedCost: fixed, stationsCost, trackRate: { F: tm }, trains, demolishCells: [], newStations, layersAdded, angle: ang };
 }
 
 function planSpace(g, A, B) {
@@ -431,6 +431,9 @@ function evaluate(g, plan, { withExports = true } = {}) {
   const before = withExports ? g.exportsReachable() : 0;
   const genB = withExports ? g.generation() : null, compB = withExports ? components(g) : null;
   const upkeep0 = g.upkeepPerMin ? g.upkeepPerMin() : 0;
+  // demolition losses: what each demolished block makes now, if a station serves it now or the new stations would
+  const lossCells = withExports && g.cellYield ? (plan.demolishCells || []) : [];
+  const lossYield = lossCells.map((c) => g.cellYield(c));
   const { refs, changes } = applyOps(g, plan.ops);
   try {
     const res = (x) => (typeof x === 'string' ? refs[x] : x);
@@ -473,8 +476,17 @@ function evaluate(g, plan, { withExports = true } = {}) {
     else running += (plan.newStations || 0) * 2 + (plan.layersAdded || 0) * 2;
     running = Math.round(running * 100) / 100;
     const after = withExports ? g.exportsReachable() : 0;
-    const cost = plan.free ? 0 : Math.round(plan.fixedCost + track + plan.trains);
+    const cost = Math.round(plan.fixedCost + track + plan.trains);
     const potential = Math.max(0, after - before);
+    let ridersLost = 0, exportsLost = 0;
+    if (lossCells.length) {
+      const genA = g.generation(), compA = components(g);
+      lossCells.forEach((c, i) => {
+        const was = genB.cover.get(c) || [], would = genA.cover.get(c) || [];
+        if (was.length || would.length) ridersLost += lossYield[i].riders;
+        if (was.some((id) => compB.comp.get(id) === compB.terminal) || would.some((id) => compA.comp.get(id) === compA.terminal)) exportsLost += lossYield[i].exports;
+      });
+    }
     // the new exports must also get through the existing network to the Terminal (full interchanges, busy lines)
     const route = withExports && potential > 0 ? exportRoute(g, changes, genB, compB) : null;
     const reach = route ? route.gain : Infinity;
@@ -483,6 +495,7 @@ function evaluate(g, plan, { withExports = true } = {}) {
     const exportsNote = withExports ? exportOutcome(g, plan, refs, changes, { potential, gain: exportsGain, carries, limit: pathLimit || limit, pathLimited: !!pathLimit, genB, compB }) : null;
     return {
       cost, carries: Math.round(isFinite(carries) ? carries : 0), exportsGain, exportsPotential: Math.round(potential), exportsNote, tripTime: Math.round(time),
+      ridersLost: Math.round(ridersLost * 10) / 10, exportsLost: Math.round(exportsLost * 10) / 10,
       runningCost: running, runningBreakdown: { trains: trainsRun, stations: Math.round((running - trainsRun) * 100) / 100 }, trackUnits, trackMiles: Math.round(trackUnits * 50), legs, transfers, preview,
       breakdown: { track: Math.round(track), stations: Math.round(plan.stationsCost || 0), demolition: Math.round(plan.demolition || 0), blocks: plan.demolishCells.length, trains: plan.trains },
     };
@@ -602,7 +615,7 @@ function planHybrid(g, A, B, singles) {
           ops: [...ps.ops, ...pl.ops], legs: [...ps.legs, ...pl.legs], interior: [S.id, ...pl.interior],
           fixedCost: legS.fixedCost + legL.fixedCost, stationsCost: (legS.stationsCost || 0) + (legL.stationsCost || 0), demolition: legS.demolition,
           trackRate: { ...ps.trackRate, ...pl.trackRate }, oceanCells: legS.oceanCells, trains: legS.trains + legL.trains,
-          demolishCells: legS.demolishCells, newStations: legS.newStations + legL.newStations, layersAdded: legS.layersAdded + legL.layersAdded, free: false,
+          demolishCells: legS.demolishCells, newStations: legS.newStations + legL.newStations, layersAdded: legS.layersAdded + legL.layersAdded,
         };
       }
     }
@@ -643,7 +656,8 @@ export function routeCards(g, a, b, { withExports = true, kinds = CARD_KINDS } =
     const p = plans[kind];
     out.push({
       kind, name: CARD_NAMES[kind], type: TYPE_OF_KIND[kind] || null, feasible: !!p.feasible, locked: !!p.locked, lockTech: p.lockTech || null, reason: p.feasible ? null : p.reason,
-      cost: p.cost ?? null, free: !!p.free, carries: p.carries ?? null, exportsGain: p.exportsGain ?? 0, exportsPotential: p.exportsPotential ?? 0, exportsNote: p.feasible ? (p.exportsNote ?? null) : null, demolishes: p.demolishCells?.length || 0,
+      cost: p.cost ?? null, free: false, carries: p.carries ?? null, exportsGain: p.exportsGain ?? 0, exportsPotential: p.exportsPotential ?? 0, exportsNote: p.feasible ? (p.exportsNote ?? null) : null, demolishes: p.demolishCells?.length || 0,
+      ridersLost: p.ridersLost ?? 0, exportsLost: p.exportsLost ?? 0,
       demolishCells: p.demolishCells || [], tripTime: p.tripTime ?? null, runningCost: p.runningCost ?? null, runningBreakdown: p.runningBreakdown || null, trackMiles: p.trackMiles ?? null, breakdown: p.breakdown || null,
       legs: p.legs || [], transfers: p.transfers || [], bestAt: BEST_AT[kind], tags: [], preview: p.preview || [], via: p.via ?? null, plan: p.feasible ? { ops: p.ops } : null,
       line: p.feasible ? cardLine(kind, p) : (p.reason || ''),
@@ -666,9 +680,14 @@ function hybridFullReason(g, h) {
   if (leg) return `The ${leg.line != null && g.s.lines[leg.line] ? lineName(g, leg.line) : leg.shaft ? 'shaft' : leg.type + ' line'} it joins is already full`;
   return 'The link it joins is already full';
 }
+/** The card's red demolition line: "demolishes 3 blocks: −12 riders/min, −2 exports/min" or "demolishes 3 unserved blocks". */
 function cardLine(kind, p) {
-  if (kind === 'surface' || (kind === 'hybrid' && p.demolishCells?.length)) return `demolishes ${p.demolishCells.length} block${p.demolishCells.length === 1 ? '' : 's'}`;
-  if (p.free) return 'FREE: the Homeworld funds your first crossing';
+  if (kind === 'surface' || (kind === 'hybrid' && p.demolishCells?.length)) {
+    const n = p.demolishCells.length, r = Math.round(p.ridersLost || 0), x = Math.round(p.exportsLost || 0);
+    if (!n) return 'demolishes 0 blocks';
+    if (!r && !x) return `demolishes ${n} unserved block${n === 1 ? '' : 's'}`;
+    return `demolishes ${n} block${n === 1 ? '' : 's'}: \u2212${r} riders/min, \u2212${x} exports/min`;
+  }
   return '';
 }
 
@@ -703,7 +722,7 @@ export function buildInheritedNetwork(g, rng) {
     const sa = g.s.stations.find((s) => s && s.cell === pick[i]);
     const sb = g.s.stations.find((s) => s && s.cell === pick[i + 1]);
     const cards = routeCards(g, sa ? { station: sa.id } : pick[i], sb ? { station: sb.id } : pick[i + 1], { withExports: false, kinds })
-      .filter((c) => c.feasible && !c.free);
+      .filter((c) => c.feasible);
     if (!cards.length) continue;
     const best = cards.reduce((m, c) => (c.cost < m.cost ? c : m));
     // never link to the Terminal's component

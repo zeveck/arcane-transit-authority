@@ -13,6 +13,7 @@ import { Hud } from './hud.js';
 import { Story } from './story.js';
 import { Meta } from './meta.js';
 import * as names from './names.js';
+import { fmtMoney } from './fmt.js';
 
 const R = 100;
 const SPEEDS = [1, 2, 4];
@@ -85,7 +86,7 @@ export class Game {
     const st = this.sim.state();
     return { kind, termId: this.termId, thumb: this.thumbnail(kind === 'manual'),
       info: { charter: st.charter, region: st.region, time: st.time, throughput: Math.round(st.throughput || 0), tutorial: !!st.tutorial && !!this.story.tut, freePlay: !!st.freePlay },
-      data: { sim: this.sim.snapshot(), opts: this.termOpts, story: this.story.saveState() } };
+      data: { sim: this.sim.snapshot(), opts: this.termOpts, story: this.story.saveState(), plan: this.plan ? { a: this.plan.a, b: this.plan.b, kind: this.plan.kind, at: this.plan.at } : null } };
   }
   /** A small picture of the planet for the slot list (~160×100 JPEG), refreshed at most every 2 minutes for autosaves. */
   thumbnail(fresh = false) {
@@ -126,7 +127,8 @@ export class Game {
     this.termOpts = restored?.opts || opts;
     this.speedIdx = 0; this.paused = false; this.pauseReasons.clear();
     this.tool = 'route'; this.clearRoute(); this.selection = null; this.flow = false; this.xrayUser = false; this.xrayAuto = false;
-    this.ride = null; this.cinematic = null; this.prevSpeed = null; this.allClearAt = null;
+    this.ride = null; this.cinematic = null; this.prevSpeed = null; this.allClearAt = null; this.rideThrough = null;
+    this.plan = null; G.net.setPlanGhost(null); G.net.setHeldCrates([]);
     this.layers = Object.fromEntries(TYPE_ORDER.map((t) => [t, true]));
     for (const t of TYPE_ORDER) G.net.setLayer(t, true);
     G.net.setFlow(false); G.net.useGameTime = true;
@@ -150,6 +152,8 @@ export class Game {
     G.cam.flyTo(V(this.cells[start].pos), 175, 2.2);
     this.hud.enter(st);
     this.story.enter(sim, { tutorial: st.tutorial, restored: !!restored, story: restored?.story });
+    if (restored?.plan) this.setPlan(restored.plan); // the planned project is saved with the term
+    this.hud.updatePlan();
     audio.playMusic('build');
     // a term saved mid-disaster comes back with its warning (Brace / Reroute) or damage report on screen
     if (restored) { const d = sim.disasters(); if (d?.warning) { this.hud.disasterWarning(); audio.playMusic('disaster'); } else this.hud.disasterRefresh(); }
@@ -160,7 +164,7 @@ export class Game {
   /** End a Ride or the crossing cinematic without any fly-to or story step (leaving play, pausing, end screens). */
   stopCameraModes() {
     if (this.ride) this.exitRide(true);
-    if (this.cinematic) { this.cinematic = null; this.G.net.cineTrain = null; this.G.net.cineHide = null; this.G.cam.exitFollow(); this.xrayAuto = false; this.applyXray(); this.hud.setCinematic(false); if (this.story.tut?.step === 3) this.story.afterCrossing?.(); }
+    if (this.cinematic) { const first = this.cinematic.first; this.cinematic = null; this.G.net.endCrossing(); this.G.cam.exitFollow(); this.xrayAuto = false; this.applyXray(); this.hud.setCinematic(false); this.hud.caption(null); if (first) this.story.afterCrossing?.(true); }
     this.G.net.riding = false; this.setUnderwater(false); this.hud.setRiding(null); audio.ambience('amb-deep', 0);
   }
   leavePlay() {
@@ -169,6 +173,7 @@ export class Game {
     this.playing = false; this.sim = null;
     this.hud.leave(); this.story.leave();
     this.G.net.useGameTime = false; this.G.net.setPriority([]); this.G.net.setGhost(null); this.G.net.setSelected(null);
+    this.plan = null; this.G.net.setPlanGhost(null); this.G.net.setHeldCrates([]); this.hud.updatePlan();
     this.G.net.setPin('A', null); this.G.net.setPin('B', null);
     this.G.city.clearOutlines();
     for (let i = 0; i < 642; i++) { if (this.cityState?.demolished[i] || this.cityState?.green[i]) { this.G.city.setCellCleared(i, false, false); this.G.city.setGreen(i, null); this.G.city.tintCell(i, null); } }
@@ -254,7 +259,9 @@ export class Game {
       this.lastTurned.set(x.id, x.turnedAway || 0);
       if (dlt > 0 && x.kind !== 'core') this.hud.popup(V(x.pos), `−${dlt} turned away`, 'bad');
     }
-    // money pop-ups: income since last tick, at up to 3 busy stations a second
+    // the planned project: its card is dealt again every 5 s (price, exports), its chip every tick; held crates every 2 s
+    if (this.plan && st.time % 5 === 0) this.refreshPlan();
+    if (st.time % 2 === 0 && !this.cinematic) this.updateCrates();
     this.lastMoney = st.money;
     this.hud.tick(st);
     this.story.tick(st);
@@ -267,7 +274,7 @@ export class Game {
     const top = list.filter((d) => d.fare > 0.5).sort((a, b) => b.fare - a.fare || a.station - b.station).slice(0, 3);
     if (!top.length) return;
     const st = new Map(this.sim.stations().map((x) => [x.id, x]));
-    for (const d of top) { const x = st.get(d.station); if (x && x.kind !== 'core') this.hud.popup(V(x.pos), '+$' + Math.round(d.fare)); }
+    for (const d of top) { const x = st.get(d.station); if (x && x.kind !== 'core') this.hud.popup(V(x.pos), fmtMoney(d.fare, { sign: true })); }
     audio.sfx('money-chime', { minGap: 0.34, gain: 0.5 });
   }
   moneyPops(amount) {
@@ -276,7 +283,7 @@ export class Game {
     const n = Math.min(3, busy.length);
     for (let i = 0; i < n; i++) {
       const s = busy[(this.sim.s.time + i) % busy.length];
-      this.hud.popup(V(s.pos), `+$${Math.round(amount / n)}`);
+      this.hud.popup(V(s.pos), fmtMoney(amount / n, { sign: true }));
     }
     audio.sfx('money-chime', { minGap: 0.34, gain: 0.5 });
   }
@@ -319,6 +326,8 @@ export class Game {
     if (l) setTimeout(() => audio.sfx('depart-' + l.type, { minGap: 1 }), 900);
     if (e.firstCrossing) this.startCrossingCinematic(e);
     this.story.onBuilt(e);
+    if (this.plan) this.refreshPlan();
+    if (!this.cinematic) this.updateCrates();
   }
   onQuota(e) {
     this.hud.quotaMet(e);
@@ -533,12 +542,80 @@ export class Game {
     if (!this.story.cardAllowed(c)) { audio.sfx('ui-error'); return; }
     const res = this.sim.act({ type: 'buildRoute', a: r.a, b: r.b, kind: c.kind });
     if (!res.ok) { audio.sfx('ui-error'); this.hud.toast(res.reason || 'Can\'t build that.', 'error'); return; }
+    if (this.plan && this.plan.kind === c.kind && samePlace(this.plan.a, r.a) && samePlace(this.plan.b, r.b)) this.setPlan(null);
     this.handleEvents(this.sim.drainEvents());
-    this.hud.spent(res.cost, res.free);
+    this.hud.spent(res.cost);
     this.hud.showUndo();
     this.clearRoute();
     this.select(null);
     this.story.afterBuild?.(c, res);
+  }
+
+  // ------------------------------------------------------------------ Plan it (one planned project; the sim reserves nothing)
+  /** Pin route card i as the planned project: its ghost stays drawn and the HUD chip counts the money down. */
+  planCard(i) {
+    const r = this.route; const c = r.cards?.[i];
+    if (!c?.feasible) { audio.sfx('ui-error'); return; }
+    const replaced = !!this.plan;
+    this.setPlan({ a: r.a, b: r.b, kind: c.kind }, c);
+    audio.sfx('build-confirm', { gain: 0.5 });
+    this.clearRoute(); this.select(null);
+    if (replaced || !this.story.tut) this.hud.toast(replaced ? 'Plan replaced: one planned project at a time.' : 'Planned. The chip shows the price and the wait; it turns gold when you can build.', 'info');
+    this.showPlan();
+    this.story.onPlan?.(this.plan);
+  }
+  /** Set (or clear, with null) the planned project. `card` is its dealt card, if at hand; else it is dealt now. */
+  setPlan(p, card = null) {
+    this.plan = p ? { a: p.a, b: p.b, kind: p.kind, at: p.at ?? this.sim?.s.time ?? 0, card } : null;
+    if (this.plan && !card) this.refreshPlan(); else this.applyPlan();
+  }
+  refreshPlan() {
+    const p = this.plan; if (!p || !this.sim) return;
+    let cards = []; try { cards = this.sim.routeCards(p.a, p.b); } catch { cards = []; }
+    p.card = cards.find((c) => c.kind === p.kind) || null;
+    this.applyPlan();
+  }
+  applyPlan() {
+    const c = this.plan?.card;
+    this.G.net.setPlanGhost(c?.feasible && c.preview?.length ? c.preview.map((q) => ({ type: q.type, samples: toArr(q.samples) })) : null);
+    this.hud.updatePlan();
+  }
+  /** The plan chip's Build: the same action as the card's Build. */
+  buildPlan() {
+    const p = this.plan; if (!p || !this.sim || this.cinematic) return;
+    this.refreshPlan(); const c = p.card;
+    if (!c?.feasible) { audio.sfx('ui-error'); this.hud.toast(c?.reason || c?.line || 'That route can\'t be built now.', 'error'); return; }
+    if (!this.story.cardAllowed(c)) { audio.sfx('ui-error'); return; }
+    const res = this.sim.act({ type: 'buildRoute', a: p.a, b: p.b, kind: p.kind });
+    if (!res.ok) { audio.sfx('ui-error'); this.hud.toast(res.reason || 'Can\'t build that yet.', 'error'); return; }
+    this.setPlan(null);
+    this.clearRoute(); this.select(null);
+    this.handleEvents(this.sim.drainEvents());
+    this.hud.spent(res.cost);
+    this.hud.showUndo();
+  }
+  cancelPlan() { if (!this.plan) return; this.setPlan(null); audio.sfx('ui-cancel'); this.updateCrates(); this.story.onPlan?.(null); }
+  /** Frame the planned route (the chip's name). */
+  showPlan() {
+    const p = this.plan; if (!p) return;
+    const pa = this.placePos(p.a), pb = this.placePos(p.b); if (!pa || !pb) return;
+    const mid = pa.clone().normalize().add(pb.clone().normalize()); if (mid.lengthSq() < 0.01) mid.copy(pa).normalize();
+    this.G.cam.flyTo(mid.normalize(), Math.min(ZOOM.max - 20, 190 + pa.angleTo(pb) * 130), 1.0);
+  }
+  /**
+   * Held exports (cosmetic): while a planned project (or the tutorial's crossing step) waits on the Terminal, crates
+   * stack beside every station that can't reach it yet, a crate every 15 s; a station that gets linked pours them in.
+   */
+  updateCrates() {
+    const sim = this.sim; if (!sim) return;
+    const t = sim.s.time; const since = this.plan?.card?.exportsGain > 0 ? this.plan.at : this.story.cratesSince?.();
+    const all = sim.stations();
+    const list = since == null ? [] : all.filter((s) => s.kind !== 'terminal' && s.kind !== 'core' && s.lines?.length && !s.linkedToTerminal)
+      .map((s) => ({ station: s.id, n: Math.max(1, Math.min(8, 1 + Math.floor((t - since) / 15))) }));
+    const gone = this.G.net.setHeldCrates(list);
+    const linked = gone.filter((r) => all.find((s) => s.id === r.station)?.linkedToTerminal);
+    if (linked.length) this.G.net.pourCrates(linked);
+    return linked;
   }
 
   act(action, okSound = null) {
@@ -677,6 +754,7 @@ export class Game {
   // returns true when the input was used up (leaving a ride, or a skip key ending the cinematic), so it does nothing else;
   // any other key that skips the cinematic still does its own job
   anyInput(kind, code) {
+    if (this.ride && kind === 'key' && (code === 'Enter' || code === 'NumpadEnter') && this.rideThrough) { this.rideOnThrough(); return true; }
     if (this.ride && kind !== 'none') { this.exitRide(); return true; }
     if (this.cinematic && this.cinematic.skippable && kind === 'key') { this.endCinematic(); return ['Escape', 'Space', 'Enter'].includes(code); }
     return false;
@@ -721,7 +799,7 @@ export class Game {
     if (cc && !cc.demolished && (cc.terrain === 'city' || cc.terrain === 'mountain') && !cc.peak && !(cc.stations?.length)) this.demoDrag.add(c);
     const total = [...this.demoDrag].reduce((s, id) => s + (this.sim.cells((q) => q.id === id)[0]?.demolitionPrice || 0), 0);
     this.G.city.outlineCells('tool-drag', [...this.demoDrag], '#ff5a6e', { pulse: true });
-    this.hud.tooltip(x, y, `Demolish ${this.demoDrag.size} · $${Math.round(total).toLocaleString('en-US')}`);
+    this.hud.tooltip(x, y, `Demolish ${this.demoDrag.size} · ${fmtMoney(total)}`);
   }
   dragEnd() {
     if (this.demoDrag) {
@@ -739,8 +817,8 @@ export class Game {
       const cc = this.sim.cells((q) => q.id === c)[0];
       this.G.city.outlineCells('tool-hover', [c], this.tool === 'demolish' ? '#ff5a6e' : this.tool === 'green' ? '#7aa84a' : '#e3ecf7');
       let tip = '';
-      if (this.tool === 'demolish') tip = cc.demolished ? 'Already cleared' : cc.stations?.length ? 'Has a station' : cc.terrain === 'city' || cc.terrain === 'mountain' ? `Demolish: $${Math.round(cc.demolitionPrice).toLocaleString('en-US')} (density ${cc.density})` : 'Nothing to demolish';
-      if (this.tool === 'green') { const g = GREEN[this.greenKind]; tip = cc.stations?.length ? 'A station stands here' : cc.demolished && !cc.green ? `${this.greenKind === 'attraction' ? 'Attraction' : this.greenKind === 'park' ? 'Park' : 'Tree grove'}: $${Math.round(g.price * (CHARTERS[this.sim.s.charter]?.price || 1)).toLocaleString('en-US')}` : 'Green needs a cleared district'; }
+      if (this.tool === 'demolish') tip = cc.demolished ? 'Already cleared' : cc.stations?.length ? 'Has a station' : cc.terrain === 'city' || cc.terrain === 'mountain' ? `Demolish: ${fmtMoney(cc.demolitionPrice)} (density ${cc.density})` : 'Nothing to demolish';
+      if (this.tool === 'green') { const g = GREEN[this.greenKind]; tip = cc.stations?.length ? 'A station stands here' : cc.demolished && !cc.green ? `${this.greenKind === 'attraction' ? 'Attraction' : this.greenKind === 'park' ? 'Park' : 'Tree grove'}: ${fmtMoney(g.price * (CHARTERS[this.sim.s.charter]?.price || 1))}` : 'Green needs a cleared district'; }
       if (this.tool === 'station') tip = `${this.stationKind[0].toUpperCase() + this.stationKind.slice(1)} station here`;
       if (!this.demoDrag) this.hud.tooltip(x, y, tip);
     } else { this.G.city.outlineCells('tool-hover', null); this.hud.tooltip(-1, -1, null); }
@@ -817,6 +895,8 @@ export class Game {
         const below = pose.below; if (below !== this.xrayAuto) { this.xrayAuto = below; this.applyXray(); }
         this.setUnderwater(!!pose.water);
         audio.ambience('amb-deep', below || pose.water ? 0.8 : 0);
+        // riding a shaft down toward its Core Exchange: "ride on through" with the fire consist waiting there
+        if (l.shaft) { const deep = pose.pos.length() < 75; if (deep !== !!this.rideThrough) { this.rideThrough = deep ? this.G.net.chainFromShaft(l.id) : null; this.hud.setRiding(l, !!this.rideThrough); } }
       }
       return pose;
     });
@@ -824,9 +904,15 @@ export class Game {
     this.hud.setRiding(l);
     this.story.interim?.('ride');
   }
+  /** From a shaft Ride: the crossing timeline from the first Core Exchange on (the hand-off, the fire consist, the far shaft). */
+  rideOnThrough() {
+    const chain = this.rideThrough; if (!chain) return;
+    this.exitRide(true);
+    this.startCrossingCinematic(null, { chain, start: 4.2, first: false });
+  }
   exitRide(quiet = false) {
     if (!this.ride) return;
-    this.ride = null; this.G.net.riding = false;
+    this.ride = null; this.G.net.riding = false; this.rideThrough = null;
     this.G.cam.exitFollow();
     // back from street level to an overview of where the train was
     if (!quiet) this.G.cam.flyTo(this.G.camera.position.clone().normalize(), Math.max(210, this.G.cam.dist), 1.0);
@@ -843,61 +929,59 @@ export class Game {
     if (!el) { el = document.createElement('div'); el.id = 'underwater'; el.innerHTML = '<i></i><i></i><i></i>'; document.body.insertBefore(el, document.getElementById('hud-root')); }
     el.classList.toggle('on', on);
   }
-  startCrossingCinematic(e) {
-    // follow the train down shaft A, across the core on the fire line, up shaft B
-    const lines = e.lines.map((id) => this.sim.lines().find((l) => l.id === id)).filter(Boolean);
-    const order = [lines.find((l) => l.shaft && l.a !== 0 && l.b !== 0 && this.sim.stations().find((s) => s.id === l.a)?.kind !== 'terminal') || lines[0], lines.find((l) => l.type === 'fire'), lines.find((l, i) => l.shaft && i > 0 && l !== lines[0])].filter(Boolean);
-    // the drawn rails (render-net may have moved a line into its own lane), so the consist rides what is drawn
-    // the drawn rails (render-net may have moved a line into its own lane), so the consist rides what is drawn
+  /**
+   * The first-crossing cinematic (and ride on through): the shared crossing timeline in render-net.js (~19 s), two
+   * consists and the Core Exchange hand-off at each end. `e` is the built event; returns false when the chain can't
+   * be found (the story advances on the built event anyway).
+   */
+  startCrossingCinematic(e, { chain = null, start = 0, first = true } = {}) {
     const net = this.G.net;
-    const paths = order.map((l) => ({ id: l.id, type: l.type, samples: net.lineById.get(l.id)?.samples || toArr(this.sim.lineSamples(l.id).samples) }));
-    // orient each leg so they chain: the end of one is the start of the next
-    const pts = []; const ptype = []; const hide = new Map();
-    for (const p of paths) {
-      let rev = false; const arr0 = p.samples;
-      if (pts.length) { const last = V(pts[pts.length - 1]); if (V(arr0[arr0.length - 1]).distanceTo(last) < V(arr0[0]).distanceTo(last)) rev = true; }
-      else if (paths[1]) { const f = paths[1].samples; const end0 = V(arr0[arr0.length - 1]); const d0 = Math.min(end0.distanceTo(V(f[0])), end0.distanceTo(V(f[f.length - 1]))); const st0 = V(arr0[0]); const d1 = Math.min(st0.distanceTo(V(f[0])), st0.distanceTo(V(f[f.length - 1]))); if (d1 < d0) rev = true; }
-      // ride in the lane of its direction of travel; the line's own trains going the same way are hidden meanwhile
-      const arr = net.laneSamples?.(p.id, !rev) || (rev ? arr0.slice().reverse() : arr0.slice());
-      hide.set(p.id, rev ? -1 : 1);
-      pts.push(...arr); for (let q = 0; q < arr.length; q++) ptype.push(p.type);
+    if (!chain && e) {
+      const all = this.sim.lines(); const stations = this.sim.stations();
+      const lines = (e.lines || []).map((id) => all.find((l) => l.id === id)).filter(Boolean);
+      const fire = lines.find((l) => l.type === 'fire');
+      const atTerminal = (l) => [l.a, l.b].some((sid) => stations.find((x) => x.id === sid)?.kind === 'terminal');
+      if (fire) {
+        // the shafts at the fire chord's two Core Exchanges (new or reused); down is the one away from the Terminal
+        const at = (sid) => all.find((l) => l.shaft && (l.a === sid || l.b === sid));
+        let down = at(fire.a), up = at(fire.b);
+        if (down && up && atTerminal(down) && !atTerminal(up)) [down, up] = [up, down];
+        if (down && up) chain = net.chainFromLines(down.id, fire.id, up.id);
+      }
     }
-    net.cineHide = hide;
-    if (pts.length < 4) return;
-    const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + V(pts[i]).distanceTo(V(pts[i - 1])));
-    const total = cum[cum.length - 1];
-    const dur = 13;
-    this.cinematic = { t: 0, dur, pts, cum, total, skippable: true, holdSim: false, ptype };
+    if (!chain) return false;
+    const ctl = net.crossingTimeline(chain, { start, onHandoff: (i) => this.onHandoff(i, first) });
+    this.cinematic = { t: 0, dur: ctl.dur - start, ctl, skippable: true, holdSim: false, first, start };
     this.G.closeOverlays();
+    this.select(null);
     this.xrayAuto = true; this.applyXray();
     audio.sfx('core-dive');
-    setTimeout(() => this.cinematic && audio.sfx('core-crossing'), 4500);
-    const at = (s) => { s = Math.max(0, Math.min(total, s)); let i = 1; while (i < cum.length - 1 && cum[i] < s) i++; const t = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); return V(pts[i - 1]).lerp(V(pts[i]), t); };
-    this.G.cam.startFollow(() => {
-      const c = this.cinematic; if (!c) return null;
-      const u = Math.min(1, c.t / c.dur); const e2 = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-      const s = e2 * (total - 9);
-      const p = at(s), ahead = at(s + 3.5);
-      // the train the camera follows: a consist a few units ahead of the camera on the same path
-      const idx = (q) => { let i = 1; while (i < cum.length - 1 && cum[i] < q) i++; return i; };
-      const ts = s + 3; const cars = [];
-      for (let k = 0; k < 4; k++) { const q = ts - k * 1.35; const a = at(q), b2 = at(q + 0.5); cars.push({ p: a, d: b2.clone().sub(a).normalize() }); }
-      this.G.net.cineTrain = { type: c.ptype[idx(ts)] || 'earth', cars };
-      const dir = ahead.clone().sub(p).normalize();
-      let up = p.clone().normalize(); if (Math.abs(up.dot(dir)) > 0.9) up = new THREE.Vector3(0, 1, 0).cross(dir).normalize();
-      const side = new THREE.Vector3().crossVectors(dir, up).normalize();
-      return { pos: p.clone().addScaledVector(dir, -0.5).addScaledVector(up, 1.5).addScaledVector(side, 3.4), look: ahead, up };
-    });
+    this.G.cam.startFollow(() => { const c = this.cinematic; return c ? c.ctl.pose(Math.min(c.t, c.dur)) : null; });
     this.hud.setCinematic(true);
+    return true;
+  }
+  /** A hand-off at a Core Exchange: the crossing sound with the first one; the caption the first time ever. */
+  onHandoff(i, first) {
+    if (i === 0) audio.sfx('core-crossing');
+    if (i === 0 && !save.meta().exchangeSeen) {
+      this.hud.caption('Core Exchange: cargo moves from the earth train to the fire train', 4.5);
+      if (first) save.saveMeta({ exchangeSeen: true });
+    }
   }
   endCinematic() {
     if (!this.cinematic) return;
-    this.cinematic = null; this.G.cam.exitFollow(); this.G.net.cineTrain = null; this.G.net.cineHide = null;
+    const c = this.cinematic;
+    this.cinematic = null; this.G.cam.exitFollow(); this.G.net.endCrossing();
     this.G.cam.dist = Math.max(this.G.cam.dist, 220);
-    this.G.cam.flyTo(V(this.cells[this.meta.terminal].pos), 230, 1.6);
     this.xrayAuto = false; this.applyXray();
-    this.hud.setCinematic(false);
-    this.story.afterCrossing?.();
+    this.hud.setCinematic(false); this.hud.caption(null);
+    if (c.first) {
+      // back up top over the stations whose held exports now pour through the core
+      const poured = this.updateCrates() || [];
+      const st = poured.length ? this.sim.stations().find((x) => x.id === poured[0].station) : null;
+      if (st) this.G.cam.flyTo(V(this.cells[st.cell].pos), 230, 1.6); else this.G.cam.flyTo(V(this.cells[this.meta.terminal].pos), 230, 1.6);
+      this.story.afterCrossing?.();
+    } else this.G.cam.flyTo(this.G.camera.position.clone().normalize(), 230, 1.4);
   }
 
   visuals(dt) {
@@ -926,13 +1010,14 @@ export class Game {
   hash() { return this.sim?.hash() ?? null; }
   stations() { return this.sim?.stations() ?? []; }
   lines() { return this.sim?.lines().map((l) => ({ ...l, cells: undefined })) ?? []; }
-  routeCards() { return (this.route.cards || []).map((c) => ({ kind: c.kind, feasible: c.feasible, locked: c.locked, cost: c.cost, carries: c.carries, exportsGain: c.exportsGain, exportsNote: c.exportsNote, line: c.line, tags: c.tags, free: c.free })); }
+  routeCards() { return (this.route.cards || []).map((c) => ({ kind: c.kind, feasible: c.feasible, locked: c.locked, cost: c.cost, carries: c.carries, exportsGain: c.exportsGain, exportsNote: c.exportsNote, line: c.line, tags: c.tags, demolishes: c.demolishes, ridersLost: c.ridersLost, exportsLost: c.exportsLost, tripTime: c.tripTime })); }
   debugState() {
     const st = this.sim ? this.sim.state() : {};
     return {
       ...st, screen: this.G.screen, playing: this.playing, tool: this.tool, speed: this.speed(), paused: this.isPaused(), pauseReasons: [...this.pauseReasons],
       selection: this.selection, pins: { a: this.route.a, b: this.route.b }, cards: this.route.cards ? this.route.cards.length : 0, highlighted: this.route.hi,
-      flow: this.flow, xrayOn: this.xrayOn(), riding: !!this.ride, cinematic: !!this.cinematic, tutorialStep: this.story.stepId?.() ?? null, tutorialWaiting: this.story.tut?.waiting ?? null,
+      flow: this.flow, xrayOn: this.xrayOn(), riding: !!this.ride, cinematic: !!this.cinematic, tutorialStep: this.story.stepId?.() ?? null, tutorialStepId: this.story.stepName?.() ?? null, tutorialWaiting: this.story.tut?.waiting ?? null,
+      plan: this.plan ? { a: this.plan.a, b: this.plan.b, kind: this.plan.kind, cost: this.plan.card?.cost ?? null, ready: !!(this.plan.card && this.sim?.canAfford?.(this.plan.card.cost)) } : null,
       toolbar: this.story.visibleTools?.(), gameTime: +this.gameTime().toFixed(2),
     };
   }

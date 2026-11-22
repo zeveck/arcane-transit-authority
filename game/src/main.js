@@ -100,6 +100,8 @@ async function boot() {
   try {
     const rn = await import('./render-net.js');
     G.net = new rn.NetRenderer(G);
+    // the title's attract crossing: the Core Exchange caption at the first hand-off, until the player's own first crossing
+    G.net.onAttractHandoff = (i) => { if (i === 0 && !save.meta().exchangeSeen && G.screen !== 'play') titleCaption('Core Exchange: cargo moves from the earth train to the fire train', 4.5); };
   } catch (e) { console.warn('render-net not ready', e?.message); }
   bootMark('net');
   try {
@@ -233,7 +235,16 @@ function attractScene() {
   G.game?.setUnderwater?.(water);
 }
 const baseXray = () => (G.screen === 'play' && G.game ? ((G.game.xrayUser || G.game.xrayAuto) ? 1 : 0) : 0);
+/** A caption at the bottom of the title screen (the attract crossing's hand-off). */
+function titleCaption(text, secs) {
+  let el = document.getElementById('title-caption');
+  if (!el) { el = document.createElement('div'); el.id = 'title-caption'; document.body.appendChild(el); }
+  clearTimeout(titleCaption.t);
+  el.textContent = text; el.hidden = false;
+  titleCaption.t = setTimeout(() => { el.hidden = true; }, secs * 1000);
+}
 function endAttractRide() {
+  const tc = document.getElementById('title-caption'); if (tc) tc.hidden = true;
   if (!G.net?.attractActive) return;
   G.net.endAttractRide();
   if (G.attractBelow) { G.attractBelow = false; G.xrayTarget = baseXray(); }

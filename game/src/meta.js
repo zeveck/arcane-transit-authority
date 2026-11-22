@@ -11,14 +11,15 @@ import { FINALE_DISPATCH } from './story.js';
 import { cellName } from './names.js';
 import * as save from './save.js';
 import * as audio from './audio.js';
+import { fmtMoney } from './fmt.js';
 
 const BOARD_DIST = 420; // the board and setup show the whole globe between their columns
 const ROMAN = { I: 'I', II: 'II', III: 'III', IV: 'IV', V: 'V', VI: 'VI', G: 'Galactic' };
 const REGION_ORDER = ['capital', 'brine', 'rift', 'spires', 'flats', 'ringside'];
-const money = (v) => { const n = Math.round(v); return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US'); };
+const money = (v) => fmtMoney(v);
 // one line for each perk and livery (the Merit Office)
 const PERK_TEXT = {
-  cash: 'Start the term with $3,000 more to build with.',
+  cash: `Start the term with ${fmtMoney(MERITS.perks.find((p) => p.id === 'cash')?.effect?.cash ?? 0)} more to build with.`,
   freeTech: 'Buy any one tech node for nothing.',
   corePair: 'Your first two Core Exchanges cost nothing (one through-the-core route).',
   elevator: 'Start with a Space Elevator already standing at your start district.',
@@ -32,6 +33,10 @@ const LIVERY_TEXT = {
   rust: 'Copper-red lead cars over foundry-brown carriages.',
   verdigris: 'Weathered green copper, sea-green carriages.',
 };
+// Charter I's document (requests 35–37: no free crossing)
+const NO_MANDATE = ['Founding Charter: no mandate', 'Your first crossing is yours to fund.'];
+/** A perk's name; the cash perk's amount comes from its number, formatted. */
+const perkName = (p) => (p.id === 'cash' && p.effect?.cash ? `${fmtMoney(p.effect.cash, { sign: true })} starting money` : p.name);
 /** An icon for a milestone card, from what its goal asks for. */
 export function milestoneIcon(c) {
   const g = c.goal || {};
@@ -69,8 +74,9 @@ export class Meta {
     const charters = [...CHARTER_IDS];
     const docs = charters.map((id) => {
       const ch = CHARTERS[id]; const unlocked = m.unlockedCharters.includes(id); const com = m.commended[id];
-      const mand = ch.mandates === 'dealt2' ? 'Two mandates, dealt by the term seed' : ch.mandates.map((k) => MANDATES[k].name).join(' + ');
-      const rule = ch.mandates === 'dealt2' ? 'You see them in the term setup.' : ch.mandates.map((k) => MANDATES[k].text).join(' ');
+      const none = Array.isArray(ch.mandates) && !ch.mandates.length; // Charter I: the founding Charter
+      const mand = ch.mandates === 'dealt2' ? 'Two mandates, dealt by the term seed' : none ? NO_MANDATE[0] : ch.mandates.map((k) => MANDATES[k].name).join(' + ');
+      const rule = ch.mandates === 'dealt2' ? 'You see them in the term setup.' : none ? NO_MANDATE[1] : ch.mandates.map((k) => MANDATES[k].text).join(' ');
       return `<button class="charter-doc ${unlocked ? '' : 'sealed'} ${this.pick.charter === id && !this.pick.free ? 'on' : ''}" data-ch="${id}" ${unlocked ? '' : 'disabled'}>
         <span class="cd-title">${id === 'G' ? 'Charter Galactic' : 'Charter ' + ROMAN[id]}</span>
         <span class="cd-mand">${unlocked ? esc(mand) : 'Sealed'}</span>
@@ -153,14 +159,14 @@ export class Meta {
     const getC = getCells();
     el.innerHTML = `<div class="panel setup-panel side-col">
       <div class="panel-head"><h2>Charter ${ROMAN[s.charter]}${s.freePlay ? ' · Free play' : ''} · ${esc(REGIONS[s.region].name)}</h2><button class="icon-btn" data-act="back" aria-label="Back">${icon('close')}</button></div>
-      <h3>Mandate${st.mandates.length > 1 ? 's' : ''}</h3>${mand || '<p class="sub">None</p>'}
+      <h3>Mandate${st.mandates.length > 1 ? 's' : ''}</h3>${mand || `<div class="mandate"><b>${NO_MANDATE[0]}.</b><span>${NO_MANDATE[1]}</span></div>`}
       <div class="setup-grid">
         <div><h3>Quotas</h3><p class="num">${st.quotas.join(' / ')} exports/min</p><p class="sub">${s.freePlay ? 'No deadline' : `Audit in ${Math.round(st.deadline / 60)} min`} · start ${money(st.money)}</p></div>
         <div><h3>Priority districts</h3><p>${st.priority.length ? st.priority.map((c) => `${esc(cellName(c))} <span class="sub">(${esc(REGIONS[getC[c].areaId].name)})</span>`).join(', ') : 'None'}</p><p class="sub">Outlined on the globe: ×1.5 exports when linked to the Terminal</p></div>
         <div><h3>Inherited network</h3><p>${inh.length ? `${inh.length} line${inh.length > 1 ? 's' : ''}, ${p.stations().filter((x) => x.inherited).length} stations` : 'Nothing: a clean slate'}</p><p class="sub">Free, but pays upkeep; never linked to the Terminal</p></div>
       </div>
       <h3>Milestone cards</h3><div class="mcards">${ms}</div>
-      ${perks.length ? `<h3>Starting perk</h3><div class="row wrap">${['none', ...perks.map((k) => k.id)].map((id) => { const pk = MERITS.perks.find((k) => k.id === id); return `<button class="chip ${(s.perk || 'none') === id ? 'on' : ''}" data-perk="${id}">${pk ? esc(pk.name) + (perkN(id) > 1 ? ` ×${perkN(id)}` : '') : 'No perk'}</button>`; }).join('')}</div>` : ''}
+      ${perks.length ? `<h3>Starting perk</h3><div class="row wrap">${['none', ...perks.map((k) => k.id)].map((id) => { const pk = MERITS.perks.find((k) => k.id === id); return `<button class="chip ${(s.perk || 'none') === id ? 'on' : ''}" data-perk="${id}">${pk ? esc(perkName(pk)) + (perkN(id) > 1 ? ` ×${perkN(id)}` : '') : 'No perk'}</button>`; }).join('')}</div>` : ''}
       <div class="row board-foot" style="margin-top:16px"><span class="spacer"></span><button class="btn primary" data-act="go">Begin the term${icon('next')}</button></div>
     </div>`;
     this.centreGlobeLeftOf(el.querySelector('.setup-panel'));
@@ -187,7 +193,7 @@ export class Meta {
     let items = '';
     if (tab === 'milestones') items = MILESTONES.filter((c) => c.pool === 'unlock').map((c) => this.shopItem(milestoneIcon(c), c.name, `${c.text} · bonus: ${c.bonusText}`, c.price, m.ownedMilestones.includes(c.id), `ms:${c.id}`)).join('');
     // perks are one-use: the save keeps one entry per perk bought, and a term that starts with it uses one up
-    if (tab === 'perks') items = MERITS.perks.map((p) => { const n = m.ownedPerks.filter((x) => x === p.id).length; return this.shopItem('perk', p.name, `${PERK_TEXT[p.id] || ''} Choose it in term setup; one is used up per term.`, p.price, n > 0, `pk:${p.id}`, n > 0 ? `×${n} ready` : null); }).join('');
+    if (tab === 'perks') items = MERITS.perks.map((p) => { const n = m.ownedPerks.filter((x) => x === p.id).length; return this.shopItem('perk', perkName(p), `${PERK_TEXT[p.id] || ''} Choose it in term setup; one is used up per term.`, p.price, n > 0, `pk:${p.id}`, n > 0 ? `×${n} ready` : null); }).join('');
     if (tab === 'liveries') items = MERITS.liveries.map((l) => this.shopItem('palette', l.name, LIVERY_TEXT[l.id] || 'A tint for every lead car and its carriages.', l.price, m.ownedLiveries.includes(l.id), `lv:${l.id}`, m.livery === l.id ? 'Wearing' : m.ownedLiveries.includes(l.id) ? 'Wear' : null, l.tint)).join('');
     el.innerHTML = `<div class="panel merit-panel">
       <div class="panel-head"><h2>Merit Office</h2><div class="merits-chip">${icon('medal')}<span class="num">${m.merits}</span> Merits</div><button class="icon-btn" data-act="back" aria-label="Back">${icon('close')}</button></div>

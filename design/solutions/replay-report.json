@@ -2,40 +2,40 @@
  {
   "charter": "I",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
-    "time": 630,
-    "hash": "05af135d"
+    "time": 750,
+    "hash": "b6e48b8b"
    },
    {
     "quota": 2,
-    "time": 1140,
-    "hash": "1ce2a35c"
+    "time": 1530,
+    "hash": "3cc93085"
    },
    {
     "quota": 3,
-    "time": 1590,
-    "hash": "89c45408"
+    "time": 1800,
+    "hash": "fa20fe7d"
    }
   ],
   "recorded": [
    {
     "quota": 1,
-    "time": 630,
-    "hash": "05af135d"
+    "time": 750,
+    "hash": "b6e48b8b"
    },
    {
     "quota": 2,
-    "time": 1140,
-    "hash": "1ce2a35c"
+    "time": 1530,
+    "hash": "3cc93085"
    },
    {
     "quota": 3,
-    "time": 1590,
-    "hash": "89c45408"
+    "time": 1800,
+    "hash": "fa20fe7d"
    }
   ],
   "runs": [
@@ -43,35 +43,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 50,
+    "seconds": 85,
     "quotas": [
      {
       "quota": 1,
-      "time": 630,
-      "money": 3162,
-      "throughput": 112,
-      "hash": "05af135d"
+      "time": 750,
+      "money": 2657,
+      "throughput": 94,
+      "hash": "b6e48b8b"
      },
      {
       "quota": 2,
-      "time": 1140,
-      "money": 3690,
-      "throughput": 255,
-      "hash": "1ce2a35c"
+      "time": 1530,
+      "money": 4667,
+      "throughput": 275,
+      "hash": "3cc93085"
      },
      {
       "quota": 3,
-      "time": 1590,
-      "money": 1243,
-      "throughput": 397,
-      "hash": "89c45408"
+      "time": 1800,
+      "money": 2169,
+      "throughput": 381,
+      "hash": "fa20fe7d"
      }
     ],
     "state": {
-     "time": 1590,
+     "time": 1800,
      "quotaStage": 3,
-     "money": 1243,
-     "hash": "89c45408"
+     "money": 2169,
+     "hash": "fa20fe7d"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 76,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 750,
+      "money": 2657,
+      "throughput": 94,
+      "hash": "b6e48b8b"
+     },
+     {
+      "quota": 2,
+      "time": 1530,
+      "money": 4667,
+      "throughput": 275,
+      "hash": "3cc93085"
+     },
+     {
+      "quota": 3,
+      "time": 1800,
+      "money": 2169,
+      "throughput": 381,
+      "hash": "fa20fe7d"
+     }
+    ],
+    "state": {
+     "time": 1800,
+     "quotaStage": 3,
+     "money": 2169,
+     "hash": "fa20fe7d"
     }
    }
   ]
@@ -79,40 +114,40 @@
  {
   "charter": "II",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
     "time": 450,
-    "hash": "9d6a0936"
+    "hash": "630eb913"
    },
    {
     "quota": 2,
     "time": 990,
-    "hash": "961f29dd"
+    "hash": "5d77123b"
    },
    {
     "quota": 3,
-    "time": 1260,
-    "hash": "e80234a4"
+    "time": 1290,
+    "hash": "d1baf612"
    }
   ],
   "recorded": [
    {
     "quota": 1,
     "time": 450,
-    "hash": "9d6a0936"
+    "hash": "630eb913"
    },
    {
     "quota": 2,
     "time": 990,
-    "hash": "961f29dd"
+    "hash": "5d77123b"
    },
    {
     "quota": 3,
-    "time": 1260,
-    "hash": "e80234a4"
+    "time": 1290,
+    "hash": "d1baf612"
    }
   ],
   "runs": [
@@ -120,35 +155,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 51,
+    "seconds": 77,
     "quotas": [
      {
       "quota": 1,
       "time": 450,
-      "money": 3633,
-      "throughput": 149,
-      "hash": "9d6a0936"
+      "money": 3559,
+      "throughput": 129,
+      "hash": "630eb913"
      },
      {
       "quota": 2,
       "time": 990,
-      "money": 5311,
-      "throughput": 339,
-      "hash": "961f29dd"
+      "money": 6033,
+      "throughput": 334,
+      "hash": "5d77123b"
      },
      {
       "quota": 3,
-      "time": 1260,
-      "money": 2590,
-      "throughput": 506,
-      "hash": "e80234a4"
+      "time": 1290,
+      "money": 2258,
+      "throughput": 500,
+      "hash": "d1baf612"
      }
     ],
     "state": {
-     "time": 1260,
+     "time": 1290,
      "quotaStage": 3,
-     "money": 2590,
-     "hash": "e80234a4"
+     "money": 2258,
+     "hash": "d1baf612"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 76,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 450,
+      "money": 3559,
+      "throughput": 129,
+      "hash": "630eb913"
+     },
+     {
+      "quota": 2,
+      "time": 990,
+      "money": 6033,
+      "throughput": 334,
+      "hash": "5d77123b"
+     },
+     {
+      "quota": 3,
+      "time": 1290,
+      "money": 2258,
+      "throughput": 500,
+      "hash": "d1baf612"
+     }
+    ],
+    "state": {
+     "time": 1290,
+     "quotaStage": 3,
+     "money": 2258,
+     "hash": "d1baf612"
     }
    }
   ]
@@ -156,40 +226,40 @@
  {
   "charter": "III",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
     "time": 180,
-    "hash": "2bd060a9"
+    "hash": "749c55e9"
    },
    {
     "quota": 2,
-    "time": 810,
-    "hash": "8b280027"
+    "time": 930,
+    "hash": "349e41c8"
    },
    {
     "quota": 3,
-    "time": 1230,
-    "hash": "3e6431ae"
+    "time": 1440,
+    "hash": "1231079d"
    }
   ],
   "recorded": [
    {
     "quota": 1,
     "time": 180,
-    "hash": "2bd060a9"
+    "hash": "749c55e9"
    },
    {
     "quota": 2,
-    "time": 810,
-    "hash": "8b280027"
+    "time": 930,
+    "hash": "349e41c8"
    },
    {
     "quota": 3,
-    "time": 1230,
-    "hash": "3e6431ae"
+    "time": 1440,
+    "hash": "1231079d"
    }
   ],
   "runs": [
@@ -197,35 +267,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 51,
+    "seconds": 90,
     "quotas": [
      {
       "quota": 1,
       "time": 180,
-      "money": 3968,
-      "throughput": 214,
-      "hash": "2bd060a9"
+      "money": 4186,
+      "throughput": 209,
+      "hash": "749c55e9"
      },
      {
       "quota": 2,
-      "time": 810,
-      "money": 6451,
-      "throughput": 409,
-      "hash": "8b280027"
+      "time": 930,
+      "money": 5661,
+      "throughput": 422,
+      "hash": "349e41c8"
      },
      {
       "quota": 3,
-      "time": 1230,
-      "money": 5884,
-      "throughput": 633,
-      "hash": "3e6431ae"
+      "time": 1440,
+      "money": 5179,
+      "throughput": 637,
+      "hash": "1231079d"
      }
     ],
     "state": {
-     "time": 1230,
+     "time": 1440,
      "quotaStage": 3,
-     "money": 5884,
-     "hash": "3e6431ae"
+     "money": 5179,
+     "hash": "1231079d"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 90,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 180,
+      "money": 4186,
+      "throughput": 209,
+      "hash": "749c55e9"
+     },
+     {
+      "quota": 2,
+      "time": 930,
+      "money": 5661,
+      "throughput": 422,
+      "hash": "349e41c8"
+     },
+     {
+      "quota": 3,
+      "time": 1440,
+      "money": 5179,
+      "throughput": 637,
+      "hash": "1231079d"
+     }
+    ],
+    "state": {
+     "time": 1440,
+     "quotaStage": 3,
+     "money": 5179,
+     "hash": "1231079d"
     }
    }
   ]
@@ -233,40 +338,40 @@
  {
   "charter": "IV",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
     "time": 240,
-    "hash": "14f5e37c"
+    "hash": "500ff0e6"
    },
    {
     "quota": 2,
-    "time": 930,
-    "hash": "5768c8c3"
+    "time": 870,
+    "hash": "3164be3c"
    },
    {
     "quota": 3,
-    "time": 1320,
-    "hash": "9232a7eb"
+    "time": 1350,
+    "hash": "9ba6ffcf"
    }
   ],
   "recorded": [
    {
     "quota": 1,
     "time": 240,
-    "hash": "14f5e37c"
+    "hash": "500ff0e6"
    },
    {
     "quota": 2,
-    "time": 930,
-    "hash": "5768c8c3"
+    "time": 870,
+    "hash": "3164be3c"
    },
    {
     "quota": 3,
-    "time": 1320,
-    "hash": "9232a7eb"
+    "time": 1350,
+    "hash": "9ba6ffcf"
    }
   ],
   "runs": [
@@ -274,35 +379,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 56,
+    "seconds": 89,
     "quotas": [
      {
       "quota": 1,
       "time": 240,
-      "money": 5663,
+      "money": 5858,
       "throughput": 192,
-      "hash": "14f5e37c"
+      "hash": "500ff0e6"
      },
      {
       "quota": 2,
-      "time": 930,
-      "money": 5265,
-      "throughput": 492,
-      "hash": "5768c8c3"
+      "time": 870,
+      "money": 4852,
+      "throughput": 503,
+      "hash": "3164be3c"
      },
      {
       "quota": 3,
-      "time": 1320,
-      "money": 4790,
-      "throughput": 751,
-      "hash": "9232a7eb"
+      "time": 1350,
+      "money": 5775,
+      "throughput": 771,
+      "hash": "9ba6ffcf"
      }
     ],
     "state": {
-     "time": 1320,
+     "time": 1350,
      "quotaStage": 3,
-     "money": 4790,
-     "hash": "9232a7eb"
+     "money": 5775,
+     "hash": "9ba6ffcf"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 92,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 240,
+      "money": 5858,
+      "throughput": 192,
+      "hash": "500ff0e6"
+     },
+     {
+      "quota": 2,
+      "time": 870,
+      "money": 4852,
+      "throughput": 503,
+      "hash": "3164be3c"
+     },
+     {
+      "quota": 3,
+      "time": 1350,
+      "money": 5775,
+      "throughput": 771,
+      "hash": "9ba6ffcf"
+     }
+    ],
+    "state": {
+     "time": 1350,
+     "quotaStage": 3,
+     "money": 5775,
+     "hash": "9ba6ffcf"
     }
    }
   ]
@@ -310,40 +450,40 @@
  {
   "charter": "V",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
-    "time": 240,
-    "hash": "ecf5c597"
+    "time": 540,
+    "hash": "173d1429"
    },
    {
     "quota": 2,
     "time": 1040,
-    "hash": "066a4d34"
+    "hash": "9b8a0697"
    },
    {
     "quota": 3,
-    "time": 1260,
-    "hash": "0b92c552"
+    "time": 1280,
+    "hash": "61ac8c92"
    }
   ],
   "recorded": [
    {
     "quota": 1,
-    "time": 240,
-    "hash": "ecf5c597"
+    "time": 540,
+    "hash": "173d1429"
    },
    {
     "quota": 2,
     "time": 1040,
-    "hash": "066a4d34"
+    "hash": "9b8a0697"
    },
    {
     "quota": 3,
-    "time": 1260,
-    "hash": "0b92c552"
+    "time": 1280,
+    "hash": "61ac8c92"
    }
   ],
   "runs": [
@@ -351,35 +491,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 51,
+    "seconds": 106,
     "quotas": [
      {
       "quota": 1,
-      "time": 240,
-      "money": 4995,
-      "throughput": 214,
-      "hash": "ecf5c597"
+      "time": 540,
+      "money": 5419,
+      "throughput": 303,
+      "hash": "173d1429"
      },
      {
       "quota": 2,
       "time": 1040,
-      "money": 4986,
-      "throughput": 597,
-      "hash": "066a4d34"
+      "money": 7386,
+      "throughput": 583,
+      "hash": "9b8a0697"
      },
      {
       "quota": 3,
-      "time": 1260,
-      "money": 1693,
-      "throughput": 841,
-      "hash": "0b92c552"
+      "time": 1280,
+      "money": 4752,
+      "throughput": 888,
+      "hash": "61ac8c92"
      }
     ],
     "state": {
-     "time": 1260,
+     "time": 1280,
      "quotaStage": 3,
-     "money": 1693,
-     "hash": "0b92c552"
+     "money": 4752,
+     "hash": "61ac8c92"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 90,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 540,
+      "money": 5419,
+      "throughput": 303,
+      "hash": "173d1429"
+     },
+     {
+      "quota": 2,
+      "time": 1040,
+      "money": 7386,
+      "throughput": 583,
+      "hash": "9b8a0697"
+     },
+     {
+      "quota": 3,
+      "time": 1280,
+      "money": 4752,
+      "throughput": 888,
+      "hash": "61ac8c92"
+     }
+    ],
+    "state": {
+     "time": 1280,
+     "quotaStage": 3,
+     "money": 4752,
+     "hash": "61ac8c92"
     }
    }
   ]
@@ -387,40 +562,40 @@
  {
   "charter": "VI",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
     "time": 180,
-    "hash": "fcc0e966"
+    "hash": "0605c05f"
    },
    {
     "quota": 2,
-    "time": 750,
-    "hash": "5305228c"
+    "time": 780,
+    "hash": "c19235ab"
    },
    {
     "quota": 3,
-    "time": 1290,
-    "hash": "f2100c2b"
+    "time": 1130,
+    "hash": "39e33689"
    }
   ],
   "recorded": [
    {
     "quota": 1,
     "time": 180,
-    "hash": "fcc0e966"
+    "hash": "0605c05f"
    },
    {
     "quota": 2,
-    "time": 750,
-    "hash": "5305228c"
+    "time": 780,
+    "hash": "c19235ab"
    },
    {
     "quota": 3,
-    "time": 1290,
-    "hash": "f2100c2b"
+    "time": 1130,
+    "hash": "39e33689"
    }
   ],
   "runs": [
@@ -428,35 +603,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 56,
+    "seconds": 124,
     "quotas": [
      {
       "quota": 1,
       "time": 180,
-      "money": 5014,
-      "throughput": 289,
-      "hash": "fcc0e966"
+      "money": 4972,
+      "throughput": 321,
+      "hash": "0605c05f"
      },
      {
       "quota": 2,
-      "time": 750,
-      "money": 5369,
-      "throughput": 675,
-      "hash": "5305228c"
+      "time": 780,
+      "money": 8562,
+      "throughput": 733,
+      "hash": "c19235ab"
      },
      {
       "quota": 3,
-      "time": 1290,
-      "money": 5509,
-      "throughput": 1137,
-      "hash": "f2100c2b"
+      "time": 1130,
+      "money": 2770,
+      "throughput": 1073,
+      "hash": "39e33689"
      }
     ],
     "state": {
-     "time": 1290,
+     "time": 1130,
      "quotaStage": 3,
-     "money": 5509,
-     "hash": "f2100c2b"
+     "money": 2770,
+     "hash": "39e33689"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 124,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 180,
+      "money": 4972,
+      "throughput": 321,
+      "hash": "0605c05f"
+     },
+     {
+      "quota": 2,
+      "time": 780,
+      "money": 8562,
+      "throughput": 733,
+      "hash": "c19235ab"
+     },
+     {
+      "quota": 3,
+      "time": 1130,
+      "money": 2770,
+      "throughput": 1073,
+      "hash": "39e33689"
+     }
+    ],
+    "state": {
+     "time": 1130,
+     "quotaStage": 3,
+     "money": 2770,
+     "hash": "39e33689"
     }
    }
   ]
@@ -464,40 +674,40 @@
  {
   "charter": "G",
   "pass": true,
-  "bothRunsSame": false,
+  "bothRunsSame": true,
   "recordedHashesCurrent": true,
   "nodeHashes": [
    {
     "quota": 1,
     "time": 240,
-    "hash": "6656e387"
+    "hash": "37ecab37"
    },
    {
     "quota": 2,
-    "time": 1120,
-    "hash": "749e7b60"
+    "time": 1420,
+    "hash": "8d774800"
    },
    {
     "quota": 3,
-    "time": 1480,
-    "hash": "eebcc5ad"
+    "time": 1760,
+    "hash": "5413fd00"
    }
   ],
   "recorded": [
    {
     "quota": 1,
     "time": 240,
-    "hash": "6656e387"
+    "hash": "37ecab37"
    },
    {
     "quota": 2,
-    "time": 1120,
-    "hash": "749e7b60"
+    "time": 1420,
+    "hash": "8d774800"
    },
    {
     "quota": 3,
-    "time": 1480,
-    "hash": "eebcc5ad"
+    "time": 1760,
+    "hash": "5413fd00"
    }
   ],
   "runs": [
@@ -505,35 +715,70 @@
     "fail": null,
     "match": true,
     "matchRecorded": true,
-    "seconds": 63,
+    "seconds": 113,
     "quotas": [
      {
       "quota": 1,
       "time": 240,
-      "money": 4977,
-      "throughput": 500,
-      "hash": "6656e387"
+      "money": 4925,
+      "throughput": 493,
+      "hash": "37ecab37"
      },
      {
       "quota": 2,
-      "time": 1120,
-      "money": 7632,
-      "throughput": 929,
-      "hash": "749e7b60"
+      "time": 1420,
+      "money": 6505,
+      "throughput": 910,
+      "hash": "8d774800"
      },
      {
       "quota": 3,
-      "time": 1480,
-      "money": 4936,
-      "throughput": 1302,
-      "hash": "eebcc5ad"
+      "time": 1760,
+      "money": 4087,
+      "throughput": 1320,
+      "hash": "5413fd00"
      }
     ],
     "state": {
-     "time": 1480,
+     "time": 1760,
      "quotaStage": 3,
-     "money": 4936,
-     "hash": "eebcc5ad"
+     "money": 4087,
+     "hash": "5413fd00"
+    }
+   },
+   {
+    "fail": null,
+    "match": true,
+    "matchRecorded": true,
+    "seconds": 73,
+    "quotas": [
+     {
+      "quota": 1,
+      "time": 240,
+      "money": 4925,
+      "throughput": 493,
+      "hash": "37ecab37"
+     },
+     {
+      "quota": 2,
+      "time": 1420,
+      "money": 6505,
+      "throughput": 910,
+      "hash": "8d774800"
+     },
+     {
+      "quota": 3,
+      "time": 1760,
+      "money": 4087,
+      "throughput": 1320,
+      "hash": "5413fd00"
+     }
+    ],
+    "state": {
+     "time": 1760,
+     "quotaStage": 3,
+     "money": 4087,
+     "hash": "5413fd00"
     }
    }
   ]

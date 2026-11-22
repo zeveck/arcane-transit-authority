@@ -6,16 +6,14 @@
    "region": "capital",
    "termSeed": 11,
    "tutorial": false,
-   "start": "aff6f2d5",
-   "after": "46828d6d",
+   "start": "d1cbcd7e",
+   "after": "d0e2d024",
    "afterSeconds": 300,
    "priority": [
     136,
     67
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -23,16 +21,14 @@
    "region": "brine",
    "termSeed": 11,
    "tutorial": false,
-   "start": "4b71881d",
-   "after": "4ff7f84b",
+   "start": "27622684",
+   "after": "5f2e0fd2",
    "afterSeconds": 300,
    "priority": [
     583,
     286
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -40,16 +36,14 @@
    "region": "rift",
    "termSeed": 11,
    "tutorial": false,
-   "start": "77759720",
-   "after": "dbae53fb",
+   "start": "6147dfc1",
+   "after": "300d5730",
    "afterSeconds": 300,
    "priority": [
     46,
     217
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -57,16 +51,14 @@
    "region": "spires",
    "termSeed": 11,
    "tutorial": false,
-   "start": "2b7ac052",
-   "after": "4feae9e7",
+   "start": "ba72d151",
+   "after": "a840b0bc",
    "afterSeconds": 300,
    "priority": [
     402,
     459
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -74,16 +66,14 @@
    "region": "flats",
    "termSeed": 11,
    "tutorial": false,
-   "start": "4e6ae62a",
-   "after": "617176f0",
+   "start": "273eb001",
+   "after": "aac8def4",
    "afterSeconds": 300,
    "priority": [
     246,
     518
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -91,16 +81,14 @@
    "region": "ringside",
    "termSeed": 11,
    "tutorial": false,
-   "start": "36c631e3",
-   "after": "f2691b30",
+   "start": "e162c62a",
+   "after": "e12692af",
    "afterSeconds": 300,
    "priority": [
     53,
     598
    ],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {
@@ -642,13 +630,11 @@
    "region": "capital",
    "termSeed": 1,
    "tutorial": true,
-   "start": "739aac7f",
-   "after": "a23f3fba",
+   "start": "1a9ad0b2",
+   "after": "201a9222",
    "afterSeconds": 300,
    "priority": [],
-   "mandates": [
-    "firstCrossing"
-   ],
+   "mandates": [],
    "geoHash": "d176ef3d"
   },
   {

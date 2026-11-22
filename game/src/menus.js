@@ -1,11 +1,13 @@
 // menus.js — the HTML menu screens: title, settings, How to Play, credits, pause, confirm.
 import { icon } from './icons.js';
 import { TYPE_COLORS } from './palette.js';
+import { fmtMoney } from './fmt.js';
+import { GREEN, TRANSFER } from './tuning.js';
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 export function h(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
-export function esc(s) { return String(s).replace(/>=/g, '≥').replace(/\bx(\d)/g, '×$1').replace(/ x /g, ' × ').replace(/->/g, '→').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+export function esc(s) { return String(s).replace(/>=/g, '≥').replace(/\bx(\d)/g, '×$1').replace(/ x /g, ' × ').replace(/->/g, '→').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); } // fmt-ok ('×$1' is a regex group)
 
 export function show(id) { const el = document.getElementById(id); if (el) el.hidden = false; return el; }
 export function hide(id) { const el = document.getElementById(id); if (el) el.hidden = true; return el; }
@@ -102,15 +104,17 @@ export const HOWTO_PAGES = [
   { id: 'routes', title: 'Route cards', hero: null, shot: 'cards', html: `
     <p>The Route tool (R) is the heart of the game. <b>Click a place A, then a place B.</b> You're dealt one <b>route card</b> for each kind of route that can link them, always in the same order.</p>
     <ul><li>After you click A, stations on the far side of the planet show as markers you can click through the globe; <b>Pick from list</b> works too. <span class="nw">X-ray</span> (V) stays off unless you turn it on.</li>
-    <li>Each card leads with its <b>cost</b> (stations, track, its trains and any demolition) and how many riders a minute it <b>carries</b>.</li>
+    <li>Each card leads with its <b>cost</b> (stations, track, its trains and any demolition) and how many riders a minute it <b>carries</b>. Prices are in millions ($M) and billions ($B).</li>
+    <li>A card that clears blocks has a red line: what those blocks produce now that the line would lose.</li>
     <li>A card that would let more exports reach the Terminal says so: <b>+N exports/min to the Terminal</b>.</li>
     <li>Hover a card to see its path on the globe; districts it would demolish are outlined in red. <b>Cheapest</b> and <b>Most capacity</b> tags help you compare.</li>
+    <li>Can't afford it yet? <b>Plan it</b> pins the card: its ghost rail stays on the globe and a chip shows the price, what you have and how long saving up takes. It turns gold when you can build.</li>
     <li>Click the card again (or press Enter) to build. The ley-rail grows and the first train glides out. <b>Undo</b> (Ctrl+Z) reverses a build within 10 seconds.</li>
     <li>Greyed cards say what's missing: a tech to unlock, or why the route can't work.</li></ul>` },
   { id: 'trains', shot: 'ride', title: 'The seven trains', hero: 'sky', html: '' },
   { id: 'core', shot: 'xray', title: 'Interchanges and the core', hero: 'xray', html: `
     <p>A station that serves more than one layer is an <b>interchange</b>. Two stations in the same or neighbouring districts are joined by a <b>walkway</b> automatically.</p>
-    <ul><li>Riders and goods changing lines use the station's <b>transfer capacity</b>: 120 a minute for an ordinary station, 360 for a Core Exchange or Space Elevator. A ring around the station fills; red means full. Upgrade it (from $600) to double it.</li>
+    <ul><li>Riders and goods changing lines use the station's <b>transfer capacity</b>: 120 a minute for an ordinary station, 360 for a Core Exchange or Space Elevator. A ring around the station fills; red means full. Upgrade it (from ${fmtMoney(TRANSFER.upgradePrice)}) to double it.</li>
     <li><b>Through the core:</b> a Bore Station at each end sinks a shaft to a Core Exchange on the molten core; a fire train crosses between them. Earth down, fire across, earth up: the far side of the planet in about a minute and a half.</li>
     <li>Press <b>V</b> for <span class="nw">X-ray</span> to see bores, shafts and the core.</li></ul>` },
   { id: 'flow', shot: 'breakdown', title: 'Flow and bottlenecks', hero: 'ring', html: `
@@ -120,12 +124,12 @@ export const HOWTO_PAGES = [
     <li>Fix it: add a train (+), upgrade an interchange, build a second route, or buy a tech (T).</li></ul>` },
   { id: 'green', shot: 'demolish', title: 'Demolish and green', hero: 'surface', html: `
     <p>Oikumene has no room to spare. <b>Demolish</b> (X) clears a district (its price rises with density); a cleared district makes no riders.</p>
-    <ul><li><b>Green</b> (G) a cleared district: a tree grove (from $80, +5% to its neighbours) or a park (from $150, +10%).</li>
-    <li>An <b>attraction</b> (from $1,500, next to a line) adds +30% within 2 districts: a Giant Wheel, a Fountain Plaza or a Monument to the Engineers.</li>
+    <ul><li><b>Green</b> (G) a cleared district: a tree grove (from ${fmtMoney(GREEN.grove.price)}, +5% to its neighbours) or a park (from ${fmtMoney(GREEN.park.price)}, +10%).</li>
+    <li>An <b>attraction</b> (from ${fmtMoney(GREEN.attraction.price)}, next to a line) adds +30% within 2 districts: a Giant Wheel, a Fountain Plaza or a Monument to the Engineers.</li>
     <li>Surface lines leave a cleared corridor: the districts beside it are cheap to green. Greenery earns a grade star.</li></ul>` },
   { id: 'charters', shot: 'charters', title: 'Charters, quotas and grades', hero: 'globe', html: `
     <p>Each term is played under a <b>Homeworld Charter</b> with three Quotas. Meet Quota III and the Charter is <b>Commended</b>: the next Charter and a new starting region unlock.</p>
-    <ul><li>Each Charter has a <b>mandate</b>, a rule that changes what you build first (Charter I funds your first route through the core).</li>
+    <ul><li>Each Charter has a <b>mandate</b>, a rule that changes what you build first (Charter I, the founding Charter, has none: your first crossing is yours to fund).</li>
     <li>Quotas count when Throughput holds at the quota for two deep space departures in a row. Quotas I and II pay a cash bonus.</li>
     <li>Grade stars: Quota III before the Audit deadline; more money at the end than at the start; enough greenery.</li>
     <li>You may run into debt down to the Charter's limit; a minute below it and the term is over.</li>

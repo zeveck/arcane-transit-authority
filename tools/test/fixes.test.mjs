@@ -43,14 +43,14 @@ test('undo of a build reverts only that build: an older line broken or emptied i
   assert.ok(g.act({ type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' }).ok);
   g.step(15);
   const m0 = g.s.money, dem0 = g.s.demolished.slice(), sts0 = g.s.stations.length;
-  const b = g.act({ type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' }); assert.ok(b.ok && b.free);
+  const b = g.act({ type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' }); assert.ok(b.ok && !b.free && b.cost > 0 && b.firstCrossing);
   assert.ok(g.s.firstCrossingUsed);
   g.s.lines[0].broken = { by: 'caveIn', cost: 100, seconds: 30 }; // damage on another line inside the window
   assert.ok(g.act({ type: 'removeTrain', line: 0 }).ok);
   const t0 = g.s.lines[0].trains, money = g.s.money;
   const u = g.act({ type: 'undo' }); assert.ok(u.ok, u.reason);
   assert.equal(g.s.lines.length, 1); assert.equal(g.s.stations.length, sts0);
-  assert.equal(g.s.firstCrossingUsed, false, 'the free crossing is offered again');
+  assert.equal(g.s.firstCrossingUsed, false, 'undone: the next core route is the first crossing again');
   assert.ok(g.s.lines[0].broken, 'the other line stays broken'); assert.equal(g.s.lines[0].trains, t0);
   assert.equal(g.s.money, money + b.cost);
   assert.deepEqual(g.s.demolished, dem0);
@@ -142,17 +142,17 @@ test('throughput breakdown fallback: names the fullest line or interchange, else
   assert.notEqual(g.breakdown().bottleneck.kind, 'travelling');
 });
 
-test('route cards: explicit export outcome, "within 1 cell of", firstCrossingUsed', () => {
+test('route cards: explicit export outcome, "within 1 cell of"; firstCrossingUsed = a core route was built', () => {
   const g = fresh(); g.s.money = 1e6;
   const ab = g.routeCards(T.a, T.b).find((c) => c.kind === 'surface');
   assert.equal(ab.exportsGain, 0); assert.equal(ab.exportsNote, 'not linked to the Terminal');
   for (const c of g.routeCards(T.a, T.b)) assert.equal(typeof c.exportsGain, 'number');
-  assert.equal(g.state().firstCrossingUsed, false); assert.equal(g.state().firstCrossingAvailable, true);
+  assert.equal(g.state().firstCrossingUsed, false); assert.equal('firstCrossingAvailable' in g.state(), false);
   g.act({ type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' });
   const core = g.routeCards({ station: 1 }, meta.terminal).find((c) => c.kind === 'core');
-  assert.ok(core.free && core.exportsGain > 5); assert.equal(core.exportsNote, null);
+  assert.ok(!core.free && core.cost > 0 && core.exportsGain > 5); assert.equal(core.exportsNote, null);
   g.act({ type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' });
-  assert.equal(g.state().firstCrossingUsed, true); assert.equal(g.state().firstCrossingAvailable, false);
+  assert.equal(g.state().firstCrossingUsed, true);
   g.step(60);
   // already served: a neighbour of the linked station
   const served = g.routeCards(cells[T.a].neighbours[0], meta.terminal).find((c) => c.feasible);
@@ -220,7 +220,7 @@ function saturated(upgradeCores) {
   for (let k = 0; k < 4; k++) h.act({ type: 'addTrain', line: 0 });
   h.act({ type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' });
   if (upgradeCores) for (const st of h.stations().filter((s) => s.kind === 'core')) h.act({ type: 'upgradeInterchange', station: st.id });
-  else for (let k = 0; k < 4; k++) { h.act({ type: 'addTrain', line: 1 }); h.act({ type: 'addTrain', line: 2 }); h.act({ type: 'addTrain', line: 3 }); }
+  else for (let k = 0; k < 6; k++) { h.act({ type: 'addTrain', line: 1 }); h.act({ type: 'addTrain', line: 2 }); h.act({ type: 'addTrain', line: 3 }); } // shafts above the 360/min interchange
   h.step(400);
   return h;
 }
@@ -274,7 +274,7 @@ test('Atlantis: Water from the district next to a dome works; land cards say how
 
 test('card balance: light short hops favour Surface, dense blocks Earth, the far side the core; tags split', async () => {
   const { angleDeg } = await import('../../game/src/geo.js');
-  const g = fresh(); g.s.money = 1e6; g.s.firstCrossingUsed = true;
+  const g = fresh(); g.s.money = 1e6;
   const tags = (cs, k) => cs.find((c) => c.kind === k)?.tags || [];
   // a 4-cell hop over light districts (all path cells density <= 2)
   let light = 0, lightSurface = 0, dense = 0, denseEarth = 0;

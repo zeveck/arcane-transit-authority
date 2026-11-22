@@ -58,7 +58,7 @@ function repairPrice(g, w) {
     case 'caveIn': return DISASTERS.caveIn.repair * pm(g);
     case 'coreFlare': return DISASTERS.coreFlare.coolant * pm(g);
     case 'blackout': return DISASTERS.blackout.restore * pm(g);
-    default: return 300 * pm(g); // solar storm, warp drift: no repair; brace priced on a $300 base
+    default: return 300 * pm(g); // solar storm, warp drift: no repair; brace priced on a base of 300
   }
 }
 export function bracePrice(g, w = g.s.dis.warning) { return w ? Math.round(repairPrice(g, w) * BRACE_SHARE) : 0; }
@@ -176,7 +176,7 @@ export function brace(g) {
   if (!w) return { ok: false, reason: 'No disaster warning' };
   if (w.braced) return { ok: false, reason: 'Already braced' };
   const p = bracePrice(g, w);
-  if (g.s.money - p < CHARTERS[g.s.charter].debt) return { ok: false, reason: 'Not enough money' };
+  if (!g.canAfford(p)) return { ok: false, reason: 'Not enough money' };
   g.s.money -= p; w.braced = true;
   return { ok: true, cost: p };
 }
@@ -193,7 +193,7 @@ export function repair(g, lineId) {
   const l = g.s.lines[lineId];
   if (!l || !l.broken) return { ok: false, reason: 'Nothing to repair' };
   if (l.repairAt != null) return { ok: false, reason: 'Already being repaired' };
-  if (g.s.money - l.broken.cost < CHARTERS[g.s.charter].debt) return { ok: false, reason: 'Not enough money' };
+  if (!g.canAfford(l.broken.cost)) return { ok: false, reason: 'Not enough money' };
   g.s.money -= l.broken.cost; l.repairAt = g.s.time + Math.ceil(l.broken.seconds);
   return { ok: true, cost: l.broken.cost, at: l.repairAt };
 }
@@ -207,13 +207,13 @@ export function repairAll(g) {
 export function coolant(g) {
   const D = g.s.dis; if (!D.flare) return { ok: false, reason: 'No core flare' };
   const p = Math.round(DISASTERS.coreFlare.coolant * pm(g));
-  if (g.s.money - p < CHARTERS[g.s.charter].debt) return { ok: false, reason: 'Not enough money' };
+  if (!g.canAfford(p)) return { ok: false, reason: 'Not enough money' };
   g.s.money -= p; D.flare = null; g.refreshFlare(); g.dirty = true; return { ok: true, cost: p };
 }
 export function restorePower(g) {
   if (!g.s.blackoutUntil) return { ok: false, reason: 'No blackout' };
   const p = Math.round(DISASTERS.blackout.restore * pm(g));
-  if (g.s.money - p < CHARTERS[g.s.charter].debt) return { ok: false, reason: 'Not enough money' };
+  if (!g.canAfford(p)) return { ok: false, reason: 'Not enough money' };
   g.s.money -= p; for (const st of liveStations(g)) if (st.closedUntil > g.s.time) st.closedUntil = g.s.time; g.s.blackoutUntil = null; g.dirty = true;
   return { ok: true, cost: p };
 }

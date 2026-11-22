@@ -14,13 +14,13 @@ function playScript(g, script, until) {
   for (const [t, a] of script) { g.stepTo(t); g.act(a); }
   g.stepTo(until);
 }
-const SCRIPT = [
-  [30, { type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' }],
-  [100, { type: 'addTrain', line: 0 }],
-  [200, { type: 'buildRoute', a: { station: 1 }, b: { station: 0 }, kind: 'core' }],
-  [380, { type: 'green', cell: T.path[1], kind: 'park' }],
-  [440, { type: 'buildRoute', a: meta.capitalCentre, b: { station: 1 }, kind: 'earth' }],
-  [530, { type: 'buildRoute', a: T.peaks[0], b: T.peaks[1], kind: 'sky' }],
+const SCRIPT = [ // the tutorial's order (tools/solve.mjs tutorialScript), the crossing at a fixed time
+  [20, { type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' }],
+  [120, { type: 'buildRoute', a: meta.capitalCentre, b: { station: 1 }, kind: 'earth' }],
+  [210, { type: 'addTrain', line: 0 }],
+  [300, { type: 'buildRoute', a: T.peaks[0], b: T.peaks[1], kind: 'sky' }],
+  [390, { type: 'green', cell: T.path[1], kind: 'park' }],
+  [660, { type: 'buildRoute', a: { station: 1 }, b: { station: 0 }, kind: 'core' }],
 ];
 
 test('determinism: same seed + same actions → same hash', () => {
@@ -34,11 +34,14 @@ test('determinism: same seed + same actions → same hash', () => {
   assert.notEqual(c.hash(), e.hash());
 });
 
-test('tutorial: free core crossing by 6 min and Quota I (90) by 12 min', () => {
+test('tutorial: every step is paid (no free crossing); the crossing is affordable by 11 min and emits firstCrossing', () => {
   const g = Game.newTerm({ tutorial: true });
-  playScript(g, SCRIPT, 720);
+  const built = [];
+  for (const [t, a] of SCRIPT) { g.stepTo(t); g.drainEvents(); const r = g.act(a); assert.ok(r.ok, `${a.type} ${a.kind || ''} at ${t}: ${r.reason}`); assert.ok(r.cost > 0); built.push(...g.drainEvents().filter((e) => e.type === 'built')); }
   assert.ok(g.s.firstCrossingUsed);
-  assert.ok(g.s.quota.stage >= 1, 'throughput ' + g.throughput());
+  assert.deepEqual(built.map((e) => e.firstCrossing), [false, false, false, true]);
+  assert.equal(built[3].kind, 'core');
+  assert.ok(g.s.money >= 0, 'no debt in the tutorial');
 });
 
 test('snapshot round-trip: a restored term gives the same hash after the same steps', () => {
@@ -96,7 +99,6 @@ for (const kind of Object.keys(PAIRS)) {
 test('hybrid card: a surface feeder onto an existing Core Exchange', () => {
   const g = Game.newTerm({ charter: 'I', region: 'flats', termSeed: 3, noDisasters: true, noInherited: true });
   g.s.money = 1e6;
-  g.s.firstCrossingUsed = true;
   const fw = cells.filter((c) => c.areaId === 'farwards' && c.isCity);
   const s0 = fw[10].id;
   const capCell = cells.find((c) => c.areaId === 'capital' && c.isCity).id;
@@ -121,7 +123,7 @@ test('hybrid card: a surface feeder onto an existing Core Exchange', () => {
 test('the Rift rule: Core Exchange half price, shaft x1.5 speed (240/min with 2 trains); Rift earth stops at 64°', async () => {
   const { TYPES } = await import('../../game/src/tuning.js');
   const g = Game.newTerm({ charter: 'I', region: 'rift', termSeed: 9, noDisasters: true, noInherited: true });
-  g.s.money = 1e6; g.s.firstCrossingUsed = true;
+  g.s.money = 1e6;
   const rift = meta.starts.rift;
   const other = cells.find((c) => c.areaId === 'farwards' && c.isCity && angleDeg(c.pos, cells[rift].pos) > 100).id;
   const card = g.routeCards(rift, other).find((c) => c.kind === 'core');
@@ -130,12 +132,11 @@ test('the Rift rule: Core Exchange half price, shaft x1.5 speed (240/min with 2 
   for (const l of g.lines().filter((x) => x.shaft)) while (g.s.lines[l.id].trains < 2) g.act({ type: 'addTrain', line: l.id }); // new shafts start with SHAFT_TRAINS
   const shafts = g.lines().filter((l) => l.shaft);
   const caps = shafts.map((l) => l.capacity).sort((a, b) => a - b);
-  assert.deepEqual(caps, [169, 240]);
+  assert.deepEqual(caps, [169, 240]); // shafts keep 4 cars (TYPES.earth.shaftCars); earth chords have 3
   const cores = g.stations().filter((s) => s.kind === 'core');
   assert.equal(cores.length, 2);
   // price: rift Core Exchange $450 vs $900 elsewhere
   const g2 = Game.newTerm({ charter: 'I', region: 'rift', termSeed: 9, noDisasters: true, noInherited: true });
-  g2.s.firstCrossingUsed = true;
   const c2 = g2.routeCards(rift, other).find((c) => c.kind === 'core');
   const otherRift = cells.find((c) => c.areaId === 'farwards' && c.isCity && angleDeg(c.pos, cells[other].pos) > 100).id;
   const c3 = g2.routeCards(otherRift, other).find((c) => c.kind === 'core');
@@ -159,7 +160,7 @@ test('Flats demolition is x1.8', () => {
 
 test('one earth rule: every shaft is 63 units, portals at radius 100, including mountain stations', () => {
   const g = Game.newTerm({ charter: 'I', region: 'spires', termSeed: 4, noDisasters: true, noInherited: true });
-  g.s.money = 1e6; g.s.firstCrossingUsed = true;
+  g.s.money = 1e6;
   const mtn = cells.find((c) => c.terrainName === 'mountain' && !c.peak && c.areaId === 'spires');
   const far = cells.find((c) => c.isCity && c.areaId === 'brine' && angleDeg(c.pos, mtn.pos) > 90);
   const r = g.act({ type: 'buildRoute', a: mtn.id, b: far.id, kind: 'core' });
@@ -195,7 +196,7 @@ test('bottleneck: districts, an interchange, the warp ring', () => {
   h.act({ type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' });
   h.act({ type: 'addTrain', line: 0 }); h.act({ type: 'addTrain', line: 0 });
   h.act({ type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' });
-  for (let k = 0; k < 4; k++) { h.act({ type: 'addTrain', line: 1 }); h.act({ type: 'addTrain', line: 2 }); h.act({ type: 'addTrain', line: 0 }); }
+  for (let k = 0; k < 6; k++) { h.act({ type: 'addTrain', line: 1 }); h.act({ type: 'addTrain', line: 2 }); h.act({ type: 'addTrain', line: 0 }); }
   h.step(400);
   const bh = h.breakdown().bottleneck;
   assert.equal(bh.kind, 'interchange', JSON.stringify(bh));

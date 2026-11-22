@@ -4,30 +4,30 @@
  "termSeed": 303,
  "tutorial": false,
  "commended": true,
- "commendedAt": 1230,
+ "commendedAt": 1440,
  "termOver": null,
  "overtime": false,
  "quotas": [
   {
    "quota": 1,
    "time": 180,
-   "hash": "2bd060a9",
-   "money": 3968,
-   "throughput": 213.92969154929568
+   "hash": "749c55e9",
+   "money": 4186,
+   "throughput": 208.7456915492958
   },
   {
    "quota": 2,
-   "time": 810,
-   "hash": "8b280027",
-   "money": 6451,
-   "throughput": 408.87045000000035
+   "time": 930,
+   "hash": "349e41c8",
+   "money": 5661,
+   "throughput": 421.9614000000005
   },
   {
    "quota": 3,
-   "time": 1230,
-   "hash": "3e6431ae",
-   "money": 5884,
-   "throughput": 632.8804167721119
+   "time": 1440,
+   "hash": "1231079d",
+   "money": 5179,
+   "throughput": 636.6853848250103
   }
  ],
  "actions": [
@@ -59,9 +59,9 @@
    30,
    {
     "type": "buildRoute",
-    "a": 200,
+    "a": 279,
     "b": {
-     "station": 0
+     "station": 8
     },
     "kind": "surface"
    }
@@ -77,22 +77,30 @@
    60,
    {
     "type": "green",
-    "cell": 223,
+    "cell": 270,
     "kind": "park"
    }
   ],
   [
    60,
    {
-    "type": "addTrain",
-    "line": 4
+    "type": "green",
+    "cell": 274,
+    "kind": "park"
    }
   ],
   [
-   120,
+   90,
    {
     "type": "addTrain",
     "line": 1
+   }
+  ],
+  [
+   90,
+   {
+    "type": "addTrain",
+    "line": 4
    }
   ],
   [
@@ -112,43 +120,26 @@
    180,
    {
     "type": "green",
-    "cell": 262,
+    "cell": 308,
     "kind": "park"
    }
   ],
   [
    180,
    {
-    "type": "green",
-    "cell": 308,
-    "kind": "park"
+    "type": "buyTech",
+    "id": "biggerInterchanges"
    }
   ],
   [
-   240,
+   270,
    {
     "type": "buildRoute",
-    "a": 279,
+    "a": 599,
     "b": {
-     "station": 8
+     "station": 6
     },
-    "kind": "surface"
-   }
-  ],
-  [
-   300,
-   {
-    "type": "green",
-    "cell": 270,
-    "kind": "park"
-   }
-  ],
-  [
-   300,
-   {
-    "type": "green",
-    "cell": 274,
-    "kind": "park"
+    "kind": "earth"
    }
   ],
   [
@@ -161,22 +152,15 @@
   [
    330,
    {
-    "type": "upgradeInterchange",
-    "station": 5
-   }
-  ],
-  [
-   330,
-   {
     "type": "addTrain",
     "line": 4
    }
   ],
   [
-   330,
+   360,
    {
-    "type": "buyTech",
-    "id": "biggerInterchanges"
+    "type": "upgradeInterchange",
+    "station": 4
    }
   ],
   [
@@ -186,40 +170,40 @@
    }
   ],
   [
-   420,
-   {
-    "type": "buildRoute",
-    "a": 178,
-    "b": {
-     "station": 9
-    },
-    "kind": "surface"
-   }
-  ],
-  [
    435,
    {
     "type": "repairAll"
    }
   ],
   [
-   450,
+   480,
+   {
+    "type": "buildRoute",
+    "a": 200,
+    "b": {
+     "station": 0
+    },
+    "kind": "surface"
+   }
+  ],
+  [
+   510,
    {
     "type": "green",
-    "cell": 197,
+    "cell": 223,
     "kind": "park"
    }
   ],
   [
-   450,
+   510,
    {
     "type": "green",
-    "cell": 217,
+    "cell": 262,
     "kind": "park"
    }
   ],
   [
-   540,
+   600,
    {
     "type": "buildRoute",
     "a": 252,
@@ -230,7 +214,67 @@
    }
   ],
   [
-   630,
+   690,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   690,
+   {
+    "type": "addTrain",
+    "line": 11
+   }
+  ],
+  [
+   690,
+   {
+    "type": "upgradeInterchange",
+    "station": 5
+   }
+  ],
+  [
+   699,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   720,
+   {
+    "type": "buildRoute",
+    "a": {
+     "station": 2
+    },
+    "b": {
+     "station": 0
+    },
+    "kind": "core"
+   }
+  ],
+  [
+   780,
+   {
+    "type": "buildRoute",
+    "a": {
+     "station": 10
+    },
+    "b": {
+     "station": 4
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   810,
+   {
+    "type": "addTrain",
+    "line": 2
+   }
+  ],
+  [
+   870,
    {
     "type": "buildRoute",
     "a": 490,
@@ -241,73 +285,31 @@
    }
   ],
   [
-   630,
-   {
-    "type": "addTrain",
-    "line": 4
-   }
-  ],
-  [
-   660,
-   {
-    "type": "addTrain",
-    "line": 11
-   }
-  ],
-  [
-   690,
+   900,
    {
     "type": "upgradeInterchange",
     "station": 2
    }
   ],
   [
-   690,
-   {
-    "type": "addTrain",
-    "line": 1
-   }
-  ],
-  [
-   699,
-   {
-    "type": "brace"
-   }
-  ],
-  [
-   750,
-   {
-    "type": "buildRoute",
-    "a": 142,
-    "b": {
-     "station": 12
-    },
-    "kind": "earth"
-   }
-  ],
-  [
-   810,
+   930,
    {
     "type": "buyTech",
     "id": "warpConsists"
    }
   ],
   [
-   840,
+   960,
    {
-    "type": "buildRoute",
-    "a": 599,
-    "b": {
-     "station": 6
-    },
-    "kind": "earth"
+    "type": "buyTech",
+    "id": "heatShielding"
    }
   ],
   [
-   840,
+   960,
    {
     "type": "buildRoute",
-    "a": 85,
+    "a": 178,
     "b": {
      "station": 11
     },
@@ -315,60 +317,23 @@
    }
   ],
   [
-   840,
-   {
-    "type": "green",
-    "cell": 121,
-    "kind": "park"
-   }
-  ],
-  [
-   870,
-   {
-    "type": "buildRoute",
-    "a": 39,
-    "b": {
-     "station": 17
-    },
-    "kind": "surface"
-   }
-  ],
-  [
-   900,
-   {
-    "type": "buyTech",
-    "id": "heatShielding"
-   }
-  ],
-  [
-   900,
+   960,
    {
     "type": "addTrain",
-    "line": 7
+    "line": 1
    }
   ],
   [
-   900,
+   960,
    {
     "type": "addTrain",
     "line": 4
    }
   ],
   [
-   960,
-   {
-    "type": "buildRoute",
-    "a": 113,
-    "b": {
-     "station": 10
-    },
-    "kind": "surface"
-   }
-  ],
-  [
    965,
    {
-    "type": "brace"
+    "type": "reroute"
    }
   ],
   [
@@ -380,66 +345,42 @@
   [
    990,
    {
-    "type": "upgradeInterchange",
-    "station": 7
+    "type": "green",
+    "cell": 197,
+    "kind": "park"
    }
   ],
   [
    990,
    {
-    "type": "upgradeInterchange",
-    "station": 9
+    "type": "green",
+    "cell": 217,
+    "kind": "park"
    }
   ],
   [
-   1020,
+   1050,
+   {
+    "type": "buildRoute",
+    "a": 142,
+    "b": {
+     "station": 2
+    },
+    "kind": "core"
+   }
+  ],
+  [
+   1050,
    {
     "type": "upgradeInterchange",
     "station": 3
    }
   ],
   [
-   1020,
-   {
-    "type": "upgradeInterchange",
-    "station": 4
-   }
-  ],
-  [
-   1020,
-   {
-    "type": "green",
-    "cell": 32,
-    "kind": "park"
-   }
-  ],
-  [
-   1050,
-   {
-    "type": "addTrain",
-    "line": 11
-   }
-  ],
-  [
-   1050,
-   {
-    "type": "addTrain",
-    "line": 4
-   }
-  ],
-  [
-   1050,
-   {
-    "type": "green",
-    "cell": 53,
-    "kind": "park"
-   }
-  ],
-  [
    1080,
    {
     "type": "upgradeInterchange",
-    "station": 8
+    "station": 7
    }
   ],
   [
@@ -447,14 +388,6 @@
    {
     "type": "addTrain",
     "line": 4
-   }
-  ],
-  [
-   1080,
-   {
-    "type": "green",
-    "cell": 119,
-    "kind": "park"
    }
   ],
   [
@@ -470,29 +403,7 @@
    }
   ],
   [
-   1110,
-   {
-    "type": "buildRoute",
-    "a": 88,
-    "b": {
-     "station": 9
-    },
-    "kind": "surface"
-   }
-  ],
-  [
    1140,
-   {
-    "type": "buildRoute",
-    "a": 182,
-    "b": {
-     "station": 8
-    },
-    "kind": "surface"
-   }
-  ],
-  [
-   1170,
    {
     "type": "buildRoute",
     "a": 540,
@@ -503,10 +414,105 @@
    }
   ],
   [
-   1200,
+   1170,
    {
     "type": "addTrain",
-    "line": 2
+    "line": 17
+   }
+  ],
+  [
+   1200,
+   {
+    "type": "buildRoute",
+    "a": 132,
+    "b": {
+     "station": 16
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   1260,
+   {
+    "type": "buildRoute",
+    "a": 603,
+    "b": {
+     "station": 0
+    },
+    "kind": "core"
+   }
+  ],
+  [
+   1260,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1266,
+   {
+    "type": "brace"
+   }
+  ],
+  [
+   1281,
+   {
+    "type": "repairAll"
+   }
+  ],
+  [
+   1320,
+   {
+    "type": "buildRoute",
+    "a": 464,
+    "b": {
+     "station": 14
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   1320,
+   {
+    "type": "addTrain",
+    "line": 21
+   }
+  ],
+  [
+   1350,
+   {
+    "type": "addTrain",
+    "line": 4
+   }
+  ],
+  [
+   1380,
+   {
+    "type": "buildRoute",
+    "a": 640,
+    "b": {
+     "station": 20
+    },
+    "kind": "earth"
+   }
+  ],
+  [
+   1380,
+   {
+    "type": "addTrain",
+    "line": 21
+   }
+  ],
+  [
+   1410,
+   {
+    "type": "buildRoute",
+    "a": 182,
+    "b": {
+     "station": 8
+    },
+    "kind": "surface"
    }
   ]
  ],
@@ -517,9 +523,9 @@
   "surface"
  ],
  "trackShares": {
-  "core": 0.256,
-  "surface": 0.526,
-  "earth": 0.218
+  "core": 0.499,
+  "surface": 0.194,
+  "earth": 0.307
  },
  "moneyCurve": [
   [
@@ -528,200 +534,233 @@
   ],
   [
    60,
-   2101
+   2677
   ],
   [
    90,
-   941
+   1935
   ],
   [
    120,
-   1154
+   936
   ],
   [
    150,
-   965
+   1295
   ],
   [
    180,
-   3968
+   4186
   ],
   [
    210,
-   2244
+   1882
   ],
   [
    240,
-   3018
+   2662
   ],
   [
    270,
-   2144
+   3401
   ],
   [
    300,
-   2992
+   1240
   ],
   [
    330,
-   2876
+   1363
   ],
   [
    360,
-   1662
+   1448
   ],
   [
    390,
-   2546
+   1447
   ],
   [
    420,
-   3224
+   1961
   ],
   [
    450,
-   1388
+   2557
   ],
   [
    480,
-   2105
+   3536
   ],
   [
    510,
-   3103
+   1507
   ],
   [
    540,
-   4070
+   2048
   ],
   [
    570,
-   1779
+   2999
   ],
   [
    600,
-   2964
+   3974
   ],
   [
    630,
-   4183
+   1669
   ],
   [
    660,
-   1812
+   2735
   ],
   [
    690,
-   2575
+   3858
   ],
   [
    720,
-   2440
+   2985
   ],
   [
    750,
-   3833
+   1948
   ],
   [
    780,
-   2250
+   3199
   ],
   [
    810,
-   6451
+   1773
   ],
   [
    840,
-   6815
+   2452
   ],
   [
    870,
-   2860
+   3682
   ],
   [
    900,
-   2375
+   2132
   ],
   [
    930,
-   2517
+   5661
   ],
   [
    960,
-   4312
+   5985
   ],
   [
    990,
-   2198
+   1512
   ],
   [
    1020,
-   2523
+   2680
   ],
   [
    1050,
-   2716
+   4230
   ],
   [
    1080,
-   3202
+   2078
   ],
   [
    1110,
-   3105
+   2027
   ],
   [
    1140,
-   2736
+   3777
   ],
   [
    1170,
-   3470
+   2672
   ],
   [
    1200,
-   3502
+   3896
+  ],
+  [
+   1230,
+   2802
+  ],
+  [
+   1260,
+   5345
+  ],
+  [
+   1290,
+   2783
+  ],
+  [
+   1320,
+   5117
+  ],
+  [
+   1350,
+   3252
+  ],
+  [
+   1380,
+   5229
+  ],
+  [
+   1410,
+   4109
   ]
  ],
- "finalHash": "3e6431ae",
- "finalTime": 1230,
- "money": 5884,
- "stations": 23,
- "lines": 22,
+ "finalHash": "1231079d",
+ "finalTime": 1440,
+ "money": 5179,
+ "stations": 25,
+ "lines": 26,
  "cardStats": {
-  "comparisons": 1822,
-  "bothTagged": 796,
+  "comparisons": 2008,
+  "bothTagged": 1178,
   "bothByKind": {
-   "core": 137,
-   "earth": 659
+   "core": 294,
+   "surface": 160,
+   "earth": 722,
+   "hybrid": 2
   },
   "cheapestByKind": {
-   "core": 424,
-   "surface": 643,
-   "earth": 659,
-   "hybrid": 96
+   "core": 457,
+   "surface": 512,
+   "earth": 1018,
+   "hybrid": 21
   },
   "capacityByKind": {
-   "core": 137,
-   "earth": 1559,
-   "surface": 126
+   "core": 294,
+   "earth": 1181,
+   "surface": 531,
+   "hybrid": 2
   },
   "builds": {
-   "core": 2,
-   "surface": 9,
-   "earth": 5
+   "core": 5,
+   "surface": 5,
+   "earth": 8
   }
  },
  "dbg": [],
- "realSeconds": 41.5,
+ "prefixFailed": null,
+ "tutorialChecks": null,
+ "realSeconds": 51.5,
  "perf": {
-  "worstTick": 32.574,
-  "avgTick": 0.196,
-  "worstTickWithRecompute": 34.133,
-  "worstRecompute": 6.178,
-  "worstFullRecompute": 17.068,
-  "avgUpdate": 0.01,
-  "recomputes": 31
+  "worstTick": 29.727,
+  "avgTick": 0.313,
+  "worstTickWithRecompute": 29.727,
+  "worstRecompute": 21.728,
+  "worstFullRecompute": 22.472,
+  "avgUpdate": 0.0147,
+  "recomputes": 32
  },
- "throughput": 632.8804167721119
+ "throughput": 636.6853848250103
 }

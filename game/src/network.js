@@ -2,7 +2,7 @@
 // ley-rail path geometry (dense samples ~1 unit apart that the renderer, trains, Ride and picking all use).
 // Functions take `g`, the Game (sim.js): g.s = serializable state, g.mods = modifiers, g.ct = static cells.
 
-import { PLANET, TYPES, TRANSFER, DWELL_PER_ROUND_TRIP, REGIONS, CHARTERS, SIM, GREEN, AREA_IDS } from './tuning.js';
+import { PLANET, TYPES, TRANSFER, DWELL_PER_ROUND_TRIP, REGIONS, CHARTERS, SIM, GREEN, AREA_IDS, DEMOLITION } from './tuning.js';
 import { getCells, getGrid, ringTrackDeg, ringTrackPoint, TERRAIN, isWater, hexDistances } from './planet.js';
 import { norm, scale, add, sub, dot, cross, slerp, lerp, lerp3, len, dist, angleDeg, angleRad, gcDist, smoothstep, perp, DEG } from './geo.js';
 
@@ -78,7 +78,7 @@ export function demolitionPrice(g, cell, forSurfaceLine = false) {
   const c = g.ct[cell];
   if (!c.isCity || g.s.demolished[cell] || g.s.green[cell]) return 0;
   const d = g.s.densities[cell];
-  let p = [0, 100, 250, 450, 700, 1000][d] * CHARTERS[g.s.charter].demolition * REGIONS[c.areaId].demolition * g.mods.demolition;
+  let p = DEMOLITION[d] * CHARTERS[g.s.charter].demolition * REGIONS[c.areaId].demolition * g.mods.demolition;
   if (forSurfaceLine) p *= g.mods.surfaceDemolition;
   return Math.round(p);
 }
@@ -153,7 +153,7 @@ export function greenMult(g, cell) {
 }
 
 // ------------------------------------------------------------------ line physics
-export function lineCars(g, l) { return TYPES[l.type].cars + (g.mods.cars[l.type] || 0) + g.mods.carsAll; }
+export function lineCars(g, l) { return (l.shaft && TYPES.earth.shaftCars ? TYPES.earth.shaftCars : TYPES[l.type].cars) + (g.mods.cars[l.type] || 0) + g.mods.carsAll; }
 export function lineCarCap(g, l) { return TYPES[l.type].carCap * (g.mods.carCap[l.type] || 1); }
 /** Speed (units/s) on a segment kind of a line, including tech, the Rift rule and timed disaster effects. */
 export function segSpeed(g, l, kind) {

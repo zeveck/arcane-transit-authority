@@ -634,15 +634,16 @@ export class City {
   buildCore() {
     const coreTex = this.tex.core;
     const coreMat = new THREE.ShaderMaterial({
-      uniforms: { map: { value: coreTex }, uTime: XRAY.uniforms.uTime, uFlare: { value: 0 } },
+      uniforms: { map: { value: coreTex }, uTime: XRAY.uniforms.uTime, uFlare: { value: 0 }, uCut: { value: new THREE.Vector4(0, 0, 0, 0) } },
       vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vW; void main(){ vUv=uv; vN=normalize(normal); vW=(modelMatrix*vec4(position,1.)).xyz; gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.); }',
-      fragmentShader: `uniform sampler2D map; uniform float uTime; uniform float uFlare; varying vec2 vUv; varying vec3 vN; varying vec3 vW;
-        void main(){ vec2 uv = vUv*(gl_FrontFacing ? vec2(4.0,2.0) : vec2(14.0,7.0)); vec3 a = texture2D(map, uv + vec2(uTime*0.01, uTime*0.004)).rgb; vec3 b = texture2D(map, uv*1.7 - vec2(uTime*0.006, 0.0)).rgb;
+      fragmentShader: `uniform sampler2D map; uniform float uTime; uniform float uFlare; uniform vec4 uCut; varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+        void main(){ float cd = uCut.w > 0.0 ? length(vW - uCut.xyz) : 1e9; if (cd < uCut.w) discard; vec2 uv = vUv*(gl_FrontFacing ? vec2(4.0,2.0) : vec2(14.0,7.0)); vec3 a = texture2D(map, uv + vec2(uTime*0.01, uTime*0.004)).rgb; vec3 b = texture2D(map, uv*1.7 - vec2(uTime*0.006, 0.0)).rgb;
           vec3 c = (a*0.6+b*0.5); float hot = smoothstep(0.35, 0.9, c.r);
           vec3 base = vec3(0.478,0.102,0.047); vec3 col = base*0.55 + vec3(0.86,0.12,0.18)*hot*0.65 + vec3(1.0,0.55,0.2)*pow(hot,3.0)*0.45;
           vec3 V = normalize(cameraPosition - vW); float f = pow(1.0-max(dot(normalize(vW),V),0.0),2.0);
           col += vec3(0.9,0.25,0.1)*f*0.4; col = mix(col, vec3(1.2,1.1,1.0), uFlare*0.5);
           if (!gl_FrontFacing) { float dd = length(cameraPosition - vW); col *= 0.55 + 0.45*smoothstep(70.0, 10.0, dd); col = mix(col*0.7, col*1.25, smoothstep(0.3,0.8,hot)); }
+          col += vec3(1.0,0.6,0.25) * smoothstep(uCut.w + 1.5, uCut.w, cd) * 0.8; // a glowing rim round the chamber's opening
           gl_FragColor = vec4(col, 1.0); }`,
     });
     coreMat.side = THREE.DoubleSide;
@@ -693,6 +694,8 @@ export class City {
   }
   /** Water Ride: the sea surface drawn from below too. */
   setUnderwater(on) { if (!this.seaMat) return; this.seaMat.side = on ? THREE.DoubleSide : THREE.FrontSide; this.seaMat.needsUpdate = true; }
+  /** The crossing's hand-off: open the lava round a Core Exchange (a sphere of radius r at pos; r 0 closes it). */
+  setCoreCut(pos, r = 0) { const u = this.coreMat?.uniforms.uCut.value; if (!u) return; if (pos && r > 0) u.set(pos.x, pos.y, pos.z, r); else u.w = 0; }
   setFlare(v) { this.coreMat.uniforms.uFlare.value = v; this.glowMat.uniforms.uFlare.value = v; }
 
   // ------------------------------------------------------------------ outlines
@@ -721,18 +724,15 @@ export class City {
     if (old) { this.root.remove(old.obj); old.obj.geometry.dispose(); this.outlines.delete(key); }
     if (!ids || !ids.length) return;
     const P = [];
-    const set = new Set(ids);
     const W = 0.75;
     for (const id of ids) {
       const c = this.cells[id]; const k = this.grid.corners[id]; const n = k.length;
       const r = Math.max(cellRadius(c), c.terrain === TERRAIN.OCEAN || c.terrain === TERRAIN.ATLANTIS ? R : 0) + lift + (c.terrain === TERRAIN.MOUNTAIN ? 0.5 : 0);
       for (let j = 0; j < n; j++) {
         const a = k[j], b = k[(j + 1) % n];
-        // skip edges shared with another outlined cell
-        const mid = nrm(mix3(a, b, 0.5));
-        const other = c.neighbours.find((m) => { const p = this.cells[m].pos; return (p[0] - mid[0]) ** 2 + (p[1] - mid[1]) ** 2 + (p[2] - mid[2]) ** 2 < 0.02; });
-        if (other != null && set.has(other)) continue;
-        // inset slightly so neighbouring outlines don't overlap
+        // every outlined cell gets its whole outline (each is a separate thing: a block to demolish, a target);
+        // the inset keeps neighbouring outlines side by side instead of overlapping
+        // (skipping shared edges left adjacent cells looking like hexagons with a side missing: request 35)
         const ia = nrm(mix3(c.pos, a, 0.95)), ib = nrm(mix3(c.pos, b, 0.95));
         const ja = nrm(mix3(c.pos, a, 0.95 - W / 7.5)), jb = nrm(mix3(c.pos, b, 0.95 - W / 7.5));
         for (const v of [ia, ib, jb, ia, jb, ja]) P.push(v[0] * r, v[1] * r, v[2] * r);

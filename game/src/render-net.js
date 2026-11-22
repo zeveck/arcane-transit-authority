@@ -525,7 +525,18 @@ export class NetRenderer {
     this.pinA = makeMarker(0xffd9a0); this.pinB = makeMarker(0xe3ecf7);
     this.root.add(this.pinA, this.pinB); this.pinA.visible = this.pinB.visible = false;
     this.ghosts = new THREE.Group(); this.ghosts.name = 'ghosts'; this.root.add(this.ghosts);
+    this.planGhosts = new THREE.Group(); this.planGhosts.name = 'plan-ghost'; this.root.add(this.planGhosts);
     this.selection = new THREE.Group(); this.root.add(this.selection);
+    // Core Exchange cargo pods (the hand-off in the crossing timeline; a shaft train dwelling at its exchange)
+    const podG = new THREE.BoxGeometry(0.3, 0.24, 0.46);
+    this.pods = new THREE.InstancedMesh(podG, new THREE.MeshBasicMaterial({ color: 0xffe6c2, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, toneMapped: false }), 96);
+    this.pods.count = 0; this.pods.frustumCulled = false; this.pods.renderOrder = 14; this.pods.name = 'cargo-pods'; this.root.add(this.pods);
+    this.cinePods = null; this.cineTrains = null;
+    // held exports: crates stacking beside stations that can't reach the Terminal yet (cosmetic)
+    const crateG = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+    const crateMat = clipMaterial(new THREE.MeshStandardMaterial({ color: 0x8a7a66, metalness: 0.35, roughness: 0.55, emissive: 0xffd9b0, emissiveIntensity: 0.32 }), null, 'crate');
+    this.crates = new THREE.InstancedMesh(crateG, crateMat, 160); this.crates.count = 0; this.crates.frustumCulled = false; this.crates.name = 'held-crates'; this.root.add(this.crates);
+    this.crateList = []; this.pouring = [];
   }
 
   buildEffects() {
@@ -917,14 +928,14 @@ export class NetRenderer {
       const arr = this.trainSource(l.id);
       const x = arr && arr[tr.i];
       // the sim's distance along its own rail, scaled onto the drawn rail (a lane offset changes its length a little)
-      if (x) { const xs = x.s * (l.len / (l.srcLen || l.len)); const dir = x.dir || tr.lastDir || 1; tr.lastDir = dir; tr.lastS = xs; return { s: xs, dir: x.dir === 0 ? (xs > l.len / 2 ? 1 : -1) : dir }; }
+      if (x) { const xs = x.s * (l.len / (l.srcLen || l.len)); const dir = x.dir || tr.lastDir || 1; tr.lastDir = dir; tr.lastS = xs; tr.dwell = x.dir === 0; return { s: xs, dir: x.dir === 0 ? (xs > l.len / 2 ? 1 : -1) : dir }; }
     } const sp = (l.speed || ({ surface: 3, sky: 4, water: 2.5, earth: 2, fire: 6, space: 8, deep: 8 })[l.type]) * (l.speedMult ?? 1);
     const dwell = 4;
     const leg = l.len / sp; const cycle = 2 * (leg + dwell);
     if (l.stopped) { if (tr.frozenS == null) tr.frozenS = tr.lastS ?? 0; return { s: tr.frozenS, dir: tr.lastDir ?? 1 }; }
     tr.frozenS = null;
     let u = ((t / cycle + tr.phase) % 1 + 1) % 1 * cycle;
-    let s, dir;
+    let s, dir; tr.dwell = (u >= leg && u < leg + dwell) || u >= 2 * leg + dwell;
     if (u < leg) { s = u * sp; dir = 1; } else if (u < leg + dwell) { s = l.len; dir = 1; } else if (u < 2 * leg + dwell) { s = l.len - (u - leg - dwell) * sp; dir = -1; } else { s = 0; dir = -1; }
     tr.lastS = s; tr.lastDir = dir;
     return { s, dir };
@@ -945,11 +956,14 @@ export class NetRenderer {
     const leadNear2 = (this.quality === 'low' ? 70 : 110) ** 2;
     this.trainPoses = [];
     const xa = this.xpinGeo.attributes; let nx = 0; const fireC = col(TYPE_COLORS.fire).lerp(WHITE, 0.3);
+    let nPod = 0; const podsOn = near && (this.xray > 0.5 || this.inside) && !this.cineTrains;
     for (const tr of this.trains) {
       const l = tr.line; if (!this.layerVisible[l.type]) continue;
       const { s, dir } = this.trainS(tr, gt);
       // the crossing cinematic's own consist rides this lane now: the line's trains going the same way step aside
-      if (this.cineTrain && this.cineHide?.get(l.id) === dir) continue;
+      if (this.cineTrains && this.cineHide?.get(l.id) === dir) continue;
+      // a shaft train dwelling at its Core Exchange unloads its cargo pods into the chamber (cosmetic)
+      if (l.shaft && tr.dwell && podsOn && nPod < 72) nPod = this.exchangePods(l, s, dir, tr, nPod, m);
       const spacing = 1.35, stop = Math.min(END_STOP, l.len * 0.2);
       const moving = !(s <= 0.001 || s >= l.len - 0.001) && !l.stopped;
       for (let c = 0; c < tr.cars; c++) {
@@ -996,8 +1010,7 @@ export class NetRenderer {
         pin.position.setXYZ(npin, p.x, p.y, p.z); pin.color.setXYZ(npin, tc.r, tc.g, tc.b); pin.size.setX(npin, surfLight ? (near ? 11 : 8) : 6); npin++;
       }
     }
-    if (this.cineTrain) {
-      const ct = this.cineTrain;
+    for (const ct of this.cineTrains || []) {
       ct.cars.forEach((car, ci) => {
         let upv = car.p.clone().normalize(); if (Math.abs(upv.dot(car.d)) > 0.95) upv = new THREE.Vector3(0, 1, 0).cross(car.d).normalize();
         m.lookAt(tgt.copy(car.p).add(car.d), car.p, upv); m.setPosition(car.p.x - upv.x * 0.3, car.p.y - upv.y * 0.3, car.p.z - upv.z * 0.3);
@@ -1007,6 +1020,15 @@ export class NetRenderer {
         if (ct.type === 'fire' && Math.random() < 0.8) this.emit(car.p.clone().addScaledVector(car.d, -1.2), car.d.clone().multiplyScalar(-2).add(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)), new THREE.Color(1, 0.35, 0.08), 0.9, 0.7);
       });
     }
+    // the crossing timeline's cargo pods
+    for (const pd of this.cinePods || []) {
+      if (nPod >= 96) break;
+      let upv = pd.p.clone().normalize(); if (Math.abs(upv.dot(pd.d)) > 0.95) upv = new THREE.Vector3(0, 1, 0).cross(pd.d).normalize();
+      m.lookAt(tgt.copy(pd.p).add(pd.d), pd.p, upv); m.setPosition(pd.p); this.pods.setMatrixAt(nPod++, m);
+      if (Math.random() < 0.35) this.emit(pd.p.clone(), pd.d.clone().multiplyScalar(-0.6), new THREE.Color(1, 0.78, 0.4), 0.5, 0.5);
+    }
+    this.pods.count = nPod; this.pods.instanceMatrix.needsUpdate = true;
+    this.drawCrates(dt);
     for (const k of TYPES) if (this.leads[k]) { this.leads[k].count = leadCount[k]; this.leads[k].instanceMatrix.needsUpdate = true; }
     this.caps.count = nc; this.caps.instanceMatrix.needsUpdate = true; if (this.caps.instanceColor) this.caps.instanceColor.needsUpdate = true; this.capsBand.needsUpdate = true;
     this.bubbles.count = nb; this.bubbles.instanceMatrix.needsUpdate = true;
@@ -1259,10 +1281,200 @@ export class NetRenderer {
       if (!g.samples || g.samples.length < 2) continue;
       const { geometry } = buildRibbon([{ id: 0, samples: g.samples, load: 0, dim: 0 }]);
       const mat = railMaterial(g.type); mat.uniforms.uGhost.value = 1; mat.uniforms.uBright.value = 1.3; mat.uniforms.uClip.value = 0;
+      if (UNDERGROUND[g.type]) mat.depthTest = false; // a ghost through the planet shows through the ground
       const mesh = new THREE.Mesh(geometry, mat); mesh.renderOrder = 10; mesh.frustumCulled = false;
       this.ghosts.add(mesh);
     }
   }
+  /** The planned project's ghost (Plan it): stays drawn until it is built or cancelled; dimmer than the card preview. */
+  setPlanGhost(paths) {
+    disposeChildren(this.planGhosts);
+    if (!paths) return;
+    for (const g of paths) {
+      if (!g.samples || g.samples.length < 2) continue;
+      const { geometry } = buildRibbon([{ id: 0, samples: g.samples, load: 0, dim: 0 }]);
+      const mat = railMaterial(g.type); mat.uniforms.uGhost.value = 1; mat.uniforms.uBright.value = 0.85; mat.uniforms.uClip.value = 0;
+      if (UNDERGROUND[g.type]) mat.depthTest = false;
+      const mesh = new THREE.Mesh(geometry, mat); mesh.renderOrder = 10; mesh.frustumCulled = false;
+      this.planGhosts.add(mesh);
+    }
+  }
+  /**
+   * Held exports (cosmetic): `list` = [{ station, n }] stacks of n crates beside each station. A station that leaves
+   * the list because it is linked now pours its crates into the network (they sink into the station and fade).
+   */
+  setHeldCrates(list) {
+    const prev = new Map(this.crateList.map((c) => [c.station, c]));
+    const next = [];
+    for (const it of list || []) {
+      const mk = this.markers?.find((m) => m.id === it.station && !m.sky && !m.inside); if (!mk?.station) continue;
+      const a = this.stationAnchor(mk.station);
+      next.push({ station: it.station, n: Math.min(8, it.n), pos: a.pos.clone(), up: a.up.clone(), yaw: (mk.station.cell * 1.7) % (Math.PI * 2) });
+      prev.delete(it.station);
+    }
+    this.crateList = next;
+    return [...prev.values()];
+  }
+  /** Crates of stations now linked to the Terminal pour into the network (sink and fade over ~2.5 s, staggered). */
+  pourCrates(recs) { const t = this.time; for (const r of recs || []) for (let i = 0; i < r.n; i++) this.pouring.push({ ...r, i, t0: t + i * 0.18 }); }
+  /** Where crate i of a stack sits: a 2×2 footprint, rising in layers, 3.2 units to the side of the station. */
+  cratePos(r, i, out) {
+    const up = r.up; const t1 = new THREE.Vector3(0, 1, 0).cross(up); if (t1.lengthSq() < 0.01) t1.set(1, 0, 0); t1.normalize();
+    const t2 = up.clone().cross(t1).normalize();
+    const c = Math.cos(r.yaw), sn = Math.sin(r.yaw); const ax = t1.clone().multiplyScalar(c).addScaledVector(t2, sn), bx = t2.clone().multiplyScalar(c).addScaledVector(t1, -sn);
+    const layer = Math.floor(i / 4), k = i % 4;
+    return out.copy(r.pos).addScaledVector(ax, 3.2 + (k % 2) * 1.0).addScaledVector(bx, (k < 2 ? -0.5 : 0.5)).addScaledVector(up, 0.45 + layer * 0.95);
+  }
+  drawCrates(dt) {
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), sc = new THREE.Vector3();
+    let n = 0; const t = this.time;
+    for (const r of this.crateList) {
+      q.setFromUnitVectors(Y, r.up); q.multiply(new THREE.Quaternion().setFromAxisAngle(Y, r.yaw));
+      for (let i = 0; i < r.n && n < 160; i++) {
+        this.cratePos(r, i, p);
+        const bob = i === r.n - 1 ? 0.5 + 0.5 * Math.min(1, ((t * 0.7) % 1) * 3) : 1; // the newest crate drops in
+        sc.setScalar(bob); m.compose(p, q, sc); this.crates.setMatrixAt(n++, m);
+      }
+    }
+    for (let j = this.pouring.length - 1; j >= 0; j--) {
+      const r = this.pouring[j]; const u = (t - r.t0) / 1.6;
+      if (u >= 1) { this.pouring.splice(j, 1); continue; }
+      if (n >= 160) continue;
+      this.cratePos(r, r.i, p);
+      const k = Math.max(0, u); p.lerp(r.pos, k * k); // slide into the station
+      q.setFromUnitVectors(Y, r.up); sc.setScalar(Math.max(0.05, 1 - k)); m.compose(p, q, sc); this.crates.setMatrixAt(n++, m);
+      if (k > 0 && Math.random() < 0.5) this.emit(p.clone(), r.up.clone().multiplyScalar(1.5), new THREE.Color(1, 0.75, 0.35), 0.8, 0.45);
+    }
+    this.crates.count = n; this.crates.instanceMatrix.needsUpdate = true;
+    this.crates.visible = n > 0 && !this.inside;
+  }
+
+  // ------------------------------------------------------------------ the core crossing (one shared timeline)
+  /**
+   * The crossing as three legs in travel order (each in its direction's lane): down a shaft, across on the fire
+   * chord, up the far shaft. `down`, `fire`, `up` are line ids. Returns { legs: [{ type, id, dir, pts, cum, len }] } or null.
+   */
+  chainFromLines(downId, fireId, upId) {
+    const dl = this.lineById.get(downId), fl = this.lineById.get(fireId), ul = this.lineById.get(upId);
+    if (!dl?.side || !fl?.side || !ul?.side) return null;
+    const r0 = (l) => V(l.samples[0]).length(), r1 = (l) => V(l.samples[l.samples.length - 1]).length();
+    const fwdDown = r0(dl) >= r1(dl), fwdUp = r0(ul) <= r1(ul);
+    const deepA = V(fwdDown ? dl.samples[dl.samples.length - 1] : dl.samples[0]);
+    const fwdFire = V(fl.samples[0]).distanceTo(deepA) <= V(fl.samples[fl.samples.length - 1]).distanceTo(deepA);
+    const mk = (l, fwd, type) => {
+      const pts = (this.laneSamples(l.id, fwd) || []).map(V); const cum = [0];
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+      return { type, id: l.id, dir: fwd ? 1 : -1, pts, cum, len: cum[cum.length - 1] || 0 };
+    };
+    const legs = [mk(dl, fwdDown, 'earth'), mk(fl, fwdFire, 'fire'), mk(ul, fwdUp, 'earth')];
+    if (legs.some((g) => g.pts.length < 2 || g.len < 4)) return null;
+    return { legs };
+  }
+  /** From a shaft line: the fire chord from its Core Exchange and the shaft at the far end (ride on through). */
+  chainFromShaft(shaftId) {
+    const s = this.lineById.get(shaftId); if (!s?.shaft) return null;
+    const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 3;
+    const deep = V(s.samples[0]).length() < V(s.samples[s.samples.length - 1]).length() ? s.samples[0] : s.samples[s.samples.length - 1];
+    for (const f of this.lines.filter((l) => l.type === 'fire')) {
+      const fe = [f.samples[0], f.samples[f.samples.length - 1]]; const k = fe.findIndex((e) => near(e, deep)); if (k < 0) continue;
+      const far = fe[1 - k];
+      const up = this.lines.find((l) => l !== s && l.type === 'earth' && l.shaft && [l.samples[0], l.samples[l.samples.length - 1]].some((e) => near(e, far)));
+      if (up) return this.chainFromLines(s.id, f.id, up.id);
+    }
+    return null;
+  }
+  /**
+   * The shared crossing timeline (~19 s) for the first-crossing cinematic, the title's attract crossing and ride
+   * on through. Two consists meet at each Core Exchange: the earth consist descends and stops in the chamber, glowing
+   * cargo pods slide across (1.2 s) to the waiting fire consist, which leaves through the lava; the reverse on the
+   * far side. Returns { dur, handoffs: [t, t], pose(t) }: pose(t) places the consists and pods (cineTrains,
+   * cinePods) and returns the camera pose { pos, look, up, below }. `start` skips ahead (ride on through starts at
+   * the first exchange).
+   */
+  crossingTimeline(chain, { onHandoff = null, start = 0 } = {}) {
+    const [D, F, U] = chain.legs; const SP = 1.35, N = 4, GA = 5.5, GF = 3, BACK = 3; // GA: the earth consist stops clear of the exchange model; GF: the fire consist's tail
+    const ease = (u) => { u = Math.max(0, Math.min(1, u)); return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+    const smooth = (u) => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
+    const T = { aEnd: 4.2, h1: 5.0, h1End: 6.2, fGo: 6.8, fEnd: 11.8, h2: 12.4, h2End: 13.6, bGo: 14.0, bEnd: 18.2, dur: 19.0 };
+    const at = (g, s, out = new THREE.Vector3()) => {
+      s = Math.max(0, Math.min(g.len, s)); let i = 1; while (i < g.cum.length - 1 && g.cum[i] < s) i++;
+      const t = (s - g.cum[i - 1]) / ((g.cum[i] - g.cum[i - 1]) || 1); return out.copy(g.pts[i - 1]).lerp(g.pts[i], t);
+    };
+    const dirAt = (g, s) => at(g, s + 0.4).sub(at(g, s - 0.4)).normalize();
+    // lead positions (leg-local): earth A from the portal to the chamber; fire waits with its tail at the exchange; earth B the same
+    const aS0 = N * SP + 0.4, aS1 = D.len - GA;
+    const fS0 = GF + (N - 1) * SP, fS1 = F.len - GF;
+    const bS0 = GA + (N - 1) * SP, bS1 = Math.max(bS0 + 4, U.len - 6);
+    const lead = (t) => ({
+      a: aS0 + (aS1 - aS0) * ease(t / T.aEnd),
+      f: fS0 + (fS1 - fS0) * ease((t - T.fGo) / (T.fEnd - T.fGo)),
+      b: bS0 + (bS1 - bS0) * ease((t - T.bGo) / (T.bEnd - T.bGo)),
+    });
+    const consist = (g, s, type) => {
+      const cars = [];
+      for (let k = 0; k < N; k++) { const q = Math.max(0.3, s - k * SP); cars.push({ p: at(g, q), d: dirAt(g, q) }); }
+      return { type, cars };
+    };
+    // the camera: beside and a little above a point BACK behind the lead, looking ahead (as Ride frames a train)
+    const follow = (g, s) => {
+      const p = at(g, s - BACK), ahead = at(g, s + 0.5); const dir = ahead.clone().sub(p).normalize();
+      let up = p.clone().normalize(); if (Math.abs(up.dot(dir)) > 0.9) up = new THREE.Vector3(0, 1, 0).cross(dir).normalize();
+      const side = new THREE.Vector3().crossVectors(dir, up).normalize();
+      return { pos: p.clone().addScaledVector(dir, -0.5).addScaledVector(up, 1.5).addScaledVector(side, 3.4), look: ahead, up };
+    };
+    // at an exchange: hold to the side of the gap between the two consists, both in frame, the pods crossing between
+    const hold = (g1, s1, g2, s2) => {
+      const p1 = at(g1, s1), p2 = at(g2, s2); const c = p1.clone().add(p2).multiplyScalar(0.5);
+      const d1 = dirAt(g1, s1), d2 = dirAt(g2, s2);
+      let side = d1.clone().cross(d2); if (side.lengthSq() < 0.05) side = d1.clone().cross(c.clone().normalize()); if (side.lengthSq() < 0.01) side.set(0, 1, 0).cross(d1); side.normalize();
+      const up = c.clone().normalize(); const span = p1.distanceTo(p2);
+      return { pos: c.clone().addScaledVector(side, 9 + span * 0.45).addScaledVector(d1, -1.0), look: c, up: Math.abs(up.dot(side)) > 0.9 ? d1.clone() : up };
+    };
+    const mix = (A, B, u) => ({ pos: A.pos.clone().lerp(B.pos, u), look: A.look.clone().lerp(B.look, u), up: A.up.clone().lerp(B.up, u).normalize() });
+    const fired = [false, false];
+    const pods = (from, to, u) => {
+      const out = [];
+      for (let k = 0; k < N; k++) for (let j = 0; j < 2; j++) {
+        const uu = smooth((u - (k * 0.06 + j * 0.12)) / 0.7); if (uu <= 0 || uu >= 1) continue;
+        const a = from.cars[k].p, b = to.cars[N - 1 - k].p; const p = a.clone().lerp(b, uu);
+        p.addScaledVector(p.clone().normalize(), Math.sin(uu * Math.PI) * 0.5 + (j - 0.5) * 0.25);
+        out.push({ p, d: b.clone().sub(a).normalize() });
+      }
+      return out;
+    };
+    const net = this;
+    this.cineHide = new Map([[D.id, D.dir], [F.id, F.dir], [U.id, U.dir]]);
+    return {
+      dur: T.dur, start, handoffs: [T.h1, T.h2],
+      pose(t) {
+        t += start;
+        for (let i = 0; i < 2; i++) if (!fired[i] && t >= [T.h1, T.h2][i]) { fired[i] = true; onHandoff?.(i); }
+        const L = lead(t);
+        const A = consist(D, L.a, 'earth'), Fc = consist(F, L.f, 'fire'), B = consist(U, L.b, 'earth');
+        const trains = [A, Fc, B];
+        let pd = null;
+        if (t >= T.h1 && t <= T.h1End + 0.2) pd = pods(A, Fc, (t - T.h1) / (T.h1End - T.h1));
+        else if (t >= T.h2 && t <= T.h2End + 0.2) pd = pods(Fc, B, (t - T.h2) / (T.h2End - T.h2));
+        net.cineTrains = trains; net.cinePods = pd;
+        // the chamber: the lava opens round the exchange while the consists meet there, so the fire consist shows
+        const open = (a, b2) => smooth((t - a) / 0.6) * (1 - smooth((t - b2) / 0.6));
+        const o1 = open(T.aEnd - 0.6, T.fGo + 0.4), o2 = open(T.fEnd - 0.6, T.bGo + 0.4);
+        if (o1 > 0.01) net.G.city?.setCoreCut?.(D.pts[D.pts.length - 1], 9 * o1); else if (o2 > 0.01) net.G.city?.setCoreCut?.(F.pts[F.pts.length - 1], 9 * o2); else net.G.city?.setCoreCut?.(null);
+        let pose;
+        const H1 = hold(D, aS1 - SP * 1.5, F, GF + SP * 1.5), H2 = hold(F, fS1 - SP * 1.5, U, GA + SP * 1.5);
+        if (t < T.aEnd) pose = follow(D, L.a);
+        else if (t < T.fGo) { const a = follow(D, aS1), f = follow(F, fS0); pose = t < T.h1End ? mix(a, H1, smooth((t - T.aEnd) / 0.6)) : mix(H1, f, smooth((t - T.h1End) / (T.fGo - T.h1End))); }
+        else if (t < T.fEnd) pose = follow(F, L.f);
+        else if (t < T.bGo) { const a = follow(F, fS1), b = follow(U, bS0); pose = t < T.h2End ? mix(a, H2, smooth((t - T.fEnd) / 0.6)) : mix(H2, b, smooth((t - T.h2End) / (T.bGo - T.h2End))); }
+        else pose = follow(U, L.b);
+        pose.below = true; pose.water = false;
+        return pose;
+      },
+    };
+  }
+  /** End whatever crossing timeline ran: its consists, pods and hidden trains go. */
+  endCrossing() { this.cineTrains = null; this.cinePods = null; this.cineHide = null; this.G.city?.setCoreCut?.(null); }
+
   /** Highlight a selected line or station. */
   setSelected(sel) {
     for (const t of TYPES) this.mats[t].uniforms.uBright.value = 1;
@@ -1346,6 +1558,27 @@ export class NetRenderer {
   }
   sampleOf(lineId, i) { const l = this.lineById.get(lineId); if (!l) return null; const s = l.samples[Math.max(0, Math.min(l.samples.length - 1, i))]; return s ? V(s) : null; }
 
+  /**
+   * Normal play: a shaft train dwelling at its Core Exchange end hands its cargo over. Glowing pods slide from each
+   * car into the chamber beside the train, one after another (a 1.2 s slide, repeating while it dwells).
+   */
+  exchangePods(l, s, dir, tr, n, m) {
+    const p = new THREE.Vector3(), d = new THREE.Vector3(), sd = new THREE.Vector3(), q = new THREE.Vector3();
+    sampleAt(l, s, p, d); if (p.length() > 50) return n; // dwelling at the portal end: nothing to hand over
+    if (p.distanceToSquared(this.G.camera.position) > 140 * 140) return n;
+    sideAt(l, s, sd);
+    const t = this.time + tr.i * 0.37;
+    for (let c = 0; c < (tr.cars || 4) && n < 72; c++) {
+      const u = ((t / 1.2) - c * 0.25) % 1; if (u < 0) continue;
+      const sc = s - dir * c * 1.35;
+      sampleAt(l, sc, q, null); q.addScaledVector(sd, dir * (DIR_LANE[l.type] || 0));
+      const to = q.clone().addScaledVector(sd, -dir * 2.6).addScaledVector(d, dir * 0.8);
+      const k = u * u * (3 - 2 * u); const pp = q.clone().lerp(to, k); pp.addScaledVector(pp.clone().normalize(), Math.sin(k * Math.PI) * 0.35);
+      const up = pp.clone().normalize(); const dd = to.clone().sub(q).normalize();
+      m.lookAt(pp.clone().add(dd), pp, Math.abs(up.dot(dd)) > 0.95 ? d : up); m.setPosition(pp); this.pods.setMatrixAt(n++, m);
+    }
+    return n;
+  }
   /** Ride: a pose 2 behind and 1 above the lead car of the line's first train, looking 4 samples ahead. */
   ridePose(lineId, trainIdx = 0) {
     const pose = this.trainPoses?.find((x) => x.tr.line.id === lineId && x.tr.i === trainIdx);
@@ -1389,25 +1622,12 @@ export class NetRenderer {
     this.attractN = (this.attractN || 0) + 1;
     const chain = this.attractN % 2 === 1 ? this.crossingChain() : null;
     if (chain) {
-      const { pts, ptype, cum, total } = chain; const dur = 13;
-      const at = (q) => { q = Math.max(0, Math.min(total, q)); let i = 1; while (i < cum.length - 1 && cum[i] < q) i++; const t = (q - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1); return pts[i - 1].clone().lerp(pts[i], t); };
-      const idx = (q) => { let i = 1; while (i < cum.length - 1 && cum[i] < q) i++; return i; };
-      const c = { t0: this.time, dur };
+      // the same timeline as the game's first-crossing cinematic: two consists and the hand-off at each exchange
+      const ctl = this.crossingTimeline(chain, { onHandoff: (i) => this.onAttractHandoff?.(i) });
+      const t0 = this.time;
       this.riding = true; this.attractActive = true;
-      cam.startFollow(() => {
-        // the same framing as the game's crossing cinematic: beside and a little above a consist that runs ahead
-        const u = Math.min(1, (this.time - c.t0) / dur); const e2 = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-        const q = e2 * (total - 9); const p = at(q), ahead = at(q + 3.5);
-        const ts = q + 3; const cars = [];
-        for (let k = 0; k < 4; k++) { const a = at(ts - k * 1.35), b2 = at(ts - k * 1.35 + 0.5); cars.push({ p: a, d: b2.clone().sub(a).normalize() }); }
-        this.cineTrain = { type: ptype[idx(ts)] || 'earth', cars };
-        const dir = ahead.clone().sub(p).normalize();
-        let up = p.clone().normalize(); if (Math.abs(up.dot(dir)) > 0.9) up = new THREE.Vector3(0, 1, 0).cross(dir).normalize();
-        const side = new THREE.Vector3().crossVectors(dir, up).normalize();
-        const pose = { pos: p.clone().addScaledVector(dir, -0.5).addScaledVector(up, 1.5).addScaledVector(side, 3.4), look: ahead, up, below: true, water: false };
-        this.attractPose = pose; return pose;
-      });
-      return { dur: dur + 0.3, crossing: true };
+      cam.startFollow(() => { const pose = ctl.pose(Math.min(ctl.dur, this.time - t0)); this.attractPose = pose; return pose; });
+      return { dur: ctl.dur + 0.3, crossing: true };
     }
     const above = this.lines.filter((l) => !UNDERGROUND[l.type] && l.type !== 'deep' && this.layerVisible[l.type] && !l.stopped);
     if (!above.length) return null;
@@ -1429,7 +1649,7 @@ export class NetRenderer {
   }
   endAttractRide() {
     if (!this.attractActive) return;
-    this.attractActive = false; this.riding = false; this.cineTrain = null; this.cineHide = null; this.attractPose = null;
+    this.attractActive = false; this.riding = false; this.endCrossing(); this.attractPose = null;
   }
   /** The core crossing for the attract camera: shaft down, fire chord, shaft up, chained end to end (or null). */
   crossingChain() {
@@ -1441,16 +1661,8 @@ export class NetRenderer {
       const down = shafts.find((l) => ends(l).some((e) => near(e, fa)));
       const up = shafts.find((l) => l !== down && ends(l).some((e) => near(e, fb)));
       if (!down || !up) continue;
-      // each leg in the lane of its direction of travel: down the shaft (top first), across, up the far shaft
-      const fwdDown = V(down.samples[0]).length() >= V(down.samples[down.samples.length - 1]).length();
-      const fwdUp = V(up.samples[0]).length() <= V(up.samples[up.samples.length - 1]).length();
-      const legs = [['earth', this.laneSamples(down.id, fwdDown)], ['fire', this.laneSamples(f.id, true)], ['earth', this.laneSamples(up.id, fwdUp)]];
-      this.cineHide = new Map([[down.id, fwdDown ? 1 : -1], [f.id, 1], [up.id, fwdUp ? 1 : -1]]);
-      const pts = [], ptype = [];
-      for (const [ty, arr] of legs) for (const q of arr) { pts.push(V(q)); ptype.push(ty); }
-      const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-      const total = cum[cum.length - 1]; if (total < 20) continue;
-      return { pts, ptype, cum, total };
+      const ch = this.chainFromLines(down.id, f.id, up.id);
+      if (ch && ch.legs.reduce((a, g) => a + g.len, 0) >= 20) return ch;
     }
     return null;
   }

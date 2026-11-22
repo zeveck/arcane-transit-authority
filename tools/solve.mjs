@@ -7,6 +7,7 @@
 //   node tools/solve.mjs --sweep              7 Charters (I-VI, Galactic) × 6 regions × 2 seeds
 //   node tools/solve.mjs --verify             replay each written solution and check its hashes
 //   node tools/solve.mjs --sweep --charter I,II --no-write --rows part.json   one part of a split sweep (run parts in parallel)
+//   node tools/solve.mjs --merge a.json,b.json,...   judge the parts together (pass count + card gate), write sweep.json
 //   options: --region <id> --seed <n> --lookahead <s> --clusters <n> --no-write --quiet
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,17 +30,48 @@ const log = (...a) => { if (!QUIET) console.log(...a); };
 const meta = cellMeta(), CELLS = getCells();
 export const SOLUTION_SEEDS = { I: SOLVER.tutorialTermSeed, II: 202, III: 303, IV: 404, V: 515, VI: 626, G: 717 };
 
-/** The tutorial's fixed script (Charter I, the Capital), times in game seconds. */
+/**
+ * The tutorial's script (Charter I, the Capital), in the story's 8-step order, times in game seconds at a steady
+ * player's pace. Each entry is [time, action, opts]: the action runs at `time`; with `opts.whenAffordable` it runs at
+ * the first second from `time` on that it can be paid for (the crossing: step 6 saves for it), up to `opts.within` s;
+ * `opts.after` sets the time to that many seconds after the previous scripted action.
+ * Any prefix action that fails ends the run (solve.mjs exits 1).
+ *   1. Surface over the light blocks a → b (built with 1 train: TUTORIAL.firstLineTrains)
+ *   2. Earth under the dense blocks: the Capital centre → station 1 ("Dense? Dig.")
+ *   3. a train on the busiest line (line 0, the 1-train Surface line)
+ *   4. Sky between the Capital Heights peaks
+ *   5. a park on a cleared corridor cell
+ *   6. save for the crossing (nothing to do; the crossing card is planned)
+ *   7. the crossing: station 1 → the Warp Terminal, through the core, as soon as it is affordable; then a train on each
+ *      of its two 1-train shafts (the lines that are really full now), as soon as each can be paid
+ *   8. Quota I (the solver plays on from here)
+ */
 export function tutorialScript() {
   const T = meta.tutorial;
   return [
     [20, { type: 'buildRoute', a: T.a, b: T.b, kind: 'surface' }],
-    [90, { type: 'addTrain', line: 0 }],
-    [180, { type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' }],
-    [370, { type: 'green', cell: T.path[1], kind: 'park' }],
-    [430, { type: 'buildRoute', a: meta.capitalCentre, b: { station: 1 }, kind: 'earth' }],
-    [520, { type: 'buildRoute', a: T.peaks[0], b: T.peaks[1], kind: 'sky' }],
+    [120, { type: 'buildRoute', a: meta.capitalCentre, b: { station: 1 }, kind: 'earth' }],
+    [210, { type: 'addTrain', line: 0 }],
+    [300, { type: 'buildRoute', a: T.peaks[0], b: T.peaks[1], kind: 'sky' }],
+    [390, { type: 'green', cell: T.path[1], kind: 'park' }],
+    [400, { type: 'buildRoute', a: { station: 1 }, b: meta.terminal, kind: 'core' }, { whenAffordable: true, within: 420 }],
+    // after the crossing its 1-train shafts are the full lines (100% load): a train on each as soon as it can be paid
+    [0, { type: 'addTrain', line: 3 }, { after: 20, whenAffordable: true, within: 240 }],
+    [0, { type: 'addTrain', line: 4 }, { after: 10, whenAffordable: true, within: 240 }],
   ];
+}
+/** Tutorial targets (GAME_DESIGN "Requests 35-37"): checked on the tutorial run. */
+export const TUTORIAL_TARGETS = { affordableFrom: 360, affordableTo: 660, idleGap: 180, quotaIFrom: 720, quotaITo: 900 };
+/** The tutorial's crossing card (station 1 → the Terminal) and the other tutorial stations' cards to the Terminal. */
+export function tutorialCrossingCheck(g) {
+  const out = [];
+  for (const st of g.s.stations) {
+    if (!st || st.kind === 'terminal' || st.kind === 'core' || st.inherited) continue;
+    const cards = g.routeCards({ station: st.id }, meta.terminal);
+    const core = cards.find((c) => c.kind === 'core');
+    out.push({ station: st.id, core: core ? { feasible: core.feasible, cost: core.cost, carries: core.carries, tags: core.tags } : null, others: cards.filter((c) => c.feasible && c.kind !== 'core').map((c) => ({ kind: c.kind, cost: c.cost, carries: c.carries })) });
+  }
+  return out;
 }
 
 // ------------------------------------------------------------------ evaluation
@@ -272,7 +304,9 @@ export function solve({ charter, region, termSeed, tutorial = false, lookaheadS 
   const doAct = (a) => { const r = g.act(a); if (r.ok) { actions.push([g.s.time, a]); if (a.type === 'buildRoute') CARD_STATS.builds[a.kind] = (CARD_STATS.builds[a.kind] || 0) + 1; if (process.env.SOLVE_DEBUG) dbg.push([g.s.time, g.hash()]); } return r; };
   const dbg = [];
   const prefix = tutorial ? tutorialScript() : [];
-  let pi = 0;
+  let pi = 0, prefixFailed = null, crossingAffordableAt = null, crossingCheck = null;
+  const prefixTimes = [];
+  const coreIdx = prefix.findIndex((p) => p[1].kind === 'core');
   const deadline = CHARTERS[g.s.charter].deadline * 60 + 15 * 60;
   let nextDecision = 30, lastStage = 0;
   while (!g.s.won && !g.s.termOver && g.s.time < deadline) {
@@ -280,6 +314,11 @@ export function solve({ charter, region, termSeed, tutorial = false, lookaheadS 
     const nextT = pi < prefix.length ? Math.min(prefix[pi][0], nextDecision) : nextDecision;
     while (g.s.time < nextT && !g.s.won && !g.s.termOver) {
       g.step(1);
+      // the tutorial: when does the crossing first become affordable (from the step before it on)?
+      if (tutorial && crossingAffordableAt == null && pi === coreIdx && pi > 0) {
+        const p = prefix[coreIdx][1], c = g.routeCards(p.a, p.b).find((x) => x.kind === p.kind);
+        if (c && c.feasible && g.canAfford(c.cost)) { crossingAffordableAt = g.s.time; crossingCheck = tutorialCrossingCheck(g); }
+      }
       let qhit = false;
       if (g.s.quota.stage !== lastStage) {
         for (let k = lastStage; k < g.s.quota.stage; k++) quotas.push({ quota: k + 1, time: g.s.quota.metAt[k], hash: g.hash(), money: Math.round(g.s.money), throughput: g.throughput() });
@@ -289,7 +328,15 @@ export function solve({ charter, region, termSeed, tutorial = false, lookaheadS 
       if (qhit) break;
     }
     if (g.s.won || g.s.termOver) break;
-    if (pi < prefix.length && g.s.time >= prefix[pi][0]) { const r = doAct(prefix[pi][1]); if (!r.ok) log('prefix action failed', prefix[pi][1], r.reason); pi++; continue; }
+    if (pi < prefix.length && g.s.time >= prefix[pi][0]) {
+      const [t0, a, po = {}] = prefix[pi];
+      const r = doAct(a);
+      if (r.ok) { prefixTimes.push(g.s.time); pi++; if (pi < prefix.length && prefix[pi][2]?.after != null) prefix[pi] = [g.s.time + prefix[pi][2].after, prefix[pi][1], { ...prefix[pi][2], after: null }]; continue; }
+      if (po.whenAffordable && r.reason === 'Not enough money' && g.s.time < t0 + (po.within ?? 300)) { prefix[pi] = [g.s.time + 1, a, po]; continue; }
+      prefixFailed = { at: g.s.time, action: a, reason: r.reason };
+      log('prefix action failed', JSON.stringify(a), r.reason);
+      break;
+    }
     if (g.s.time < nextDecision) continue;
     nextDecision = g.s.time + SOLVER.everySeconds;
     if (pi < prefix.length) continue; // the tutorial's own pace
@@ -366,6 +413,25 @@ export function solve({ charter, region, termSeed, tutorial = false, lookaheadS 
     else idleSince = null;
   }
   if (idleSince != null) idleMax = Math.max(idleMax, g.s.time - idleSince);
+  // the tutorial's own idle gaps: between its scripted actions (the solver does not decide while the script runs)
+  let tut = null;
+  if (tutorial) {
+    let gap = 0, prev = 0;
+    for (const t of prefixTimes) { gap = Math.max(gap, t - prev); prev = t; }
+    const nextAct = actions.find(([t]) => t > prev);
+    if (nextAct) gap = Math.max(gap, nextAct[0] - prev);
+    idleMax = Math.max(idleMax, gap);
+    const q1 = g.s.quota.metAt[0] ?? null, TT = TUTORIAL_TARGETS;
+    const coreBest = crossingCheck ? crossingCheck.every((x) => x.core && x.core.feasible && x.core.tags.includes('Cheapest') && x.core.tags.includes('Most capacity')) : false;
+    const checks = {
+      crossingAffordable: crossingAffordableAt != null && crossingAffordableAt >= TT.affordableFrom && crossingAffordableAt <= TT.affordableTo,
+      idleGap: gap <= TT.idleGap,
+      quotaI: q1 != null && q1 >= TT.quotaIFrom && q1 <= TT.quotaITo,
+      coreCheapestAndMostCapacity: coreBest,
+      prefix: !prefixFailed,
+    };
+    tut = { crossingAffordableAt, crossingAt: prefixTimes[coreIdx] ?? null, prefixTimes, scriptGapMax: gap, quotaIAt: q1, crossingCheck, checks, ok: Object.values(checks).every(Boolean) };
+  }
   // type shares
   const track = {}; let trackTot = 0; const types = new Set();
   for (const l of liveLines(g)) { if (l.inherited) continue; const L = lineGeo(g, l).length; const k = l.core ? 'core' : l.type; track[k] = (track[k] || 0) + L; trackTot += L; types.add(l.type); }
@@ -375,7 +441,7 @@ export function solve({ charter, region, termSeed, tutorial = false, lookaheadS 
     commended: g.s.won, commendedAt: g.s.commendedAt, termOver: g.s.termOver, overtime: g.s.overtime,
     quotas, actions, idleGapMax: idleMax, types: [...types].sort(), trackShares: shares,
     moneyCurve, finalHash: g.hash(), finalTime: g.s.time, money: Math.round(g.s.money), stations: liveStations(g).length, lines: liveLines(g).length,
-    cardStats: JSON.parse(JSON.stringify(CARD_STATS)), dbg, realSeconds: +((performance.now() - t0) / 1000).toFixed(1), perf: g.perfStats(), throughput: g.throughput(),
+    cardStats: JSON.parse(JSON.stringify(CARD_STATS)), dbg, prefixFailed, tutorialChecks: tut, realSeconds: +((performance.now() - t0) / 1000).toFixed(1), perf: g.perfStats(), throughput: g.throughput(),
   };
 }
 
@@ -414,8 +480,21 @@ function summary(r) {
   const q = (k) => { const x = r.quotas.find((y) => y.quota === k); return x ? (x.time / 60).toFixed(1) : '—'; };
   return `${r.charter.padEnd(3)} ${r.region.padEnd(9)} seed ${String(r.termSeed).padEnd(5)} QI ${q(1).padStart(5)} QII ${q(2).padStart(5)} QIII ${q(3).padStart(5)}  idle ${String(r.idleGapMax).padStart(4)}s  types ${r.types.join(',')}  shares ${JSON.stringify(r.trackShares)}  $${r.money}  ${r.stations}st/${r.lines}ln  ${r.realSeconds}s${r.commended ? '' : '  NOT COMMENDED'}${r.overtime ? ' (overtime)' : ''}`;
 }
+/** Card balance gate (requests 35-37): fail if one kind takes both tags in more than 35% of comparisons (Earth: 30%),
+ *  or fewer than 3 kinds each get at least 15% of builds. Applied to the sweep's rows together (and to the recorded
+ *  solutions together): a single term has too few builds to judge. */
+export const CARD_GATE = { bothMax: 35, bothMaxEarth: 30, buildKinds: 3, buildShareMin: 15 };
+export function cardGate(m) {
+  const why = [];
+  for (const [k, v] of Object.entries(m.bothByKindPct)) if (v > (k === 'earth' ? CARD_GATE.bothMaxEarth : CARD_GATE.bothMax)) why.push(`${k} takes both tags in ${v}% of comparisons`);
+  const wide = Object.values(m.buildsByKindPct).filter((v) => v >= CARD_GATE.buildShareMin).length;
+  if (wide < CARD_GATE.buildKinds) why.push(`only ${wide} kinds get >= ${CARD_GATE.buildShareMin}% of builds`);
+  return { ok: !why.length, why };
+}
 function passes(r) {
   const maxShare = Math.max(...Object.values(r.trackShares));
+  if (r.prefixFailed) return false;
+  if (r.tutorialChecks && !r.tutorialChecks.ok) return false;
   return r.commended && !r.overtime && r.idleGapMax <= SOLVER.idleGapLimit && r.types.length >= 3 && maxShare <= 0.6;
 }
 
@@ -435,13 +514,24 @@ if (isMain) {
     }
     process.exit(bad ? 1 : 0);
   }
+  if (arg('merge')) { // node tools/solve.mjs --merge part1.json,part2.json,...: judge a split sweep as one
+    const rows = arg('merge').split(',').flatMap((f) => JSON.parse(fs.readFileSync(f, 'utf8')));
+    const fails = rows.filter((r) => !r.ok).length;
+    const m = cardMetric(rows), gate = cardGate(m);
+    console.log(cardMetricText(rows));
+    console.log(gate.ok ? 'card gate OK' : 'card gate FAIL: ' + gate.why.join('; '));
+    for (const r of rows.filter((x) => !x.ok)) console.log('FAIL', r.charter, r.region, r.seed, JSON.stringify(r.quotas));
+    if (write) fs.writeFileSync(path.join(SOL_DIR, 'sweep.json'), JSON.stringify({ seeds: [11, 22], lookahead: SOLVER.sweepLookahead, rows, cardMetric: m, cardGate: gate }, null, 1));
+    console.log(`${rows.length - fails}/${rows.length} sweep runs pass`);
+    process.exit(fails || !gate.ok ? 1 : 0);
+  }
   if (flag('sweep')) {
     const rows = []; let fails = 0;
     const seeds = [11, 22];
     const charters = arg('charter') ? arg('charter').split(',') : ['I', 'II', 'III', 'IV', 'V', 'VI', 'G'];
     const regions = arg('region') ? [arg('region')] : ['capital', 'brine', 'rift', 'spires', 'flats', 'ringside'];
     for (const ch of charters) for (const rg of regions) for (const sd of seeds) {
-      const r = solve({ charter: ch, region: rg, termSeed: sd, lookaheadS: +(arg('lookahead') || SOLVER.sweepLookahead), nClusters: +(arg('clusters') || SOLVER.sweepClusters), evalTop: +(arg('evaltop') || 10), realLimitMs: 90000 });
+      const r = solve({ charter: ch, region: rg, termSeed: sd, lookaheadS: +(arg('lookahead') || SOLVER.sweepLookahead), nClusters: +(arg('clusters') || SOLVER.sweepClusters), evalTop: +(arg('evaltop') || 10), realLimitMs: +(arg('reallimit') || SOLVER.sweepRealLimitMs) });
       if (!QUIET) process.stdout.write('');
       const ok = r.commended && r.idleGapMax <= SOLVER.idleGapLimit;
       if (!ok) fails++;
@@ -449,6 +539,9 @@ if (isMain) {
       rows.push({ charter: ch, region: rg, seed: sd, quotas: r.quotas.map((q) => q.time), idleGapMax: r.idleGapMax, shares: r.trackShares, commended: r.commended, overtime: r.overtime, ok, cardStats: r.cardStats });
     }
     console.log(cardMetricText(rows));
+    const gate = cardGate(cardMetric(rows));
+    console.log(gate.ok ? 'card gate OK' : 'card gate FAIL: ' + gate.why.join('; '));
+    if (!gate.ok && !arg('rows')) fails++; // a split part is judged when the parts are merged (--merge)
     if (arg('rows')) fs.writeFileSync(arg('rows'), JSON.stringify(rows, null, 1)); // part of a split sweep (merge with --merge)
     if (write) {
       const f = path.join(SOL_DIR, 'sweep.json');
@@ -460,7 +553,7 @@ if (isMain) {
     process.exit(fails ? 1 : 0);
   }
   const charters = arg('charter') ? [arg('charter')] : ['I', 'II', 'III', 'IV', 'V', 'VI', 'G'];
-  let bad = 0;
+  let bad = 0; const solRows = [];
   for (const ch of charters) {
     const region = arg('region') || SOLUTION_REGION[ch];
     const termSeed = +(arg('seed') || SOLUTION_SEEDS[ch]);
@@ -469,9 +562,13 @@ if (isMain) {
     const ok = passes(r);
     if (!ok) bad++;
     console.log((ok ? 'PASS ' : 'FAIL ') + summary(r));
+    if (r.prefixFailed) { console.log('     tutorial prefix failed:', JSON.stringify(r.prefixFailed)); process.exit(1); }
+    if (r.tutorialChecks) console.log('     tutorial', JSON.stringify({ ...r.tutorialChecks, crossingCheck: undefined }), 'cards to the Terminal', JSON.stringify(r.tutorialChecks.crossingCheck));
+    solRows.push(r);
     const q3 = CHARTERS[ch].quotas[2], reach = (CHARTERS[ch].warpCars + 2) * 50 * 3;
     log(`     Quota III ${q3} = ${Math.round(100 * q3 / reach)}% of the reachable ceiling ${reach}; perf ${JSON.stringify(r.perf)}`);
     if (write) { fs.mkdirSync(SOL_DIR, { recursive: true }); fs.writeFileSync(path.join(SOL_DIR, `charter-${ch}.json`), JSON.stringify(r, null, 1)); }
   }
+  if (solRows.length > 1) { const m = cardMetric(solRows), gate = cardGate(m); console.log(cardMetricText(solRows)); console.log(gate.ok ? 'card gate OK (recorded solutions)' : 'card gate FAIL (recorded solutions): ' + gate.why.join('; ')); }
   process.exit(bad ? 1 : 0);
 }

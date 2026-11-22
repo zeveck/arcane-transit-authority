@@ -8,7 +8,7 @@
 
 import {
   CHARTERS, REGIONS, SIM, TYPES, TRANSFER, GREEN, TRAINS_PER_NEW_LINE, TRAIN_REFUND, STATION_UPKEEP, LAYER_UPKEEP,
-  INTERCHANGE_LAYER_FEE, SOLVER, AREA_IDS, MERITS, UNLOCKS, MANDATES, DISASTER_PACING,
+  INTERCHANGE_LAYER_FEE, SOLVER, AREA_IDS, MERITS, UNLOCKS, MANDATES, DISASTER_PACING, NO_MANDATE_TEXT, TUTORIAL,
 } from './tuning.js';
 import { getCells, getGrid, termSetup, geoHash, regionCounts, cellMeta, hexDistances, TERRAIN, TERRAIN_NAMES } from './planet.js';
 import { Rng, termStream, hashValue, hashSeed } from './rng.js';
@@ -63,7 +63,7 @@ export class Game {
       v: 1, geo: geoHash(), termSeed, charter, region, tutorial, freePlay: !!opts.freePlay,
       mandates: setup.mandates, natives: setup.natives, priority: setup.priority,
       update: 0, time: 0,
-      money: ch.start, startMoney: ch.start,
+      money: tutorial ? TUTORIAL.start : ch.start, startMoney: tutorial ? TUTORIAL.start : ch.start,
       densities: Array.from(setup.densities), demolished: new Array(642).fill(0), green: new Array(642).fill(0), attractions: [],
       stations: [], lines: [], terminalStation: 0,
       tech: nativeTech(setup.natives), freeTechCredits: 0, freeCoreExchanges: 0, firstCrossingUsed: false,
@@ -88,8 +88,8 @@ export class Game {
     s.milestones.dealt = dealt;
     const drng = termStream(termSeed, 'disasters');
     s.dis = initDisasters(s, drng);
-    if (tutorial) s.dis.nextAt = Math.max(s.dis.nextAt, 12 * 60);
-    if (opts.noDisasters || s.freePlay) s.dis.nextAt = Infinity;
+    if (tutorial) { s.dis.nextAt = Infinity; s.dis.tutorialHold = true; } // the tutorial: no disasters until after Quota I (quotaCheck sets the first)
+    if (opts.noDisasters || s.freePlay) { s.dis.nextAt = Infinity; s.dis.tutorialHold = false; }
     s.rng = { milestones: mrng.state, disasters: drng.state, dispatches: termStream(termSeed, 'dispatches').state, term: trng.state };
     // perks
     for (const p of s.perks) {
@@ -114,6 +114,7 @@ export class Game {
   static restore(snap) {
     const s = typeof snap === 'string' ? JSON.parse(snap) : JSON.parse(JSON.stringify(snap));
     if (s.dis && s.dis.nextAt === null) s.dis.nextAt = Infinity;
+    if (Array.isArray(s.mandates) && s.mandates.includes('firstCrossing')) s.mandates = s.mandates.filter((m) => m !== 'firstCrossing'); // old saves: the grant is gone
     return new Game(s, {});
   }
   /** Full sim snapshot (plain JSON-able object). */
@@ -181,6 +182,18 @@ export class Game {
     this.gen = { C, X, cover, made, boost };
     return this.gen;
   }
+  /** What one cell makes per minute now if a station in the Terminal's network serves it ({ riders, exports }; 0 when it
+   *  makes nothing). The same formula as generation(), before splitting over stations: route cards' demolition losses. */
+  cellYield(c) {
+    const s = this.s, m = this.mods, ch = CHARTERS[s.charter], cell = this.ct[c];
+    const d = effDensity(this, c); if (d <= 0) return { riders: 0, exports: 0 };
+    const gen = this.generation();
+    const mult = (this.greenMults().get(c) || 1) * m.genMult * (s.genScale || 1);
+    let exp = SIM.exportsPerDensity * d * ch.export * REGIONS[cell.areaId].export * mult * m.exportMult;
+    if (gen.boost.has(c)) exp *= SIM.priorityExportMult;
+    if (s.mandates.includes('atlanteanTrade') && cell.terrain === TERRAIN.ATLANTIS) exp *= SIM.atlanteanTradeMult;
+    return { riders: SIM.commutersPerDensity * d * mult, exports: exp };
+  }
   greenMults() {
     const s = this.s, out = new Map();
     for (let c = 0; c < s.green.length; c++) {
@@ -192,6 +205,21 @@ export class Game {
   }
   /** Exports per minute made by stations in the Terminal's component (route cards' "+N exports"). */
   exportsReachable() { return this.generation().made; }
+  /** Exports per minute made at stations not linked to the Terminal (held: they flow once a route links them), for the
+   *  planned project's chip ("Exports waiting for the Terminal: 64/min"). { perMin, stations: [{ station, perMin }] } */
+  heldExports() {
+    const gen = this.generation(), comp = components(this), out = [];
+    let tot = 0;
+    for (const [id, x] of [...gen.X].sort((p, q) => p[0] - q[0])) if (x > 0 && comp.comp.get(id) !== comp.terminal) { out.push({ station: id, perMin: Math.round(x * 10) / 10 }); tot += x; }
+    return { perMin: Math.round(tot * 10) / 10, stations: out };
+  }
+  /** Seconds until `cost` is affordable at the current net income (0 if affordable now, null if income is not positive). */
+  secondsToAfford(cost) {
+    const short = cost - (this.s.money - (this.s.tutorial ? 0 : CHARTERS[this.s.charter].debt));
+    if (short <= 0) return 0;
+    const rate = this.s.ema.fares - this.upkeepPerMin();
+    return rate > 0 ? Math.ceil(short / rate * 60) : null;
+  }
   servedCell(c) { return this.generation().cover.has(c); }
   greeneryScore() {
     const s = this.s; let parks = 0, groves = 0;
@@ -491,6 +519,7 @@ export class Game {
       const k = s.quota.stage;
       s.quota.metAt[k] = s.time; s.quota.stage++;
       s.quota.streak = s.quota.stage < 3 && tp >= q[s.quota.stage] ? 1 : 0;
+      if (k === 0 && s.dis.tutorialHold) { s.dis.tutorialHold = false; s.dis.nextAt = s.time + TUTORIAL.firstDisasterAfterQuotaI * 60; }
       if (k < 2) { const bonus = Math.round(SIM.quotaBonus * CHARTERS[s.charter].price); s.money += bonus; this.touchUndo({ all: true }); }
       if (k === 2 && !s.freePlay) { s.won = true; s.commendedAt = s.time; } // free play: no Commended (nothing to bank)
       this.emit({ type: 'quota', quota: k + 1, throughput: tp, hash: this.hash(), freePlay: !!s.freePlay, commended: k === 2 && !s.freePlay });
@@ -569,7 +598,8 @@ export class Game {
     }
     return r;
   }
-  canAfford(cost) { return this.s.money - cost >= CHARTERS[this.s.charter].debt; }
+  /** Can the term pay `cost`? Down to the Charter's debt limit; in the tutorial never below zero (no debt). */
+  canAfford(cost) { return this.s.money - cost >= (this.s.tutorial ? 0 : CHARTERS[this.s.charter].debt); }
   /**
    * The Undo record for one action: only what that action did (new lines and stations, layers added to existing
    * stations, demolished cells, a train, an interchange upgrade, a green cell), never a copy of the network.
@@ -603,7 +633,6 @@ export class Game {
       yard: s.yard, nextDeparture: s.nextDeparture, natives: s.natives.slice(), undo: s.undo ? { until: s.undo.until, refund: s.undo.refund, kind: s.undo.kind } : null,
       disaster: s.dis.warning ? { type: s.dis.warning.type, target: s.dis.warning.target, hitAt: s.dis.warning.hitAt } : null,
       geoHash: s.geo, freePlay: !!s.freePlay, perks: s.perks.slice(), firstCrossingUsed: !!s.firstCrossingUsed,
-      firstCrossingAvailable: s.mandates.includes('firstCrossing') && !s.firstCrossingUsed,
     };
   }
   stations() { return liveStations(this).map((st) => ({ ...stationInfo(this, st), name: stationName(this, st) })); }
@@ -691,7 +720,10 @@ export class Game {
   /** Bottleneck entries for a full line / interchange, named as the player sees them. */
   lineLimit(l) {
     const cap = lineCapacity(this, l), f = Math.max(this.s.lineFlow[l.id * 2] || 0, this.s.lineFlow[l.id * 2 + 1] || 0);
-    return { kind: 'line', text: `Limit: ${lineName(this, l)} is full (${Math.round(Math.min(1, cap > 0 ? f / cap : 1) * 100)}% load, ${Math.round(cap)}/min each way)`, target: { line: l.id } };
+    const pct = Math.round(Math.min(1, cap > 0 ? f / cap : 1) * 100);
+    // named because exports are waiting behind it; only call it "full" when it is (the busier direction ≥ 95%)
+    const what = pct >= 95 ? 'is full' : 'is holding exports back';
+    return { kind: 'line', text: `Limit: ${lineName(this, l)} ${what} (${pct}% load, ${Math.round(cap)}/min each way)`, target: { line: l.id } };
   }
   stationLimit(st) {
     const cap = stationCapacity(this, st), f = this.stats.xferFlow.get(st.id) || 0;
@@ -737,7 +769,7 @@ export class Game {
     };
   }
   /** Charter / mandate text for Charter documents. */
-  static charterInfo(id) { const c = CHARTERS[id]; return { id, ...c, mandateText: Array.isArray(c.mandates) ? c.mandates.map((m) => MANDATES[m]) : 'Two mandates dealt from II–V', pacing: DISASTER_PACING[id] }; }
+  static charterInfo(id) { const c = CHARTERS[id]; return { id, ...c, mandateText: Array.isArray(c.mandates) ? c.mandates.map((m) => MANDATES[m]) : 'Two mandates dealt from II–V', mandateNote: Array.isArray(c.mandates) && !c.mandates.length ? NO_MANDATE_TEXT : null, pacing: DISASTER_PACING[id] }; }
 }
 
 // ------------------------------------------------------------------ action handlers
@@ -770,6 +802,7 @@ const ACTIONS = {
     if (!card.feasible) return { ok: false, reason: card.reason || 'Not feasible' };
     if (!g.canAfford(card.cost)) return { ok: false, reason: 'Not enough money' };
     const freeCore = g.s.freeCoreExchanges;
+    const firstBefore = !!g.s.firstCrossingUsed;
     const before = g.s.demolished.reduce((x, v) => x + v, 0);
     const { changes } = buildPlan(g, card.plan);
     g.s.money -= card.cost;
@@ -779,8 +812,9 @@ const ACTIONS = {
     const newStations = []; for (let id = changes.stationsLen; id < g.s.stations.length; id++) newStations.push(id);
     g.s.undo = g.beginUndo(card.cost, 'buildRoute', g.undoFromChanges(changes, { freeCore, demolishedByPlayer: dBy }));
     g.dirty = true;
-    g.emit({ type: 'built', kind: card.kind, lines: newLines, stations: newStations, cost: card.cost, firstCrossing: card.free });
-    return { ok: true, cost: card.cost, kind: card.kind, lines: newLines, stations: newStations, carries: card.carries, free: card.free };
+    const firstCrossing = !firstBefore && !!g.s.firstCrossingUsed; // the term's first core route (built with a fire chord)
+    g.emit({ type: 'built', kind: card.kind, lines: newLines, stations: newStations, cost: card.cost, firstCrossing });
+    return { ok: true, cost: card.cost, kind: card.kind, lines: newLines, stations: newStations, carries: card.carries, free: false, firstCrossing };
   },
   addTrain(g, a) {
     const l = g.s.lines[a.line]; if (!l) return { ok: false, reason: 'No such line' };

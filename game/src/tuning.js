@@ -1,6 +1,9 @@
 // tuning.js — every number of the simulation (GAME_DESIGN.md "Tuning", Charters, regions, tech,
 // milestones, disasters, Merit Office) plus the frozen Oikumene cell table written by tools/oikumene.mjs.
-// Pure data. Units: 1 unit = 50 miles; planet radius 100. Money in $. Rates "per minute" unless named.
+// Pure data. Units: 1 unit = 50 miles; planet radius 100. Money in sim $ (shown as $ millions by fmt.js). Rates "per minute" unless named.
+// Texts never write money by hand: they carry numbers (bonus.cash, goal.amount, effect.cash) and any text with money is made by fmtMoney.
+
+import { fmtMoney } from './fmt.js';
 
 export const VERSION = 1;
 
@@ -35,13 +38,13 @@ export const TYPES = {
   surface: { track: 14, station: 150, train: 300, upkeep: 6, speed: 3.0, cars: 3, carCap: 20, layer: 'surface' },
   sky:     { track: 4, station: 300, train: 350, upkeep: 5, speed: 4.0, cars: 2, carCap: 15, range: 60, rangeTech: 90, layer: 'sky' },
   water:   { track: 14, station: 350, stationDome: 500, train: 450, upkeep: 8, speed: 2.5, cars: 3, carCap: 20, layer: 'water' },
-  earth:   { track: 30, station: 400, train: 500, upkeep: 10, speed: 2.0, cars: 4, carCap: 25, layer: 'earth' },
-  fire:    { track: 16, station: 450, stationRift: 225, train: 450, upkeep: 12, speed: 6.0, cars: 4, carCap: 30, minAngle: 60, layer: 'fire' },
+  earth:   { track: 30, station: 450, train: 500, upkeep: 10, speed: 2.0, cars: 3, shaftCars: 4, carCap: 25, layer: 'earth' }, // earth chords 3 cars; shafts keep 4 (core capacity)
+  fire:    { track: 16, station: 350, stationRift: 175, train: 450, upkeep: 12, speed: 6.0, cars: 4, carCap: 30, minAngle: 60, layer: 'fire' },
   space:   { track: 6, station: 2500, stationCheap: 1250, train: 1200, upkeep: 18, speed: 8.0, elevatorSpeed: 3.0, cars: 6, carCap: 30, layer: 'space' },
   deep:    { interval: 30, intervalTwin: 20, intervalNarrow: 60, carCap: 50 },
 };
 /** Earth track price per unit ×(1 + max(0, length − from) / per): long chords bite, so the core wins long hauls. */
-export const EARTH_LONG_CHORD = { from: 60, per: 60 };
+export const EARTH_LONG_CHORD = { from: 45, per: 60 };
 export const TRAINS_PER_NEW_LINE = 2;
 /** A through-the-core card's new shafts start with 1 train each (the fire chord with 2): add shaft trains as flow grows. */
 export const SHAFT_TRAINS = 1;
@@ -54,7 +57,7 @@ export const VIADUCT_TRACK_MULT = 3;     // Elevated Viaducts: ocean cells at 3x
 export const VIADUCT_MAX_OCEAN = 2;
 
 /** Demolition per cell by density (index = density). x Charter demolition x region demolition. */
-export const DEMOLITION = [0, 100, 250, 450, 700, 1000];
+export const DEMOLITION = [0, 100, 250, 800, 1300, 1800];
 
 // ---------------------------------------------------------------- transfers
 export const TRANSFER = {
@@ -127,7 +130,7 @@ export const DEEP_BORE_CRUST = 15;   // Deep Bore tech: crust limit +15
 // ---------------------------------------------------------------- Charters
 export const CHARTER_IDS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'G'];
 export const CHARTERS = {
-  I:   { name: 'Charter I',   price: 1.0, demolition: 1.0, export: 1.0, start: 8000,  debt: -3000, deadline: 45, warpCars: 6,  quotas: [90, 240, 360],    mandates: ['firstCrossing'], natives: ['surface', 'sky', 'earth', 'fire', 'deep'], milestoneSlots: 3 },
+  I:   { name: 'Charter I',   price: 1.0, demolition: 1.0, export: 1.0, start: 8000,  debt: -3000, deadline: 45, warpCars: 6,  quotas: [90, 240, 360],    mandates: [], natives: ['surface', 'sky', 'earth', 'fire', 'deep'], milestoneSlots: 3 },
   II:  { name: 'Charter II',  price: 1.1, demolition: 1.1, export: 1.15, start: 9000,  debt: -3000, deadline: 45, warpCars: 6,  quotas: [120, 320, 480],   mandates: ['atlanteanTrade'], natives: ['surface', 'sky', 'earth', 'fire', 'deep', 'water'], milestoneSlots: 3 },
   III: { name: 'Charter III', price: 1.2, demolition: 1.2, export: 1.35, start: 9000,  debt: -3000, deadline: 42, warpCars: 6,  quotas: [150, 400, 600],   mandates: ['heritageCapital'], natives: ['surface', 'sky', 'earth', 'fire', 'deep', 'water'], milestoneSlots: 3 },
   IV:  { name: 'Charter IV',  price: 1.3, demolition: 1.2, export: 1.6, start: 12000, debt: -4000, deadline: 40, warpCars: 6,  quotas: [180, 480, 720],   mandates: ['frontierLink'], natives: ['surface', 'sky', 'earth', 'fire', 'deep', 'water', 'space'], milestoneSlots: 3 },
@@ -142,12 +145,16 @@ export const PRIORITY_FRONTIER_DEG = 90;
 export const PRIORITY_MIN_DENSITY = 3;
 
 export const MANDATES = {
-  firstCrossing: { name: 'First Crossing Grant', text: 'Your first through-the-core route is free (the Homeworld funds it).' },
   atlanteanTrade: { name: 'Atlantean Trade', text: 'Exports from Atlantis cells x2.' },
   heritageCapital: { name: 'Heritage Capital', text: 'No new demolition in the Capital.' },
   frontierLink: { name: 'Frontier Link', text: 'The priority district farthest from your start (always at least 90° away) must be linked to the Terminal before Quota I counts.' },
   narrowYard: { name: 'Narrow Yard', text: "The Terminal's yard holds one departure's load and the launch ring fires every 60 s until Twin Launch Ring is bought." },
 };
+/** The tutorial term (Charter I, the Capital): its own start money; builds can't take money below zero (no debt);
+ *  no disasters until `firstDisasterAfterQuotaI` minutes after Quota I. Tuned with tools/solve.mjs's tutorial script. */
+export const TUTORIAL = { start: 7800, firstDisasterAfterQuotaI: 3, firstLineTrains: 1 };
+/** Charter I is the founding Charter: no mandate (requests 35-37: the First Crossing Grant is gone). */
+export const NO_MANDATE_TEXT = 'Founding Charter: no mandate. Your first crossing is yours to fund.';
 /** Charter VI and Galactic deal two mandates from these (term stream). */
 export const DEALT_MANDATE_POOL = ['atlanteanTrade', 'heritageCapital', 'frontierLink', 'narrowYard'];
 
@@ -237,7 +244,7 @@ export const MILESTONES = [
   // 20 unlockable cards (Merit Office)
   { id: 'tenOfEach', pool: 'unlock', price: 4, name: 'Ten of Each', text: '10 trains of each available type', goal: { kind: 'trainsEachType', n: 10 }, bonus: { speedAll: 1.1 }, bonusText: 'Every train +10% speed' },
   { id: 'everyPeak', pool: 'unlock', price: 4, name: 'Every Peak', text: 'A Sky Port on every peak', goal: { kind: 'skyPortsAllPeaks' }, bonus: { cars: { sky: 1 } }, bonusText: '+1 sky car' },
-  { id: 'untouchable', pool: 'unlock', price: 3, name: 'Untouchable', text: 'No disaster damage for 10 min', goal: { kind: 'noDamageSeconds', n: 600 }, bonus: { cash: 3000 }, bonusText: '+$3,000' },
+  { id: 'untouchable', pool: 'unlock', price: 3, name: 'Untouchable', text: 'No disaster damage for 10 min', goal: { kind: 'noDamageSeconds', n: 600 }, bonus: { cash: 3000 }, bonusText: fmtMoney(3000, { sign: true }) },
   { id: 'everyDistrict', pool: 'unlock', price: 4, name: 'Every District', text: '80% of city cells served', goal: { kind: 'servedShare', n: 0.8 }, bonus: { exportMult: 1.1 }, bonusText: 'Exports +10%' },
   { id: 'fiveAttractions', pool: 'unlock', price: 3, name: 'Five Attractions', text: 'Five attractions', goal: { kind: 'attractions', n: 5 }, bonus: { attractionMult: 1.5 }, bonusText: 'Attractions +50% stronger' },
   { id: 'halfWayRound', pool: 'unlock', price: 2, name: 'Half Way Round', text: 'A working route between two places 170°+ apart', goal: { kind: 'routeAngle', n: 170 }, bonus: { fareMult: 1.1 }, bonusText: '+10% fares' },
@@ -245,16 +252,16 @@ export const MILESTONES = [
   { id: 'islandHopper', pool: 'unlock', price: 2, name: 'Island Hopper', text: 'Serve 10 island-city cells', goal: { kind: 'islandServed', n: 10 }, bonus: { speed: { water: 1.2 } }, bonusText: 'Water trains +20% speed', needs: 'water' },
   { id: 'ringMaster', pool: 'unlock', price: 3, name: 'Ring Master', text: '3 space lines', goal: { kind: 'linesOfType', type: 'space', n: 3 }, bonus: { elevatorMult: 0.75 }, bonusText: 'Elevators -25%', needs: 'space' },
   { id: 'greenWave', pool: 'unlock', price: 2, name: 'Green Wave', text: 'Greenery score >= 4% of city cells', goal: { kind: 'greeneryShare', n: 0.04 }, bonus: { genMult: 1.05 }, bonusText: '+5% generation everywhere' },
-  { id: 'noTurnAway', pool: 'unlock', price: 3, name: 'Nobody Left Behind', text: '5 min with nobody turned away (after Quota I)', goal: { kind: 'noTurnAwaySeconds', n: 300 }, bonus: { cash: 2000 }, bonusText: '+$2,000' },
+  { id: 'noTurnAway', pool: 'unlock', price: 3, name: 'Nobody Left Behind', text: '5 min with nobody turned away (after Quota I)', goal: { kind: 'noTurnAwaySeconds', n: 300 }, bonus: { cash: 2000 }, bonusText: fmtMoney(2000, { sign: true }) },
   { id: 'megaHub', pool: 'unlock', price: 3, name: 'Mega Hub', text: 'One interchange with 4 layers', goal: { kind: 'maxLayers', n: 4 }, bonus: { transferMult: 1.25 }, bonusText: '+25% transfer everywhere' },
   { id: 'grandTour', pool: 'unlock', price: 3, name: 'Grand Tour', text: 'Track twice the circumference (62,800 miles)', goal: { kind: 'trackUnits', n: 1256 }, bonus: { cars: { surface: 1 } }, bonusText: '+1 surface car' },
-  { id: 'quickStart', pool: 'unlock', price: 2, name: 'Quick Start', text: 'Quota I before 8 minutes', goal: { kind: 'quotaBy', quota: 0, seconds: 480 }, bonus: { cash: 2000 }, bonusText: '+$2,000' },
+  { id: 'quickStart', pool: 'unlock', price: 2, name: 'Quick Start', text: 'Quota I before 8 minutes', goal: { kind: 'quotaBy', quota: 0, seconds: 480 }, bonus: { cash: 2000 }, bonusText: fmtMoney(2000, { sign: true }) },
   { id: 'fullHouse', pool: 'unlock', price: 3, name: 'Full House', text: '30 stations', goal: { kind: 'stations', n: 30 }, bonus: { stationUpkeepMult: 0.5 }, bonusText: 'Station upkeep halved' },
   { id: 'deepRoots', pool: 'unlock', price: 2, name: 'Deep Roots', text: '5 earth chords', goal: { kind: 'linesOfType', type: 'earth', n: 5, chordsOnly: true }, bonus: { trackCost: { earth: 0.8 } }, bonusText: 'Earth track -20%' },
   { id: 'skyHigh', pool: 'unlock', price: 2, name: 'Sky High', text: '15,000 miles of sky arcs', goal: { kind: 'trackOfType', type: 'sky', n: 300 }, bonus: { skyRangeAdd: 15 }, bonusText: 'Sky arcs reach 750 miles farther' },
   { id: 'tidewater', pool: 'unlock', price: 2, name: 'Tidewater', text: '3 water lines', goal: { kind: 'linesOfType', type: 'water', n: 3 }, bonus: { cars: { water: 1 } }, bonusText: '+1 water car', needs: 'water' },
   { id: 'exportBaron', pool: 'unlock', price: 4, name: 'Export Baron', text: 'Launch 10,000 exports', goal: { kind: 'launchedTotal', n: 10000 }, bonus: { warpCars: 1 }, bonusText: '+1 warp car' },
-  { id: 'solvent', pool: 'unlock', price: 2, name: 'Solvent', text: 'Hold $20,000', goal: { kind: 'cash', n: 20000 }, bonus: { fareMult: 1.1 }, bonusText: '+10% fares' },
+  { id: 'solvent', pool: 'unlock', price: 2, name: 'Solvent', text: 'Hold ' + fmtMoney(20000), goal: { kind: 'cash', n: 20000, amount: 20000 }, bonus: { fareMult: 1.1 }, bonusText: '+10% fares' },
 ];
 export const MILESTONES_DEALT = 3;
 
@@ -262,7 +269,7 @@ export const MILESTONES_DEALT = 3;
 export const MERITS = {
   perQuota: 1, perMilestone: 1, perStar: 1, overtimePenalty: 1,
   perks: [
-    { id: 'cash', name: '+$3,000 starting money', price: 3, effect: { cash: 3000 } },
+    { id: 'cash', name: fmtMoney(3000, { sign: true }) + ' starting money', price: 3, effect: { cash: 3000 } },
     { id: 'freeTech', name: 'One free tech node', price: 4, effect: { freeTechNode: 1 } },
     { id: 'corePair', name: 'A free Core Exchange pair', price: 5, effect: { freeCorePair: true } },
     { id: 'elevator', name: 'A Space Elevator already built', price: 5, effect: { freeElevator: true } },
@@ -291,6 +298,7 @@ export const SOLVER_TECH_PRIORITY = {
 export const SOLVER = {
   everySeconds: 30, lookahead: 180, sweepLookahead: 180, clusters: 5, sweepClusters: 5,
   minMoney: 500, parkMoney: 1000, idleGapLimit: 180,
+  sweepRealLimitMs: 400000, // a sweep run's real-time budget before its lookahead is shortened (was 90 s: under machine load that cut quality)
   tutorialTermSeed: 1,
 };
 

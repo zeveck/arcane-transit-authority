@@ -8,9 +8,11 @@ import { TYPE_COLORS, TYPE_ORDER, TYPE_NAMES } from './palette.js';
 import { CHARTERS, REGIONS, GREEN, TECH_BRANCHES, TECH, DISASTERS } from './tuning.js';
 import { esc } from './menus.js';
 import * as audio from './audio.js';
+import { fmtMoney, fmtRate } from './fmt.js';
 
 const $ = (s, el = document) => el.querySelector(s);
-const money = (v) => { const n = Math.round(v); return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US'); };
+const money = (v) => fmtMoney(v);
+const samePlace = (a, b) => (a != null && typeof a === 'object' ? !!b && typeof b === 'object' && a.station === b.station : a === b);
 const clock = (s) => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 const KIND_ICON = { surface: 'surface', sky: 'sky', water: 'water', earth: 'earth', core: 'fire', space: 'space', hybrid: 'hybrid' };
 const KIND_NAME = { surface: 'Surface', sky: 'Sky', water: 'Water', earth: 'Earth', core: 'Through the core', space: 'Space', hybrid: 'Hybrid' };
@@ -33,7 +35,7 @@ export class Hud {
       <div class="pops"></div>
       <div class="markers"></div>
       <div class="topbar">
-        <div class="tb-cell tb-money" title="Money"><span class="ic-wrap">${icon('money')}</span><span class="num" data-k="money">$0</span><span class="sub" data-k="mpm"></span></div>
+        <div class="tb-cell tb-money" title="Money"><span class="ic-wrap">${icon('money')}</span><span class="num" data-k="money">${fmtMoney(0)}</span><span class="sub" data-k="mpm"></span></div>
         <button class="tb-cell tb-meter" data-act="breakdown" title="Throughput (click for the breakdown)">
           <span class="ic-wrap">${icon('throughput')}</span>
           <span class="meter-col"><span class="meter-label"><span class="num" data-k="tp">0</span><span class="sub">/min</span><span class="sub" data-k="quota">Quota I: 90</span></span>
@@ -45,6 +47,7 @@ export class Hud {
         <button class="icon-btn speed-btn" data-act="speed" title="Speed (F)" aria-label="Speed"><span class="num" data-k="speed">1x</span></button>
         <button class="icon-btn" data-act="menu" title="Menu (Esc)" aria-label="Menu">${icon('menu')}</button>
       </div>
+      <div class="plan-chip" hidden><button class="pc-main" data-act="plan-show" title="The planned project (click to show it)"><span class="pc-ic">${icon('pin')}</span><span class="pc-txt"><b data-k="pc-name"></b> <span class="num" data-k="pc-money"></span><span class="pc-eta" data-k="pc-eta"></span><span class="pc-held" data-k="pc-held"></span></span></button><button class="btn small primary pc-build" data-act="plan-build" hidden>Build</button><button class="icon-btn small" data-act="plan-cancel" aria-label="Cancel the plan" title="Cancel the plan">${icon('close')}</button></div>
       <button class="limit-chip" data-act="limit" hidden title="The current limit on exports (click to show it)">${icon('warning')}<span data-k="limit"></span></button>
       <div class="route-banner" hidden><span data-k="rb-text"></span><button class="btn small" data-act="places">${icon('places')}Pick from list</button><button class="icon-btn small" data-act="cancel" aria-label="Cancel (Esc)">${icon('close')}</button></div>
       <div class="ms-chips"></div>
@@ -57,6 +60,7 @@ export class Hud {
       <div class="tooltip" hidden></div>
       <div class="ride-banner" hidden></div>
       <div class="letterbox" hidden><div></div><div></div><span class="skip">Esc to skip</span></div>
+      <div class="cine-caption" hidden></div>
       <div class="paused-badge" hidden>${icon('pause')}Paused · Space to resume</div>
     `;
     this.root.addEventListener('click', (e) => this.onClick(e));
@@ -72,6 +76,7 @@ export class Hud {
   enter(st) {
     this.root.hidden = false;
     this.limitAt = null; this.limitTarget = null; const lc = $('.limit-chip', this.root); if (lc) lc.hidden = true;
+    this.lastPlanReady = null; const pc = $('.plan-chip', this.root); if (pc) pc.hidden = true;
     this.setCinematic(false); // never carry the finale's (or a cinematic's) hidden HUD into a term
     this.rightCol.innerHTML = ''; this.panels = [];
     $('.dispatches', this.root).innerHTML = ''; $('.toasts', this.root).innerHTML = '';
@@ -88,8 +93,7 @@ export class Hud {
   tick(st) {
     if (!st) return;
     this.set('money', money(st.money));
-    const mpm = Math.round(st.moneyPerMin || 0);
-    this.set('mpm', `${mpm >= 0 ? '+' : '−'}$${Math.abs(mpm).toLocaleString('en-US')}/min`);
+    this.set('mpm', fmtRate(st.moneyPerMin || 0, { sign: true }));
     const mEl = this.root.querySelector('.tb-money'); mEl.classList.toggle('neg', st.money < 0);
     this.set('tp', String(Math.round(st.throughput)));
     const q = st.quotas || [90, 240, 360]; const stage = st.quotaStage || 0;
@@ -105,6 +109,7 @@ export class Hud {
     tm.title = st.deadline == null ? 'Free play: no deadline' : st.overtime ? 'Overtime: reach Quota III before this runs out' : 'Time to the Audit deadline';
     this.set('charter', st.tutorial && this.game.story?.tut ? 'Tutorial' : st.charter === 'G' ? 'Charter Galactic' : (CHARTERS[st.charter]?.name || '')); // after Skip tutorial (or its end) it's a Charter I term
     if (st.time !== this.limitAt && (st.time % 3 === 0 || this.limitAt == null)) { this.limitAt = st.time; this.updateLimit(); }
+    this.updatePlan(st);
     if (this.panel?.kind === 'breakdown') this.renderBreakdown();
     else if (this.panel?.kind === 'line' || this.panel?.kind === 'station') this.refreshPanelNumbers();
     this.updateMilestones();
@@ -172,6 +177,10 @@ export class Hud {
       case 'breakdown': this.togglePanel('breakdown'); break;
       case 'limit': { const t = this.limitTarget; if (t) { const sel = t.line != null ? { kind: 'line', id: t.line } : { kind: 'station', id: t.station }; g.select(sel); g.flyToSelection(sel); audio.sfx('ui-click'); } else this.togglePanel('breakdown'); break; }
       case 'places': this.openPlaces(); break;
+      case 'plan-build': g.buildPlan(); break;
+      case 'plan-cancel': g.cancelPlan(); break;
+      case 'plan-show': audio.sfx('ui-click'); g.showPlan(); break;
+      case 'through': g.rideOnThrough(); break;
       case 'cancel': g.cancel(); break;
       case 'undo': g.undo(); break;
       default: break;
@@ -209,7 +218,7 @@ export class Hud {
     const html = `${this.head('Route cards', 'route')}
       <div class="rp-sub">${esc(g.placeLabel(g.route.a))} <span class="arrow">${icon('next')}</span> ${esc(g.placeLabel(g.route.b))}</div>
       <div class="cards">${cards.map((c, i) => this.cardHtml(c, i)).join('')}</div>
-      <div class="rp-hint">Hover or click a card to preview it on the globe; <b>Build</b> (or <kbd>Enter</kbd>) builds it. <kbd>Tab</kbd> shows details.</div>`;
+      <div class="rp-hint">Hover or click a card to preview it on the globe; <b>Build</b> (or <kbd>Enter</kbd>) builds it, <b>Plan it</b> pins it to save up for. <kbd>Tab</kbd> shows details.</div>`;
     const el = this.openPanel('cards', html);
     el.querySelectorAll('.rcard').forEach((cEl) => {
       const i = +cEl.dataset.i;
@@ -217,6 +226,8 @@ export class Hud {
       cEl.addEventListener('click', (e) => {
         if (e.target.closest('.rc-more')) { cEl.classList.toggle('open'); audio.sfx('ui-click'); return; }
         if (e.target.closest('[data-tech]')) { this.openTech(e.target.closest('[data-tech]').dataset.tech); return; }
+        if (e.target.closest('[data-plan]')) { g.planCard(i); return; }
+        if (e.target.closest('.rc-planned')) return;
         if (e.target.closest('[data-build]') || g.route.hi === i) g.buildCard(i); else { g.highlightCard(i); audio.sfx('ui-click'); }
       });
     });
@@ -234,30 +245,47 @@ export class Hud {
         <div class="rc-line">${esc(c.line || c.reason || '')}${c.locked && c.lockTech ? ` <button class="btn small" data-tech="${c.lockTech}">Open Tech</button>` : ''}</div></div>`;
     }
     const b = c.breakdown || {};
+    const g = this.game; const afford = g.sim?.canAfford ? g.sim.canAfford(c.cost) : true;
+    const plan = g.plan && g.plan.kind === c.kind && samePlace(g.plan.a, g.route.a) && samePlace(g.plan.b, g.route.b);
     const legs = (c.legs || []).map((l) => `<li><span style="color:${TYPE_COLORS[l.type]}">${l.shaft ? 'Shaft' : TYPE_NAMES[l.type]}</span> ${l.lengthMiles != null ? Math.round(l.lengthMiles).toLocaleString('en-US') + ' miles' : miles(l.length)} · ${Math.round(l.time)} s · ${Math.round(l.capacity)}/min${l.isNew ? '' : ' (existing)'}</li>`).join('');
     const tr = (c.transfers || []).map((t) => `<li>Transfer at ${t.station != null ? esc(this.game.stationName(t.station)) : t.kind}: ${Math.round(t.capacity)}/min</li>`).join('');
     return `<div class="rcard" data-i="${i}" style="--tc:${col}">
       <div class="rc-top"><span class="rc-ic">${icon(KIND_ICON[c.kind])}</span><b>${KIND_NAME[c.kind]}</b>${tags}</div>
-      <div class="rc-nums"><span class="big num">${c.free ? 'FREE' : money(c.cost)}</span><span class="big num carries">carries ${Math.round(c.carries)}<small>/min</small></span></div>
+      <div class="rc-nums"><span class="big num">${money(c.cost)}</span><span class="big num carries">carries ${Math.round(c.carries)}<small>/min</small></span></div>
+      ${this.demolitionLine(c)}
       ${this.exportsLine(c)}
-      ${c.line ? `<div class="rc-line">${esc(c.line)}</div>` : ''}
+      ${c.line && !/^(demolishes|free)/i.test(c.line) ? `<div class="rc-line">${esc(c.line)}</div>` : ''}
       <div class="rc-details">
+        <ul class="price-list">
+          <li><span>Track</span><b class="num">${money(b.track || 0)}</b></li>
+          <li><span>Stations</span><b class="num">${money(b.stations || 0)}</b></li>
+          <li><span>Trains</span><b class="num">${money(b.trains || 0)}</b></li>
+          ${b.demolition ? `<li><span>Demolition (${b.blocks} block${b.blocks === 1 ? '' : 's'})</span><b class="num">${money(b.demolition)}</b></li>` : ''}
+        </ul>
         <ul>
-          <li>Track ${money(b.track || 0)} · Stations ${money(b.stations || 0)} · Trains ${money(b.trains || 0)}${b.demolition ? ` · Demolition ${money(b.demolition)} (${b.blocks} blocks)` : ''}</li>
-          <li>${c.trackMiles ? `${Math.round(c.trackMiles).toLocaleString('en-US')} miles of track · ` : ''}Trip A to B: ${Math.round(c.tripTime || 0)} s · Running cost ${money(c.runningCost || 0)}/min</li>
+          <li>${c.trackMiles ? `${Math.round(c.trackMiles).toLocaleString('en-US')} miles of track · ` : ''}Trip A to B: ${Math.round(c.tripTime || 0)} s · Running cost ${fmtRate(c.runningCost || 0)}</li>
           ${legs}${tr}
           ${c.bestAt ? `<li class="best">${esc(c.bestAt)}</li>` : ''}
         </ul>
       </div>
-      <div class="rc-foot"><button class="rc-more" aria-label="Details">${icon('down')} Details</button><button class="btn small primary" data-build>Build</button></div>
+      <div class="rc-foot"><button class="rc-more" aria-label="Details">${icon('down')} Details</button><span class="spacer"></span>${plan ? '<span class="rc-planned">Planned</span>' : `<button class="btn small" data-plan title="Pin this card: its ghost stays on the globe and a chip counts the money down">${icon('pin')}Plan it</button>`}<button class="btn small primary" data-build ${afford ? '' : 'disabled title="Not enough money yet: Plan it to save up"'}>Build</button></div>
     </div>`;
   }
   /** Every card says what it does for exports: the gain, and why it's nothing (or next to nothing) when it is. */
   exportsLine(c) {
     const gain = Math.round(c.exportsGain || 0);
-    if (gain >= 3) return `<div class="rc-exp">+${gain} exports/min to the Terminal</div>`;
+    if (gain >= 3) return `<div class="rc-exp">+${gain} exports/min to the Terminal${c.demolishes ? ' (after demolition)' : ''}</div>`;
     const note = c.exportsNote ? `: ${esc(c.exportsNote)}` : '';
     return `<div class="rc-exp low">+${Math.max(0, gain)} exports/min${note}</div>`;
+  }
+  /** The red line: what the blocks a card clears produce now, and what its new stations would have served there. */
+  demolitionLine(c) {
+    const n = c.demolishes || 0; if (!n) return '';
+    const blocks = `${n} block${n === 1 ? '' : 's'}`;
+    const r = Math.round(c.ridersLost || 0), x = Math.round(c.exportsLost || 0);
+    if (!r && !x) return `<div class="rc-demo">demolishes ${n} unserved block${n === 1 ? '' : 's'}</div>`;
+    const parts = [r ? `−${r} riders/min` : '', x ? `−${x} exports/min` : ''].filter(Boolean).join(', ');
+    return `<div class="rc-demo">demolishes ${blocks}: ${parts}</div>`;
   }
   highlightCard(i) { this.panel?.el?.querySelectorAll('.rcard').forEach((c) => c.classList.toggle('hi', +c.dataset.i === i)); const el = this.panel?.el?.querySelector(`.rcard[data-i="${i}"]`); el?.scrollIntoView?.({ block: 'nearest' }); }
   /** Tutorial: mark the card Juno asks for (and preview it). */
@@ -323,7 +351,7 @@ export class Hud {
     const g = this.game; const l = g.sim.lines().find((x) => x.id === id); if (!l) return;
     const name = g.lineName(l);
     const st = (x) => { const s = g.sim.stations().find((q) => q.id === x); return s ? g.stationName(s) : '—'; };
-    const income = Math.round(l.income ?? 0);
+    const income = l.income ?? 0;
     const status = l.broken ? `<div class="warn-line">${icon('warning')} Broken by ${esc(DISASTERS[l.broken.by]?.name || 'a disaster')} · ${l.broken.repairAt != null ? `repairing, back in ${Math.max(0, Math.ceil(l.broken.repairAt - g.sim.s.time))} s` : `repair ${money(l.broken.cost || 0)}`}</div>` : l.closed || !l.open ? `<div class="warn-line">${icon('warning')} Closed</div>` : '';
     const html = `${this.head(esc(name), l.type, TYPE_COLORS[l.type])}
       <div class="rp-sub">${esc(st(l.a))} ↔ ${esc(st(l.b))}${l.inherited ? ' · inherited' : ''}</div>
@@ -332,12 +360,12 @@ export class Hud {
         <div><span>Load</span><b class="num">${Math.round((l.load || 0) * 100)}%</b></div>
         <div><span>Flow</span><b class="num">${Math.round(l.flow || 0)}/min</b></div>
         <div><span>Carries</span><b class="num">${Math.round(l.capacity || 0)}/min</b></div>
-        <div><span>Running cost</span><b class="num">${money(l.runningCost ?? l.upkeep ?? 0)}/min</b></div>
+        <div><span>Running cost</span><b class="num">${fmtRate(l.runningCost ?? l.upkeep ?? 0)}</b></div>
         <div><span>Length</span><b class="num">${l.lengthMiles != null ? Math.round(l.lengthMiles).toLocaleString('en-US') + ' miles' : miles(l.length)}</b></div>
         <div><span>Trip</span><b class="num">${Math.round(l.time)} s</b></div>
         ${l.waiting != null ? `<div><span>Waiting</span><b class="num">${Math.round(l.waiting)}</b></div>` : ''}
         ${l.turnedAway != null ? `<div><span>Turned away</span><b class="num">${Math.round(l.turnedAway)}</b></div>` : ''}
-        ${income ? `<div><span>Income</span><b class="num">${money(income)}/min</b></div>` : ''}
+        ${income ? `<div><span>Income</span><b class="num">${fmtRate(income)}</b></div>` : ''}
       </div>
       <div class="row trains-row"><span>Trains</span><button class="icon-btn small" data-a="rm" aria-label="Remove a train (−)">${icon('minus')}</button><b class="num">${l.trains}</b><button class="icon-btn small" data-a="add" aria-label="Add a train (+)">${icon('plus')}</button><span class="sub">× ${l.cars} cars</span></div>
       <div class="row wrap" style="margin-top:10px">
@@ -412,9 +440,49 @@ export class Hud {
     if (m?.width) chip.style.left = `${Math.round(Math.max(m.left, 140))}px`;
     this.stackBanners();
   }
+  /**
+   * The planned project's chip: "Core crossing: <have> / <price> · ~2:10 at this rate", the exports waiting for the
+   * Terminal, gold with Build once it can be paid for; × cancels. The time is at the current income (game time).
+   */
+  updatePlan(st = null) {
+    const g = this.game; const chip = $('.plan-chip', this.root); if (!chip) return;
+    const p = g.playing ? g.plan : null;
+    if (!p) { if (!chip.hidden) { chip.hidden = true; this.stackBanners(); } return; }
+    st = st || g.sim.state();
+    const c = p.card; const cost = c?.cost ?? 0;
+    const name = p.kind === 'core' ? 'Core crossing' : `${KIND_NAME[p.kind]}: ${g.placeLabel(p.a).split(' · ')[0]} to ${g.placeLabel(p.b).split(' · ')[0]}`;
+    this.set('pc-name', name + ':');
+    let eta = '', ready = false;
+    if (!c || !c.feasible) { this.set('pc-money', ''); eta = c ? `can't be built now: ${c.reason || c.line || 'blocked'}` : 'can\'t be built now'; }
+    else {
+      ready = g.sim.canAfford ? g.sim.canAfford(cost) : st.money >= cost;
+      this.set('pc-money', ready ? fmtMoney(cost) : `${fmtMoney(Math.max(0, st.money))} / ${fmtMoney(cost)}`);
+      if (ready) eta = ' · ready to build';
+      else { const rate = st.moneyPerMin || 0; const need = cost - st.money; eta = rate > 0.01 ? ` · ~${clock(need / rate * 60)} at this rate` : ' · no income yet'; }
+    }
+    this.set('pc-eta', eta);
+    const gain = Math.round(c?.exportsGain || 0);
+    const unlinked = gain > 0 && !g.sim.stations().some((x) => x.kind !== 'terminal' && x.linkedToTerminal);
+    this.set('pc-held', gain > 0 ? (unlinked ? `Exports waiting for the Terminal: ${gain}/min` : `+${gain} exports/min to the Terminal when built`) : '');
+    $('[data-k="pc-held"]', chip).hidden = !gain;
+    chip.classList.toggle('ready', ready);
+    $('.pc-build', chip).hidden = !ready;
+    if (chip.hidden) { chip.hidden = false; this.stackBanners(); } else if (this.lastPlanReady !== ready) this.stackBanners();
+    if (ready && this.lastPlanReady === false) audio.sfx('milestone-flip', { gain: 0.45 });
+    this.lastPlanReady = ready;
+  }
+  /** A caption over the cinematic (the Core Exchange, the first time). */
+  caption(text, secs = 4) {
+    const el = $('.cine-caption', this.root); if (!el) return;
+    if (!text) { el.hidden = true; this.captionUntil = null; return; }
+    el.textContent = text; el.hidden = false; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+    this.captionUntil = this.game.G.renderTime + secs; // render time, so a slow frame rate never cuts it short
+  }
   /** The top-centre stack: Limit chip, then the disaster banner, then the route / ride banner, never on top of each other. */
   stackBanners() {
     let y = 70;
+    const pc = $('.plan-chip', this.root);
+    if (pc && !pc.hidden) { const m = this.root.querySelector('.tb-meter')?.getBoundingClientRect(); if (m?.width) pc.style.left = `${Math.round(Math.max(m.left, 140))}px`; pc.style.top = `${y}px`; y += pc.offsetHeight + 8; }
     const chip = $('.limit-chip', this.root);
     if (chip && !chip.hidden) { chip.style.top = `${y}px`; y += chip.offsetHeight + 8; }
     const dz = $('.disaster', this.root);
@@ -625,7 +693,7 @@ export class Hud {
     box.appendChild(el);
     while (box.childElementCount > 3) box.firstElementChild.remove();
   }
-  spent(cost, free) { if (free) this.toast('Built: FREE (the Homeworld funds your first crossing).', 'good'); else if (cost) this.toast(`Spent ${money(cost)}`, 'info', 'spent'); }
+  spent(cost) { if (cost) this.toast(`Spent ${money(cost)}`, 'info', 'spent'); }
   /** The undo toast names what was done: Built. / Demolished. / Planted. / Station placed. / Upgraded. */
   showUndo(label = 'Built.') { this.undoShown = true; const s = $('.undo-toast > span', this.root); if (s) s.textContent = label; this.updateUndo(); }
   hideUndo() { this.undoShown = false; $('.undo-toast', this.root).hidden = true; }
@@ -663,12 +731,14 @@ export class Hud {
   }
   clearDispatch(key) { this.root.querySelector(`.dispatch[data-key="${key}"]`)?.remove(); }
 
-  setRiding(l) {
+  setRiding(l, through = false) {
     const b = $('.ride-banner', this.root);
-    if (!l) { b.hidden = true; return; }
-    b.hidden = false; this.stackBanners(); b.innerHTML = `${icon('ride')}Riding the ${esc(this.game.lineName(l))} · any input exits`;
+    if (!l) { b.hidden = true; b.classList.remove('through'); return; }
+    b.hidden = false; this.stackBanners();
+    b.classList.toggle('through', through);
+    b.innerHTML = `${icon('ride')}Riding the ${esc(this.game.lineName(l))} · ${through ? '<button class="btn small primary" data-act="through">Ride on through <kbd>Enter</kbd></button> · ' : ''}any other input exits`;
   }
-  setCinematic(on) { $('.letterbox', this.root).hidden = !on; this.root.classList.toggle('cine', on); }
+  setCinematic(on) { $('.letterbox', this.root).hidden = !on; this.root.classList.toggle('cine', on); if (!on) this.caption(null); }
 
   // ------------------------------------------------------------------ tech tree screen
   openTech(focus = null) {
@@ -704,6 +774,7 @@ export class Hud {
       p.el.style.transform = `translate(${sp.x - 20}px, ${sp.y - 30 - p.t * 36}px)`; p.el.style.opacity = String(Math.min(1, 2.2 - p.t * 1.4));
     }
     this.frameMarkers();
+    if (this.captionUntil != null && this.game.G.renderTime > this.captionUntil) this.caption(null);
     // dispatches fade after their time (render time, so stepping and real play agree)
     const rt = this.game.G.renderTime;
     for (const d of [...$('.dispatches', this.root).children]) {
