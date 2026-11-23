@@ -150,18 +150,21 @@ export class City {
 
   groundMaterial(map, kind) {
     const m = new THREE.MeshStandardMaterial({ map, vertexColors: true, roughness: kind === 'sea' ? 0.9 : kind === 'city' ? 0.6 : 0.8, metalness: kind === 'city' ? 0.3 : 0.05, envMapIntensity: kind === 'city' ? 0.8 : 0.6 });
-    const uni = this.groundUniforms = this.groundUniforms || { uLights: { value: 1 }, uFar: { value: 0 }, uTime: XRAY.uniforms.uTime };
+    const uni = this.groundUniforms = this.groundUniforms || { uLights: { value: 1 }, uFar: { value: 0 }, uTime: XRAY.uniforms.uTime, uCarpet: { value: this.quality === 'low' ? 0 : 1 } };
     clipMaterial(m, (sh) => {
       sh.uniforms.uLights = uni.uLights; sh.uniforms.uFar = uni.uFar; sh.uniforms.uTime = uni.uTime;
       sh.vertexShader = 'attribute float snow; attribute float glow; varying float vSnow; varying float vGlow;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvSnow = snow; vGlow = glow;');
       sh.fragmentShader = 'varying float vSnow; varying float vGlow; uniform float uLights; uniform float uFar; uniform float uTime;\n' + sh.fragmentShader;
       if (kind === 'city') {
-        sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `
+        sh.uniforms.uCarpet = uni.uCarpet;
+        sh.fragmentShader = 'uniform float uCarpet;\n' + CARPET_GLSL + sh.fragmentShader.replace('#include <map_fragment>', `
           vec4 texel = texture2D(map, vMapUv);
           float lum = dot(texel.rgb, vec3(0.3,0.5,0.2));
-          diffuseColor.rgb *= texel.rgb * 13.0;
+          ${CARPET_MAIN}
+          diffuseColor.rgb *= mix(texel.rgb * 13.0, cAlb, cK);
         `).replace('#include <emissivemap_fragment>', `
-          float lit = smoothstep(0.12, 0.32, lum);
+          float lit = smoothstep(0.12, 0.32, lum) * (1.0 - cK);
+          totalEmissiveRadiance += cEm * cK;
           totalEmissiveRadiance += vec3(1.0,0.78,0.52) * lit * 1.1 * uLights;
           // Night lights, pre-filtered so nothing shimmers as the globe turns (request 34). Every detail fades to its
           // own average once it would be smaller than a few pixels (screen-space derivatives), and nothing twinkles.
@@ -195,7 +198,7 @@ export class City {
           float line = max(lxy.x, lxy.y);
           vec3 nc = fract(hh * 3.1) > 0.5 ? vec3(1.0, 0.435, 0.569) : vec3(0.07, 0.44, 0.48) * 2.0;
           // far away the lines become their mean: a faint, even rose-teal haze (their average colour, never per-pixel)
-          totalEmissiveRadiance += mix(vec3(0.57, 0.66, 0.76) * 0.035, nc * line, lineDetail) * 0.3;
+          totalEmissiveRadiance += mix(vec3(0.57, 0.66, 0.76) * 0.035, nc * line, lineDetail) * 0.3 * (1.0 - cK);
         `);
       } else if (kind === 'lava') {
         sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `
@@ -758,7 +761,7 @@ export class City {
     if (camDist < 260) this.updateHolos(t);
     // window lights brighter when close; ground lights dimmer when close (blocks carry it)
     const far = Math.min(1, Math.max(0, (camDist - 160) / 170));
-    if (this.groundUniforms) { this.groundUniforms.uLights.value = 0.6 + far * 0.8; this.groundUniforms.uFar.value = far; }
+    if (this.groundUniforms) { this.groundUniforms.uLights.value = 0.6 + far * 0.8; this.groundUniforms.uFar.value = far; this.groundUniforms.uCarpet.value = this.quality === 'low' ? 0 : 1; }
     if (this.buildUniforms) { this.buildUniforms.uLit.value = 1 + far * 0.7; this.buildUniforms.uFar.value = far; }
   }
 }
@@ -780,6 +783,127 @@ function blockShapes() {
 }
 
 export { REGION_ACCENT };
+
+// ------------------------------------------------------------------ the low-rise carpet
+// Between the megablocks the whole district is packed with small buildings, drawn in the city ground's own shader:
+// each fragment casts its view ray into a grid of lots (CARPET_LOTS per ground UV, 0.9 units each) below the ground
+// and shades the roof, wall or street it meets (a parallax heightfield: no geometry, one pass, depth unchanged, so
+// the real megablocks, rails and trains draw over it as before). Roofs top out at the ground's own level and streets
+// sink up to ~1.2 units below it, deeper in denser districts; cleared corridors and parks (glow 0) stay flat. Avenues
+// run every fifth lot along the ground's neon lines. It fades in once a lot covers a few pixels, so from orbit the
+// ground looks exactly as before (and the Low graphics setting turns it off).
+const CARPET_LOTS = '10.0';
+const CARPET_GLSL = `
+float cHash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+// one lot's building: footprint (xy min, xy max in the lot's 0..1) and roof height; false for avenues and plazas
+bool cLot(vec2 id, float D, out vec4 bx, out float roofZ, out float tall) {
+  vec2 m = mod(id, 5.0);
+  if (abs(m.x - 2.0) < 0.5 || abs(m.y - 2.0) < 0.5) return false;
+  float h = cHash(id);
+  if (h < 0.07) return false;
+  float a = cHash(id + 17.3), b = cHash(id + 41.9);
+  bx = vec4(0.07 + 0.13 * a, 0.07 + 0.13 * b, 0.93 - 0.13 * b, 0.93 - 0.13 * a);
+  tall = cHash(id * 1.7 + 3.1); tall *= tall;
+  roofZ = -D + D * (0.18 + 0.82 * tall);
+  return true;
+}
+`;
+const CARPET_MAIN = `
+  float cK = 0.0; vec3 cAlb = vec3(1.0); vec3 cEm = vec3(0.0);
+  {
+    vec3 vp = -vViewPosition;
+    vec3 dpx = dFdx(vp), dpy = dFdy(vp);
+    vec2 dux = dFdx(vMapUv), duy = dFdy(vMapUv);
+    float lotPx = max(length(dux), length(duy)) * ${CARPET_LOTS};          // lots per pixel
+    float depthW = uCarpet * (0.35 + 0.85 * vGlow) * smoothstep(0.03, 0.12, vGlow); // street depth, world units
+    vec3 Ng = normalize(cross(dpx, dpy)); if (dot(Ng, vViewPosition) < 0.0) Ng = -Ng;
+    // level ground only: the slopes that climb to the mountains keep the flat streets texture
+    float level = dot(Ng, normalize(vp - (viewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz));
+    cK = (1.0 - smoothstep(0.05, 0.13, lotPx)) * step(0.001, depthW) * smoothstep(0.9, 0.97, level);
+    if (cK > 0.0) {
+      vec3 Tg = normalize(cross(dpy, Ng) * dux.x + cross(Ng, dpx) * duy.x);
+      vec3 Bg = normalize(cross(dpy, Ng) * dux.y + cross(Ng, dpx) * duy.y);
+      vec3 V = normalize(vp);
+      vec3 rd = vec3(dot(V, Tg), dot(V, Bg), dot(V, Ng));
+      rd.z = min(rd.z, -0.1); rd = normalize(rd);
+      vec3 rs = vec3(abs(rd.x) < 1e-4 ? 1e-4 : rd.x, abs(rd.y) < 1e-4 ? 1e-4 : rd.y, rd.z);
+      vec3 ro = vec3(vMapUv * ${CARPET_LOTS}, 0.0);
+      float D = depthW / (9.0 / ${CARPET_LOTS});                           // in lot units
+      vec2 cell = floor(ro.xy);
+      vec2 sg = sign(rs.xy);
+      vec2 tDelta = 1.0 / abs(rs.xy);
+      vec2 tMax = (sg * (cell - ro.xy) + sg * 0.5 + 0.5) * tDelta;
+      float tFloor = D / -rs.z;
+      float t0 = 0.0, tHit = tFloor, face = 0.0, hTall = 0.0, hRoof = 0.0;
+      vec2 hCell = cell;
+      for (int i = 0; i < 24; i++) {
+        float t1 = min(min(tMax.x, tMax.y), tFloor);
+        vec4 bx; float rz, tl;
+        if (cLot(cell, D, bx, rz, tl)) {
+          vec3 bmin = vec3(cell + bx.xy, -D - 1.0), bmax = vec3(cell + bx.zw, rz);
+          vec3 ta = (bmin - ro) / rs, tb = (bmax - ro) / rs;
+          vec3 tn3 = min(ta, tb), tf3 = max(ta, tb);
+          float tn = max(max(tn3.x, tn3.y), tn3.z), tf = min(min(tf3.x, tf3.y), tf3.z);
+          if (tn <= tf && tf > t0 && tn <= t1) {
+            tHit = max(tn, t0); face = tn == tn3.z ? 1.0 : tn == tn3.x ? 2.0 : 3.0;
+            hTall = tl; hRoof = rz; hCell = cell; break;
+          }
+        }
+        if (t1 >= tFloor) break;
+        if (tMax.x < tMax.y) { cell.x += sg.x; t0 = tMax.x; tMax.x += tDelta.x; }
+        else { cell.y += sg.y; t0 = tMax.y; tMax.y += tDelta.y; }
+      }
+      vec3 hp = ro + rs * tHit;
+      float up = clamp((hp.z + D) / max(D, 1e-3), 0.0, 1.0);    // 0 at street level, 1 at the ground's level
+      float ao = 0.3 + 0.7 * up;
+      float hc = cHash(hCell + 5.7);
+      vec3 neonA = vec3(1.0, 0.435, 0.569), neonB = vec3(0.14, 0.88, 0.96);
+      if (face == 1.0) {
+        // roof: pale concrete and metal, a parapet line, some with a neon rim
+        vec2 lp = hp.xy - hCell;
+        cAlb = vec3(0.36 + 0.3 * hc) * ao;
+        float edge = min(min(lp.x, lp.y), min(1.0 - lp.x, 1.0 - lp.y));
+        if (hc > 0.82) cEm += (hc > 0.91 ? neonA : neonB) * 0.35 * (1.0 - smoothstep(0.0, 0.05, abs(edge - 0.12)));
+        cEm += vec3(1.0, 0.82, 0.6) * 0.05 * step(0.6, cHash(floor(lp * 4.0) + hCell)) * step(0.4, hc);
+      } else if (face > 1.0) {
+        // walls: dark glass with rows of lit windows, faded to their average once they are under ~2 px
+        float u = face == 2.0 ? hp.y : hp.x;
+        float v = hp.z + D;
+        cAlb = vec3(face == 2.0 ? 0.42 : 0.3) * ao;
+        vec2 wg = vec2(u * 7.0, v * 9.0); vec2 wf = fract(wg);
+        float win = step(0.22, wf.x) * step(wf.x, 0.74) * step(0.3, wf.y) * step(wf.y, 0.78);
+        float wh = cHash(floor(wg) + hCell * 13.1 + face * 7.0);
+        float on = step(0.55, wh) * win;
+        float wDetail = 1.0 - smoothstep(0.35, 0.7, lotPx * 9.0);
+        vec3 wc = wh > 0.97 ? vec3(0.55, 0.8, 1.0) : vec3(1.0, 0.8, 0.55);
+        cEm += wc * mix(0.125, on, wDetail) * (0.5 + 0.5 * up) * 1.15;
+        // a neon band under the roof of a few
+        if (hc > 0.82) cEm += (hc > 0.91 ? neonA : neonB) * 0.6 * (1.0 - smoothstep(0.0, 0.03, abs(hp.z - hRoof + 0.06)));
+      } else {
+        // streets: dark, with the avenues' neon line and moving car lights down the lanes
+        cAlb = vec3(0.16) * ao;
+        vec2 q = hp.xy;
+        vec2 am = mod(q, 5.0) - 2.5;                   // distance from each avenue's centre
+        vec2 ai = floor(q / 5.0);
+        float nl = 1.0 - smoothstep(0.03, 0.07 + lotPx * 2.0, min(abs(am.x), abs(am.y)));
+        vec3 nCol = cHash(ai * 3.1) > 0.5 ? neonA : neonB;
+        cEm += nCol * nl * 0.32;
+        float carD = 1.0 - smoothstep(0.08, 0.16, lotPx);
+        // lanes either side of the centre line; each lane's cars move one way
+        for (int k = 0; k < 2; k++) {
+          float across = k == 0 ? am.x : am.y, along = k == 0 ? q.y : q.x;
+          float lane = across > 0.0 ? 1.0 : -1.0;
+          float inLane = 1.0 - smoothstep(0.015, 0.035, abs(abs(across) - 0.2));
+          float s = along * 0.9 + lane * uTime * 0.5 + cHash(vec2(floor(q.x / 5.0 + q.y / 5.0), float(k))) * 7.0;
+          float car = smoothstep(0.86, 0.9, fract(s)) * (1.0 - smoothstep(0.93, 0.95, fract(s))) * step(abs(across), 0.5);
+          cEm += (lane > 0.0 ? vec3(1.0, 0.93, 0.8) : vec3(1.0, 0.25, 0.2)) * car * inLane * 0.8 * carD;
+        }
+        // light spill from the windows above
+        cEm += vec3(1.0, 0.78, 0.52) * 0.025;
+      }
+    }
+  }
+`;
 
 /** Outline strips: drawn over buildings (no depth test) but hidden behind the planet (sphere test). */
 function outlineMaterial(color, opacity) {
